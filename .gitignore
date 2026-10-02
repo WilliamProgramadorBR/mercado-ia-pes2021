@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Dados locais, proprietários ou gerados
+mercado_config.json
+mercado_snap.bin
+mercado_pedido.txt
+mercado_status.txt
+mercado_noticias.txt
+ML0000000*
+EDIT00000000*
+*.bin
+historico/
+saida/
+save_work/
+Backups/
+pesXdecrypter/
+
+# Editores e sistema
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

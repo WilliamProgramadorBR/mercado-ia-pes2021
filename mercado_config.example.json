@@ -1,0 +1,10 @@
+{
+  "time_do_usuario": "MANCHESTER UNITED",
+  "compradores": "TODOS",
+  "max_transferencias": 25,
+  "contratar_livres": false,
+  "semente": null,
+  "limite_janela_verao": 40,
+  "limite_janela_inverno": 20,
+  "bloquear_fora_da_janela": true
+}
