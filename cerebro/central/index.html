@@ -1245,6 +1245,22 @@ function renderFrentes(d) {
 function jogoLinha(g) {
   return `<div class="jogo" ${g.meu ? 'style="color:var(--gold)"' : ''}><span>${crest(g.casa, 18)} ${esc(g.casa)}</span><span class="pl">${g.g1} x ${g.g2}</span><span>${esc(g.fora)} ${crest(g.fora, 18)}</span></div>`;
 }
+function iaAdvHTML(d, p) {
+  const a = d.ia_adversaria;
+  if (!a || !p || String(a.data) !== String(p.data) || ![p.casa, p.fora].includes(a.adversario)) return '';
+  const pl = a.plano, sim = (v, x, y) => v ? x : y, r = d.ia_adversaria_resumo;
+  const apr = r && r.jogos ? `<div class="dica">📈 A IA já analisou ${r.jogos} jogo${r.jogos > 1 ? 's' : ''} contra você`
+    + (r.melhores?.length ? ` · funciona: ${r.melhores.map(x => esc(x[0])).join(', ')}` : '')
+    + (r.piores?.length ? ` · não funciona: ${r.piores.map(x => esc(x[0])).join(', ')}` : '') + '</div>'
+    : '<div class="dica">📈 A IA começa a aprender com o resultado deste jogo.</div>';
+  return `<div class="item" style="margin-top:8px;border-left:3px solid var(--gold);padding-left:8px"><b>🧠 Como o ${esc(a.adversario)} vem${a.tecnico ? ' (' + esc(a.tecnico) + ')' : ''}</b>${a.escolha && a.escolha !== 'plano do técnico' ? ` <span class="dica">· ${esc(a.escolha)}</span>` : ''}
+    ${(a.olheiro || []).length ? `<div class="dica">🔎 O olheiro deles viu: ${a.olheiro.map(esc).join(' · ')}</div>` : ''}
+    <div class="dica">${esc(a.motivo)}</div>
+    <div class="dica">${sim(pl.estilo_ofensivo, 'posse de bola', 'contra-ataque')} · ${sim(pl.saida_de_bola, 'passe curto', 'passe longo')} · ${sim(pl.estilo_defensivo, 'defesa total', 'pressão na frente')} · pressão ${sim(pl.pressao, 'tradicional', 'agressiva')} · linha ${pl.linha_defensiva} · compactação ${pl.compactacao}</div>
+    ${(a.instrucoes || []).length ? `<div class="dica">📋 Instruções: ${a.instrucoes.map(esc).join(' · ')}</div>` : ''}
+    ${apr}</div>`;
+}
+
 function renderProximo(d) {
   const p = d.proximo_jogo;
   if (!p) { $('proxJogo').innerHTML = '<h2>Próximo jogo</h2><div class="vazio">Calendário indisponível.</div>'; return; }
@@ -1254,6 +1270,7 @@ function renderProximo(d) {
       ${p.final ? `<div class="faixa-classico faixa-final">🏆 Final · ${esc(p.competicao)}</div>` : ''}
       <div class="pj"><div>${crest(p.casa, 46)}<div class="t">${esc(p.casa)}</div><div class="dica">${tb0(p.tabela.casa)}</div></div><div class="vs">x</div>
       <div>${crest(p.fora, 46)}<div class="t">${esc(p.fora)}</div><div class="dica">${tb0(p.tabela.fora)}</div></div></div>
+      ${iaAdvHTML(d, p)}
       <div class="dica" style="margin-top:8px">Ao vivo da memória do jogo. Probabilidades, enquete e palpites chegam com a próxima reunião (depois do salvamento).</div>`;
     ['duelo1', 'duelo2', 'tatica'].forEach(id => $(id).innerHTML = '<div class="vazio">Sai na próxima reunião (depois do próximo jogo salvo).</div>');
     return;
@@ -1270,6 +1287,7 @@ function renderProximo(d) {
     <div class="dica">força do elenco: ${p.forca.casa ?? '—'} x ${p.forca.fora ?? '—'} · placar provável: <b>${esc(p.placar_provavel)}</b>${p.confrontos.length ? ' · confrontos: ' + p.confrontos.map(esc).join(' · ') : ''}</div>
     <div class="enquete" style="margin:10px 0 6px"><b>Enquete da torcida:</b> ${esc(p.enquete.pergunta)} <span class="dica">· ${p.enquete.sim}% sim</span><div class="bar"><i style="width:${p.enquete.sim}%"></i></div></div>
     ${p.palpites.map(x => `<div class="item"><b>${esc(x.quem)}</b>: ${esc(x.texto)}<div class="dica">“${esc(x.fala)}”</div></div>`).join('')}
+    ${iaAdvHTML(d, p)}
     <div class="dica" style="margin-top:8px">4 x 4 na aba Imprensa · relatório tático na aba Análise.</div>`;
   $('duelo1').innerHTML = p.duelo ? duelo4x4(p.duelo, true) : '<div class="vazio">Sai na próxima reunião.</div>';
   $('duelo2').innerHTML = p.duelo ? duelo4x4(p.duelo, true) : '<div class="vazio">Sai na próxima reunião.</div>';

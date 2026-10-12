@@ -164,6 +164,10 @@ def estado_projetado(slot=None):
     except OSError:
         d['atraso'] = {'minutos': round(atraso / 60), 'vigia_vivo': False} if atraso > 180 else None
     d['vigia_reinicio'] = dict(_VIGIA_REINICIO) if _VIGIA_REINICIO['n'] else None
+    ia = _ler_json(os.path.join(HIST, 'ia_adversaria.json'), {}) or {}
+    reg = ia.get('registro') or []
+    d['ia_adversaria'] = reg[-1] if reg else None   # como o adversário do próximo jogo foi preparado
+    d['ia_adversaria_resumo'] = ia.get('resumo')    # o que a IA já aprendeu sobre o usuário
     d['trabalhando'] = list(_trabalhos.values())
     d['trabalhando_n'] = list(_trabalhos.keys())   # qual resposta está sendo escrita no jogo agora
     return d
@@ -438,6 +442,46 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._send(500, str(e).encode('utf-8'), 'text/plain; charset=utf-8')
 
 
+def _preparar_adversario(slot, pr):
+    """12/10/2026: o técnico da IA prepara o próximo adversário (ia_adversaria.py): escreve o plano de jogo dele na
+    memória e devolve o anterior ao plano original. Desliga com "ia_adversaria": false no automacao.json."""
+    try:
+        if _ler_json(os.path.join(HERE, 'automacao.json'), {}).get('ia_adversaria', True) is False:
+            return
+        import glob
+        import carreira
+        import ia_adversaria
+        from save_ml import SaveML
+        dados = estado_projetado(slot)
+        if dados.get('laboratorio'):
+            return
+        decs = glob.glob(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'))
+        if not decs:
+            return
+        d = open(max(decs, key=os.path.getmtime), 'rb').read()
+        _, nome = carreira.time_do_usuario(d)
+        if nome not in (pr['casa'], pr['fora']):   # o save da última reunião é de outra carreira
+            return
+        adv = pr['fora'] if pr['casa'] == nome else pr['casa']
+        s = SaveML.__new__(SaveML)
+        s.path, s.d, s.base = None, bytearray(d), d.index(b'ARSENAL\x00')
+        ti = s.find_team(adv)
+        if ti is None:
+            return
+        import dados as _dados
+        import olheiro
+        try:
+            P = _dados.load_players(os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'mercado_snap.bin'))
+        except Exception:  # noqa: BLE001
+            P = {}
+        olho = olheiro.perfil(d, dados, P, s.squad(s.find_team(nome)))
+        ia_adversaria.preparar(d, ti, adv, ia_adversaria.contexto(dados, pr), olho=olho, P=P,
+                               resultados=dados.get('ultimos_jogos'), escrever_de_verdade=True,
+                               log=lambda m: print(time.strftime('%H:%M:%S'), m, flush=True))
+    except Exception as e:  # noqa: BLE001 - nunca derruba a Central
+        print('aviso: IA adversária:', e, flush=True)
+
+
 def _imprensa_viva_thread():
     """Pós-jogo ao vivo: quando o pulso mostra um jogo novo nosso, escreve a matéria sem esperar o save/reunião."""
     import imprensa
@@ -463,6 +507,7 @@ def _imprensa_viva_thread():
                         bola_na_mesa.vivo(d, p, snap, 'pos', log=log)
                 if pr and marca_pre != feito_pre:   # o próximo jogo mudou: edição PRÉ-JOGO
                     feito_pre = marca_pre
+                    threading.Thread(target=_preparar_adversario, args=(c['slot'], pr), daemon=True).start()
                     import bola_na_mesa
                     bola_na_mesa.vivo(estado_projetado(c['slot']), p, snap, 'pre', log=log)
         except Exception as e:  # noqa: BLE001 - nunca derruba a Central
