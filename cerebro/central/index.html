@@ -742,8 +742,10 @@ function renderFita(d) {
   box.style.display = at ? 'block' : 'none';
   if (at) box.textContent = at.vigia_vivo
     ? `Imprensa atrasada: o jogo salvou há ${at.minutos} min e a reunião ainda não saiu (o vigia está trabalhando ou deu erro — veja historico/vigia_erros.txt).`
-    : `Imprensa parada: o jogo salvou há ${at.minutos} min, mas o VIGIA não está rodando. Dê dois cliques em Ferramentas\\REINICIAR_VIGIA.bat (ele recupera a rodada sozinho).`;
+    : `Imprensa parada: o jogo salvou há ${at.minutos} min, mas o VIGIA não está rodando. A Central reinicia o vigia sozinha em até 3 minutos (se não voltar, use Ferramentas\\REINICIAR_VIGIA.bat).`;
   const itens = [];
+  const vr = d.vigia_reinicio;
+  if (vr && Date.now() / 1000 - vr.quando < 600) itens.push(`CENTRAL: o vigia tinha parado e foi reiniciado sozinho às ${new Date(vr.quando * 1000).toLocaleTimeString('pt-BR')}; a rodada atrasada é recuperada automaticamente.`);
   if (d.vigia && d.vigia.texto) itens.push('VIGIA: ' + d.vigia.texto);
   (d.midia?.capas || []).forEach(c => itens.push(`${c.nome.toUpperCase()}: ${c.manchete}`));
   (d.noticias || []).filter(n => n.data && n.data[0] >= 2020).slice(-6).reverse().forEach(n => itens.push(n.texto));

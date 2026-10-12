@@ -163,6 +163,7 @@ def estado_projetado(slot=None):
         d['atraso'] = {'minutos': round(atraso / 60), 'vigia_vivo': vivo} if atraso > 180 else None
     except OSError:
         d['atraso'] = {'minutos': round(atraso / 60), 'vigia_vivo': False} if atraso > 180 else None
+    d['vigia_reinicio'] = dict(_VIGIA_REINICIO) if _VIGIA_REINICIO['n'] else None
     d['trabalhando'] = list(_trabalhos.values())
     d['trabalhando_n'] = list(_trabalhos.keys())   # qual resposta está sendo escrita no jogo agora
     return d
@@ -469,12 +470,63 @@ def _imprensa_viva_thread():
         time.sleep(10)
 
 
+VIGIA_PARADO = 180   # s sem batimento com o jogo aberto = vigia travado ou fechado (a foto da memória leva ~5 s)
+_VIGIA_REINICIO = {'quando': 0, 'n': 0}
+
+
+def _jogo_aberto():
+    import subprocess
+    r = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq PES2021.exe', '/NH'], capture_output=True, text=True,
+                       creationflags=0x08000000)   # sem janela
+    return 'PES2021.exe' in r.stdout
+
+
+def _reiniciar_vigia():
+    """O mesmo que o REINICIAR_VIGIA.bat: fecha o vigia travado (a trava de cópia única impediria o novo) e abre outro,
+    minimizado. Ao abrir, ele recupera sozinho o save que ficou sem reunião."""
+    import subprocess
+    subprocess.run(['powershell', '-NoProfile', '-Command',
+                    "Get-CimInstance Win32_Process -Filter \"Name like 'python%'\" | Where-Object { $_.CommandLine -like '*vigia.py*' }"
+                    " | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"], capture_output=True, timeout=60, creationflags=0x08000000)
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    si.wShowWindow = 7   # minimizada, sem roubar o foco do jogo
+    subprocess.Popen([sys.executable, os.path.join(HERE, 'vigia.py')], cwd=os.path.dirname(HERE),
+                     creationflags=subprocess.CREATE_NEW_CONSOLE, startupinfo=si)
+
+
+def _guarda_vigia_thread():
+    """12/10/2026: com o jogo aberto e o vigia sem batimento há 3 min (travou, fechou ou o jogo foi aberto sem o .bat),
+    a Central reinicia o vigia sozinha. No máximo 1 vez a cada 5 min; desliga com "vigia_autoreinicio": false no
+    automacao.json."""
+    while True:
+        time.sleep(30)
+        try:
+            if _ler_json(os.path.join(HERE, 'automacao.json'), {}).get('vigia_autoreinicio', True) is False:
+                continue
+            try:
+                parado = time.time() - os.path.getmtime(os.path.join(HIST, 'vigia_vivo.txt'))
+            except OSError:
+                parado = float('inf')
+            if parado < VIGIA_PARADO or time.time() - _VIGIA_REINICIO['quando'] < 300 or not _jogo_aberto():
+                continue
+            _VIGIA_REINICIO.update(quando=time.time(), n=_VIGIA_REINICIO['n'] + 1)
+            print(time.strftime('%H:%M:%S'), f'vigia sem batimento há {round(min(parado, 99999))} s com o jogo aberto: reiniciando', flush=True)
+            _reiniciar_vigia()
+            with open(os.path.join(HIST, 'vigia_erros.txt'), 'a', encoding='utf-8') as f:
+                f.write(f'{time.strftime("%Y-%m-%d %H:%M:%S")} [central] vigia reiniciado automaticamente '
+                        f'(sem batimento há {round(min(parado, 99999))} s)\n')
+        except Exception as e:  # noqa: BLE001 - nunca derruba a Central
+            print('aviso: guarda do vigia:', e, flush=True)
+
+
 def main():
     porta = int(sys.argv[1]) if len(sys.argv) > 1 else PORTA
     _migrar()
     if not DADOS_FIXO:   # pulso ao vivo (memória do jogo) só na Central de verdade, não no sandbox de testes
         threading.Thread(target=_pulso_thread, daemon=True).start()
         threading.Thread(target=_imprensa_viva_thread, daemon=True).start()
+        threading.Thread(target=_guarda_vigia_thread, daemon=True).start()
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     socketserver.ThreadingTCPServer.daemon_threads = True   # conexões de eventos não seguram o fechamento
     import central_rede
