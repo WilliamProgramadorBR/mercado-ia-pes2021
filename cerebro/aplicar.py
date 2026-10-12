@@ -25,6 +25,8 @@ import mercado
 import janela
 import memoria_clubes
 import potencial
+import troca_save
+import vestiario_ia
 from save_ml import SaveML
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -124,16 +126,23 @@ def main():
     # 1) backup
     os.makedirs(BACKUPS, exist_ok=True)
     backup = os.path.join(BACKUPS, f'{os.path.basename(ml_path)}_{stamp}')
-    shutil.copy2(ml_path, backup)
+    troca_save.copiar_compartilhado(ml_path, backup)
     say(f'backup: {backup}')
 
     # 2) descriptografa cópia
     work = os.path.join(WORK, stamp)
     os.makedirs(work, exist_ok=True)
     enc_in = os.path.join(work, 'original')
-    shutil.copy2(ml_path, enc_in)
+    troca_save.copiar_compartilhado(ml_path, enc_in)
     run([DECRYPT, enc_in, os.path.join(work, 'dec')])
     data_path = os.path.join(work, 'dec', 'data.dat')
+    try:   # qualquer carreira: o time do usuário vem do próprio save (carreira.py), não da configuração
+        import carreira
+        with open(data_path, 'rb') as f:
+            cfg['time_do_usuario'] = carreira.time_do_usuario(f.read(), cfg['time_do_usuario'])[1]
+        say(f'time do usuário: {cfg["time_do_usuario"]}')
+    except Exception as e:  # noqa: BLE001
+        say(f'aviso: time do usuário não detectado ({e}); usando {cfg["time_do_usuario"]}')
 
     # 3) elencos (save) + atributos (foto)
     date = janela.career_date(snap_path)
@@ -170,11 +179,20 @@ def main():
     in_roster = {id(p) for t in teams for p in t.players}
     free = [p for p in players.values() if id(p) not in in_roster and 17 <= p.age <= 33] if cfg['contratar_livres'] else []
     seed = cfg['semente'] if cfg['semente'] is not None else random.randrange(1 << 30)
+    # vestiário dos clubes da IA: quem está insatisfeito por falta de minutos (súmulas da temporada)
+    try:
+        user_idx = save.find_team(cfg['time_do_usuario'])
+        insat = vestiario_ia.insatisfeitos(bytes(save.d), teams, mercado.best_rating, user_idx,
+                                           excluir=potencial.national_team_names())
+    except Exception as e:  # noqa: BLE001 - sem dado de vestiário, o mercado roda como antes
+        say(f'aviso: vestiário dos clubes da IA indisponível ({e})')
+        insat = {}
+    say(f'vestiário da IA: {len(insat)} jogador(es) insatisfeito(s) em outros clubes')
     moves, clubs = mercado.run_window(players, teams, cfg['time_do_usuario'], free_agents=free, seed=seed,
                                       national=potencial.national_team_names(), buyers=buyers,
                                       max_total=min(cfg['max_transferencias'], remaining), protected=protected,
                                       prior_buys=entry['chegadas'], prior_sales=entry['saidas'],
-                                      club_memory=club_memory, year=year)
+                                      club_memory=club_memory, year=year, insatisfeitos=insat)
     say(f'cérebro decidiu {len(moves)} transferências (semente {seed})')
     profiles = {}
     for m in moves:
@@ -207,22 +225,18 @@ def main():
         run([DECRYPT, out_enc, os.path.join(work, 'check')])
         if open(os.path.join(work, 'check', 'data.dat'), 'rb').read() != bytes(save.d):
             raise RuntimeError('conferência de ida e volta falhou; save NÃO foi alterado')
-        if os.path.getmtime(ml_path) > os.path.getmtime(backup) + 1:
-            raise RuntimeError('o save mudou durante o processamento; save NÃO foi alterado')
-        copied = False
-        for attempt in range(10):
-            try:
-                shutil.copy2(out_enc, ml_path)
-                copied = True
-                break
-            except PermissionError:
-                time.sleep(1)
-        if not copied:
-            raise RuntimeError('não foi possível substituir o save após 10 tentativas; backup preservado')
+        troca_save.substituir(ml_path, out_enc, enc_in)   # confere byte a byte + troca atômica
         say('SAVE ATUALIZADO. Carregue a carreira no jogo.')
         if win_key:
             janela.record(entry, [(m.de, m.para) for m, _ in applied])
             janela.save(ledger)
+        try:   # imprensa: a reunião seguinte transforma os negócios em matéria (frente "mercado")
+            import imprensa_db
+            imprensa_db.registrar_negocios(career_key, date, win_key, [
+                {'jogador': m.jogador.strip(), 'idade': m.idade, 'pos': m.pos, 'estilo': m.estilo, 'nota': m.nota,
+                 'de': m.de, 'para': m.para, 'valor': m.valor, 'motivo': m.motivo, 'perfil': m.perfil} for m, _ in applied])
+        except Exception as e:  # noqa: BLE001
+            say(f'aviso: negócios não registrados para a imprensa: {e}')
         try:
             memoria_clubes.record(club_memory, applied, year, win_key or 'fora')
             memoria_clubes.save(memory_data)

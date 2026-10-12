@@ -92,8 +92,56 @@ def decode(rec: bytes) -> dict:
     return a
 
 
+class Fichas(dict):
+    """{(reg, pid): Player} que também acha o jogador só pelo id (fichas da base, registro 0x40A90000).
+    Numa carreira recém-criada as fichas na memória ainda são as da base: o save tem (registro, id) da carreira,
+    mas a ficha só tem o id certo (10/10/2026)."""
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.por_id = {}
+
+    def _alt(self, k):
+        return self.por_id.get(k[1]) if isinstance(k, tuple) and len(k) == 2 else None
+
+    def __missing__(self, k):
+        p = self._alt(k)
+        if p is None:
+            raise KeyError(k)
+        return p
+
+    def get(self, k, padrao=None):
+        if dict.__contains__(self, k):
+            return dict.__getitem__(self, k)
+        p = self._alt(k)
+        return padrao if p is None else p
+
+    def __contains__(self, k):
+        return dict.__contains__(self, k) or self._alt(k) is not None
+
+
+_CACHE = {}
+
+
 def load_players(snap_path: str) -> dict:
-    """Retorna {(reg, pid): Player} com as fichas da carreira encontradas na foto de memória."""
+    """Retorna {(reg, pid): Player} com as fichas da carreira encontradas na foto de memória.
+    12/10/2026: a reunião lia a mesma foto ~12 vezes (quase 2 s cada). Agora fica em memória enquanto o arquivo não
+    muda (mesmo caminho, tamanho e data de modificação). Quem usa só lê as fichas."""
+    import os
+    try:
+        st = os.stat(snap_path)
+        chave = (os.path.abspath(snap_path), st.st_size, st.st_mtime_ns)
+    except OSError:
+        chave = None
+    if chave and chave in _CACHE:
+        return _CACHE[chave]
+    out = _load_players(snap_path)
+    if chave:
+        _CACHE.clear()
+        _CACHE[chave] = out
+    return out
+
+
+def _load_players(snap_path: str) -> dict:
     data = open(snap_path, 'rb').read()
     # 1) acha fichas "típicas" (0xFFFFFFFF, 0, data válida) só para descobrir onde a tabela está
     seeds = []
@@ -102,20 +150,30 @@ def load_players(snap_path: str) -> dict:
         if o < 0 or o + REC_LEN > len(data):
             continue
         y, mo, d = struct.unpack_from('<HBB', data, o + 12)
-        if 2015 <= y <= 2060 and 1 <= mo <= 12 and 1 <= d <= 31:
+        if 2015 <= y <= 2080 and 1 <= mo <= 12 and 1 <= d <= 31:
             if struct.unpack_from('<I', data, o + 124)[0] != BASE_COPY_REG:
                 seeds.append(o)
+    base_so = False
+    if len(seeds) < 1000:   # carreira recém-criada: só existem as fichas da base
+        base_so = True
+        seeds = []
+        for m in re.finditer(rb'\xff\xff\xff\xff\x00\x00\x00\x00', data):
+            o = m.start() - 4
+            if o >= 0 and o + REC_LEN <= len(data):
+                y, mo, d = struct.unpack_from('<HBB', data, o + 12)
+                if 2015 <= y <= 2080 and 1 <= mo <= 12 and 1 <= d <= 31:
+                    seeds.append(o)
     if not seeds:
-        return {}
+        return Fichas()
     # 2) as fichas ficam em sequência a cada 380 bytes: percorre a tabela no mesmo "passo"
     phase = max(set(o % REC_LEN for o in seeds), key=lambda ph: sum(1 for o in seeds if o % REC_LEN == ph))
     in_phase = [o for o in seeds if o % REC_LEN == phase]
-    out = {}
+    out = Fichas()
     for o in range(min(in_phase), max(in_phase) + REC_LEN, REC_LEN):
         if o + REC_LEN > len(data):
             break
         reg, pid = struct.unpack_from('<II', data, o + 124)
-        if reg == BASE_COPY_REG or pid == 0:
+        if pid == 0 or (reg == BASE_COPY_REG and not base_so):
             continue
         raw_name = data[o + 136:o + 198].split(b'\x00')[0]
         try:
@@ -129,6 +187,7 @@ def load_players(snap_path: str) -> dict:
         p.pos = POS[a['reg_pos']] if a['reg_pos'] < len(POS) else '?'
         p.age = a['age']
         out[(reg, pid)] = p
+        out.por_id.setdefault(pid, p)
     return out
 
 

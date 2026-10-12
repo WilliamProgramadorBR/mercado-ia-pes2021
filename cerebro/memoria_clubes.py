@@ -145,3 +145,4 @@ def record(career_state, applied, year, window):
     career_state.setdefault('historico', []).append(summary)
     # Impede crescimento infinito sem perder o arco recente da carreira.
     career_state['historico'] = career_state['historico'][-24:]
+

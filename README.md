@@ -4,7 +4,7 @@
 
 Motor externo de transferências para a Master Liga do eFootball PES 2021. O projeto lê o estado atual da carreira, identifica a formação e as necessidades de cada elenco e simula dirigentes com identidade esportiva e memória econômica entre temporadas.
 
-Trata-se de uma **IA simbólica baseada em regras**. Não utiliza rede neural, serviço em nuvem ou modelo generativo.
+O mercado é uma **IA simbólica baseada em regras**. A Central do Técnico pode, opcionalmente, usar um modelo generativo (Gemini, com a chave do próprio usuário) só para reescrever os textos da imprensa; sem chave, tudo funciona com os textos prontos.
 
 > Projeto experimental de engenharia reversa. Faça backup dos saves. Use por sua conta e risco.
 
@@ -20,6 +20,22 @@ Trata-se de uma **IA simbólica baseada em regras**. Não utiliza rede neural, s
 - backup automático antes de qualquer alteração;
 - criptografia seguida de nova descriptografia e comparação byte a byte;
 - modo `--ensaio`, que gera relatórios sem substituir o save.
+
+## Central do Técnico (vida de técnico)
+
+Uma página local (`cerebro/central.py`, http://127.0.0.1:8765) que transforma a carreira num "simulador de vida futebolística", lendo o save e a memória do jogo:
+
+- vestiário: moral, status, funções, conflitos, pedidos dos jogadores (braçadeira, pênalti, camisa 10), vida pessoal e disciplina;
+- imprensa: três jornais com tons diferentes, coletivas com perguntas e consequências, programa de TV *Bola na Mesa* (com voz), redes sociais e matérias sobre a liga e o mundo;
+- diretoria: metas, confiança, orçamento, patrocínio e espelho da diretoria nativa do jogo;
+- temporada e mundo: prévia do próximo jogo, seleção da rodada, time do mês, Data FIFA, rumores, prêmios, livro dos recordes e gráficos;
+- celular do técnico, arquibancada e painel de pendências antes do próximo jogo;
+- funciona em qualquer carreira (liga e calendário detectados sozinhos: temporada europeia "2026/27" ou anual "2027");
+- pode ser aberta no celular pela rede local, protegida por PIN.
+
+Algumas reações são escritas na memória do jogo enquanto ele está aberto (setas de condição, mensagens, apelidos, orçamento), com conferência antes e depois de cada escrita.
+
+Para iniciar: `JOGAR_COM_MERCADO_IA.bat` (vigia + Central + jogo) ou `ABRIR_CENTRAL.bat` (só a Central). A chave da IA vai em `cerebro/ia.json` (modelo em `cerebro/ia.json.exemplo`) e **nunca deve ser publicada**.
 
 ## Como funciona
 
@@ -50,7 +66,7 @@ Mais detalhes em [Arquitetura](docs/ARQUITETURA.md).
 - Sider compatível com o executável utilizado;
 - `decrypter21.exe` e `encrypter21.exe` do projeto [pesXdecrypter](https://github.com/the4chancup/pesXdecrypter/releases).
 
-O código Python utiliza apenas a biblioteca padrão. Consulte [Dependências](docs/DEPENDENCIAS.md) e [Instalação](docs/INSTALACAO.md).
+O código Python utiliza apenas a biblioteca padrão; o Pillow é opcional (fotos dos jogadores na Central). Consulte [Dependências](docs/DEPENDENCIAS.md) e [Instalação](docs/INSTALACAO.md).
 
 ## Uso resumido
 
@@ -65,7 +81,8 @@ O time do usuário e os limites ficam em `cerebro/mercado_config.json`. Comece c
 ## Estrutura
 
 ```text
-cerebro/                  motor Python e integração com o save
+cerebro/                  motor Python, integração com o save e Central do Técnico
+cerebro/central/          página da Central
 sider/MercadoIA.lua       interface dentro do Sider
 research/ML_Scanner.lua   ferramenta de pesquisa e mapeamento
 edit21.py                 leitor opcional do EDIT descriptografado
@@ -85,7 +102,7 @@ Os endereços de memória foram descobertos e testados em uma instalação espec
 
 ## Segurança
 
-O módulo Lua de produção não escreve na memória do jogo. A alteração permanente ocorre em uma cópia descriptografada do save e só é instalada depois das verificações. Ainda assim, mantenha backups fora da pasta do jogo.
+O módulo Lua de produção não escreve na memória do jogo. As transferências são feitas numa cópia descriptografada do save, instalada só depois das verificações. A Central escreve na memória apenas campos mapeados (setas, mensagens, apelidos, orçamento), conferindo o valor antes e depois; dá para desligar em `cerebro/automacao.json` (`"ao_vivo": false`). Ainda assim, mantenha backups fora da pasta do jogo.
 
 Nunca envie em uma issue pública um save pessoal completo sem entender o conteúdo que ele pode carregar.
 

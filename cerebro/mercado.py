@@ -191,9 +191,13 @@ def profile_fit(club, p, rating, price):
 
 def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=2033, national=frozenset(),
                buyers=None, max_total=None, protected=frozenset(), prior_buys=None, prior_sales=None,
-               club_memory=None, year=2033):
+               club_memory=None, year=2033, insatisfeitos=None):
     """buyers: nomes dos clubes que podem comprar (None = todos); max_total: limite de negócios na janela;
-    protected: (reg, pid) que não podem ser vendidos (capitão/cobradores etc.)."""
+    protected: (reg, pid) que não podem ser vendidos (capitão/cobradores etc.).
+    insatisfeitos: {(reg, pid): {'u': 0..1, 'motivo': ...}} do vestiário dos clubes da IA (vestiario_ia):
+      jogador insatisfeito fica até 25% mais barato, o clube aceita vendê-lo mais fácil, ele topa ir para um
+      clube um pouco mais fraco e sobe na lista dos compradores."""
+    insatisfeitos = insatisfeitos or {}
     rng = random.Random(seed)
     membership = {}
     for t in teams:
@@ -259,11 +263,14 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
                 if p.age > club.profile.get('idade_alvo', 29) + 3 and club.profile.get('tipo') != 'elite':
                     continue
                 seller = owner.get(id(p))
-                # fluxo realista: não tira jogador de clube mais forte (rival pode disputar com clube do mesmo nível)
-                limit = 3.0 if club.rival else 1.5
+                ins = insatisfeitos.get((p.reg, p.pid))
+                u = ins['u'] if ins else 0.0
+                # fluxo realista: não tira jogador de clube mais forte (rival pode disputar com clube do mesmo nível);
+                # insatisfeito aceita descer um pouco de nível para jogar
+                limit = (3.0 if club.rival else 1.5) + 2.5 * u
                 if seller and (seller.tier > club.tier + limit or seller.sales >= MAX_SALES):
                     continue
-                price = value(p, r)
+                price = round(value(p, r) * (1 - 0.25 * u), 1)
                 if seller and seller.tier >= club.tier - 1.5:
                     price = round(price * POACH_PREMIUM, 1)  # tirar de um concorrente custa mais
                 if price > club.budget:
@@ -272,12 +279,13 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
                 # idade inteligente: trintões só compensam como solução imediata
                 age_pen = max(0, p.age - 29) * (2.0 if club.rival else 1.2)
                 identity = profile_fit(club, p, r, price)
-                cands.append((r + natural - age_pen - price * 0.03 + identity, p, r, price, seller))
+                cands.append((r + natural - age_pen - price * 0.03 + identity + 3 * u, p, r, price, seller))
             cands.sort(key=lambda x: -x[0])
             best = None
             for _, p, r, price, seller in cands[:15]:
                 relaxed = club.rival and seller is not None and not seller.rival and seller.tier < club.tier - 1.5
-                if seller and not seller_ok(seller, p, relaxed):
+                insat = insatisfeitos.get((p.reg, p.pid), {}).get('u', 0) >= 0.5
+                if seller and not seller_ok(seller, p, relaxed or insat):
                     continue
                 if relaxed:
                     price = round(price * POACH_PREMIUM, 1)  # tirar o titular de um clube menor custa caro
@@ -297,6 +305,9 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
             club.buys += 1
             owner[id(p)] = club
             moved.add(id(p))
+            ins = insatisfeitos.get((p.reg, p.pid))
+            if ins:
+                why = f'{why}; {ins["motivo"]} (pediu para sair)'
             moves.append(Move(rnd, p.name, p.age, p.pos, p.style, round(r, 1),
                               seller.team.name if seller else 'sem clube', club.team.name, price, why,
                               p.reg, p.pid, seller.team.idx if seller else -1, club.team.idx,

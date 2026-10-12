@@ -1,0 +1,1807 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central do Técnico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b100d; --bg2: #101712; --panel: #151d18; --panel2: #1b251f; --line: #26332b; --text: #e8efe9; --muted: #8fa196;
+  --red: #da291c; --red2: #8f1a12; --gold: #f5c542; --grass: #1f7a3c; --grass2: #145a2b;
+  --good: #3ecf6e; --ok: #9ad64b; --mid: #f2c94c; --bad: #f2994a; --worse: #eb5757;
+  --paper: #f3eee2; --ink: #1b1b1b; --ink2: #555;
+  --f-score: "Oswald", "Bahnschrift", "Arial Narrow", sans-serif;
+  --f-news: "Playfair Display", Georgia, "Times New Roman", serif;
+  --f-body: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; color: var(--text); font: 14px/1.45 var(--f-body);
+  background: radial-gradient(1200px 500px at 50% -200px, #18412a 0%, transparent 70%), var(--bg); min-height: 100vh; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* placar */
+.placar { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 14px 22px;
+  background: linear-gradient(90deg, #2b0c09 0%, #141b16 45%, #141b16 100%); border-bottom: 3px solid var(--red); }
+.crest { object-fit: contain; vertical-align: middle; flex: none; }
+.escudo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 8px #000a); }
+.escudo.tem { background: none; box-shadow: none; }
+.escudo { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff4a3a, var(--red) 55%, var(--red2));
+  display: grid; place-items: center; font: 700 18px var(--f-score); letter-spacing: 1px; color: #fff; box-shadow: 0 0 0 3px var(--gold) inset, 0 4px 14px #0008; }
+.clube h1 { margin: 0; font: 700 24px/1.1 var(--f-score); letter-spacing: 1.5px; text-transform: uppercase; }
+.clube .sub { color: var(--muted); font-size: 13px; }
+.mostrador { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; justify-content: flex-end; }
+.lcd { background: #050806; border: 1px solid #2c3a30; border-radius: 8px; padding: 5px 12px; min-width: 92px; text-align: center; }
+.lcd .r { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; }
+.lcd .v { font: 700 20px/1.15 var(--f-score); color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
+.vivo { display: inline-flex; align-items: center; gap: 7px; font: 700 12px var(--f-score); letter-spacing: 1.5px; padding: 0 12px;
+  border-radius: 8px; background: #1c1010; border: 1px solid #4a1d1d; color: #ff8a80; }
+.vivo i { width: 9px; height: 9px; border-radius: 50%; background: #666; }
+.vivo.on { background: #2a0d0b; border-color: var(--red); color: #fff; }
+.vivo.on i { background: var(--red); animation: pulsa 1.4s infinite; }
+@keyframes pulsa { 0%, 100% { box-shadow: 0 0 0 0 #da291c99; } 50% { box-shadow: 0 0 0 7px #da291c00; } }
+.forma { display: flex; gap: 4px; align-items: center; }
+.res { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; font: 700 11px var(--f-score); color: #0b0d10; }
+.res.V { background: var(--good); } .res.E { background: var(--mid); } .res.D { background: var(--worse); }
+
+/* plantão */
+.plantao { display: flex; align-items: stretch; background: #0a0f0c; border-bottom: 1px solid var(--line); overflow: hidden; height: 34px; }
+.plantao b { background: var(--gold); color: #000; font: 700 13px/34px var(--f-score); letter-spacing: 1.5px; padding: 0 14px; flex: none; z-index: 1; }
+.fita { flex: 1; overflow: hidden; position: relative; }
+.fita span { position: absolute; white-space: nowrap; line-height: 34px; padding-left: 100%; animation: corre 70s linear infinite; font-weight: 600; }
+.fita span em { color: var(--gold); font-style: normal; margin: 0 18px; }
+@keyframes corre { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .fita span { animation: none; padding-left: 12px; } .vivo.on i { animation: none; } }
+
+/* abas */
+nav.abas { display: flex; gap: 4px; padding: 10px 22px 0; border-bottom: 1px solid var(--line); background: var(--bg2); flex-wrap: wrap; }
+nav.abas button { background: none; border: 0; padding: 9px 16px 10px; font: 600 14px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; position: relative; }
+nav.abas button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--red); }
+nav.abas .badge { position: absolute; top: 3px; right: 2px; background: var(--red); color: #fff; font: 700 10px var(--f-body); border-radius: 99px; padding: 0 5px; }
+main { padding: 16px 22px 30px; }
+.tela { display: none; } .tela.ativa { display: block; }
+.grid3 { display: grid; grid-template-columns: 340px 1fr 360px; gap: 16px; align-items: start; }
+.grid2 { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; }
+@media (max-width: 1300px) { .grid3, .grid2 { grid-template-columns: 1fr; } }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+section h2 { margin: 0 0 10px; font: 600 13px var(--f-score); text-transform: uppercase; letter-spacing: 1.6px; color: var(--muted);
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.vazio { color: var(--muted); font-style: italic; }
+.dica { color: var(--muted); font-size: 12px; }
+.item { padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.item:last-child { border-bottom: 0; }
+.tag { font: 700 10.5px var(--f-body); text-transform: uppercase; letter-spacing: .8px; color: var(--red); display: block; }
+select { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-size: 12px; }
+
+/* jogos */
+.jogo { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.jogo:last-child { border-bottom: 0; } .jogo .pl { font: 700 15px var(--f-score); }
+
+/* cartões do elenco */
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+.card { background: linear-gradient(180deg, var(--panel2), #18211b); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+  display: grid; grid-template-columns: 58px 1fr; gap: 10px; position: relative; }
+.card.revoltado { border-color: #6b2525; } .card.motivado { border-color: #24563a; }
+.card.mexeu { animation: brilho 2.5s ease-out; }
+@keyframes brilho { from { box-shadow: 0 0 0 3px var(--gold); } to { box-shadow: 0 0 0 0 transparent; } }
+.foto { border-radius: 8px; background: #263040; display: grid; place-items: center; color: var(--muted); font-weight: 700; overflow: hidden; flex: none; }
+.foto img { width: 100%; height: 100%; object-fit: cover; }
+.nome { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: center; padding-right: 22px; flex-wrap: wrap; }
+.apelido { color: var(--gold); font-weight: 600; font-size: 12.5px; }
+.cap { background: var(--gold); color: #000; font-size: 10px; font-weight: 800; border-radius: 4px; padding: 0 4px; }
+.meta { color: var(--muted); font-size: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.chip { font-size: 11px; padding: 1px 7px; border-radius: 99px; background: #26332b; color: #cfdcd2; }
+.chip.st-Lenda { background: #4a3a10; color: var(--gold); } .chip.st-Ídolo { background: #3d1f4d; color: #e2b6ff; }
+.chip.st-Superastro { background: #123b52; color: #8fd3ff; } .chip.st-Craque { background: #173a2a; color: #8ee6b0; }
+.barra { height: 7px; background: #26332b; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.barra > i { display: block; height: 100%; border-radius: 99px; transition: width .8s; }
+.linha { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+.seta { position: absolute; top: 8px; right: 10px; font-size: 20px; font-weight: 900; }
+.s0 { color: var(--worse); } .s1 { color: var(--bad); } .s2 { color: var(--mid); } .s3 { color: var(--ok); } .s4 { color: var(--good); }
+.numeros, .motivos { grid-column: 1 / -1; font-size: 11.5px; border-top: 1px solid var(--line); padding-top: 5px; }
+.numeros { color: #b8c8bc; } .motivos { color: var(--muted); }
+
+/* sala de reunião / opções */
+.pedido { background: linear-gradient(180deg, #2a1414, var(--panel)); border-color: #5b2323; }
+.quem { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.fala { font-style: italic; font-size: 15px; margin: 6px 0 10px; }
+.opcao { display: block; width: 100%; text-align: left; cursor: pointer; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px;
+  margin-bottom: 7px; background: var(--panel2); }
+.opcao:hover:not(:disabled) { border-color: var(--gold); }
+.opcao b { color: var(--gold); margin-right: 6px; }
+.opcao.escolhida { border-color: var(--good); background: #173a2a; }
+.opcao.confirmar { border-color: var(--gold); }
+.opcao:disabled { cursor: default; opacity: .55; }
+.opcao.escolhida:disabled { opacity: 1; }
+.conf { display: block; margin-top: 6px; font-size: 12.5px; color: var(--gold); }
+.conf .sim, .conf .nao { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px; font-weight: 700; }
+.conf .sim { background: var(--good); color: #08140d; } .conf .nao { background: #3a4452; color: var(--text); }
+
+/* jornais */
+.bancas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 1300px) { .bancas { grid-template-columns: 1fr; } }
+.capa { background: var(--paper); color: var(--ink); border-radius: 4px; padding: 16px 18px 18px; box-shadow: 0 10px 30px #000a;
+  background-image: repeating-linear-gradient(0deg, transparent 0 22px, #0000000a 22px 23px); }
+.capa .topo { text-align: center; border-bottom: 3px double var(--ink); padding-bottom: 6px; margin-bottom: 10px; }
+.capa .marca { font: 900 30px/1 var(--f-news); letter-spacing: -.5px; }
+.capa .slogan { font: italic 12px var(--f-news); color: var(--ink2); }
+.capa .ed { display: flex; justify-content: space-between; font: 600 10.5px var(--f-body); text-transform: uppercase; letter-spacing: 1px; color: var(--ink2);
+  border-bottom: 1px solid var(--ink); padding: 3px 0; margin-bottom: 10px; }
+.capa h3 { font: 900 27px/1.08 var(--f-news); margin: 4px 0 8px; }
+.capa .fina { font: 15px/1.35 Georgia, serif; color: #333; margin-bottom: 12px; }
+.capa .chamada { border-top: 1px solid #0003; padding: 7px 0; }
+.capa .chamada b { font: 700 15px/1.2 var(--f-news); display: block; }
+.capa .chamada span { font: 13px/1.3 Georgia, serif; color: #444; }
+.capa.sensacionalista .marca { color: #c1121f; } .capa.sensacionalista h3 { text-transform: uppercase; color: #c1121f; font-family: var(--f-score); letter-spacing: .5px; }
+.capa.analitico .marca { color: #1d3557; } .capa.torcedor .marca { color: #9b1d20; }
+
+/* TV */
+.tv { background: #06080a; border: 1px solid #2b3540; border-radius: 12px; overflow: hidden; }
+.tv .vinheta { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px;
+  background: linear-gradient(90deg, #0d2b5e, #142a4a 60%, #3a0f0c); }
+.tv .vinheta strong { font: 700 22px var(--f-score); letter-spacing: 2px; text-transform: uppercase; }
+.tv .bug { background: var(--red); font: 700 11px var(--f-score); letter-spacing: 1.5px; padding: 2px 8px; border-radius: 3px; }
+.tv .estudio { padding: 14px 16px; display: grid; gap: 10px; max-height: 560px; overflow: auto; }
+.gc { display: grid; grid-template-columns: 42px 1fr; gap: 10px; align-items: start; }
+.gc .av { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font: 700 15px var(--f-score); background: #23303c; }
+.gc .av.apresentador { background: #0d2b5e; } .gc .av.c0 { background: #5e2a0d; } .gc .av.c1 { background: #23415e; } .gc .av.c2 { background: #2f4a1f; }
+.gc .tarja { background: linear-gradient(90deg, #ffffff12, transparent); border-left: 3px solid var(--gold); padding: 6px 10px; border-radius: 0 6px 6px 0; }
+.gc .tarja .qm { font: 700 13px var(--f-score); letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+.gc .tarja .qm small { color: var(--muted); font: 400 11px var(--f-body); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.enquete { margin: 4px 16px 16px; background: #101820; border-radius: 8px; padding: 10px 12px; }
+.enquete .bar { height: 12px; border-radius: 99px; background: #3a1a1a; overflow: hidden; margin-top: 6px; }
+.enquete .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--good), #2aa65a); }
+
+/* coletiva */
+.sala { background: linear-gradient(180deg, #121a2a, var(--panel)); border-color: #26385a; }
+.backdrop { display: flex; gap: 10px; flex-wrap: wrap; opacity: .35; font: 700 12px var(--f-score); letter-spacing: 3px; margin-bottom: 10px; user-select: none; }
+.pergunta { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.pergunta .rep { font: 600 12px var(--f-body); color: var(--muted); }
+.pergunta .rep b { color: var(--text); }
+.pergunta .q { font-size: 16px; font-weight: 600; margin: 4px 0 10px; }
+.efeitos { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+.ef { font-size: 12px; border-radius: 6px; padding: 2px 8px; background: #26332b; }
+.ef.mais { color: var(--good); } .ef.menos { color: var(--worse); }
+.ao-vivo-msg { font-size: 12.5px; margin-top: 6px; color: var(--gold); }
+
+/* diretoria */
+.conf-dir { display: flex; align-items: baseline; gap: 10px; }
+.conf-dir .num { font: 700 38px var(--f-score); }
+.tab { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+.tab td { padding: 3px 4px; border-bottom: 1px solid var(--line); }
+.tab tr.eu td { color: var(--gold); font-weight: 700; }
+.tab td.n { text-align: right; color: var(--muted); } .tab tr.eu td.n { color: var(--gold); }
+.meta-linha { font-size: 13px; margin-top: 6px; }
+.reuniao-dir { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.reuniao-dir .titulo { font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+
+/* resumo */
+.destaque-capa { cursor: pointer; }
+.chamar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.btn { background: var(--red); border: 0; color: #fff; font: 700 13px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 14px;
+  border-radius: 8px; cursor: pointer; }
+.btn:hover { filter: brightness(1.15); }
+
+/* disciplina / calendário */
+.caso { background: var(--panel2); border: 1px solid var(--line); border-left: 4px solid var(--mid); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+.caso.g-média { border-left-color: var(--bad); } .caso.g-grave { border-left-color: var(--worse); } .caso.cal { border-left-color: #4aa3df; }
+.caso .cab { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+.caso .cab .tit { font-weight: 700; font-size: 15px; }
+.caso .relato { color: #cdd8cf; margin: 6px 0 10px; }
+.grav { font: 700 10.5px var(--f-body); text-transform: uppercase; letter-spacing: .8px; border-radius: 4px; padding: 1px 6px; }
+.grav.leve { background: #3b3416; color: var(--mid); } .grav.média { background: #3e2612; color: var(--bad); } .grav.grave { background: #3f1515; color: var(--worse); }
+.grav.cal { background: #13304a; color: #8fd3ff; }
+.comp { display: flex; justify-content: space-between; gap: 8px; }
+.st-aberto { color: var(--gold); } .st-cumprido { color: var(--good); } .st-quebrado { color: var(--worse); }
+.densidade { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.densidade .num { font: 700 38px var(--f-score); }
+.planos { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+.plano { text-align: left; cursor: pointer; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+.plano b { font: 700 15px var(--f-score); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.plano:hover:not(:disabled) { border-color: var(--gold); } .plano:disabled { cursor: default; opacity: .5; }
+.plano.escolhido { border-color: var(--good); background: #173a2a; opacity: 1; }
+.carga { width: 100%; border-collapse: collapse; font-size: 13px; }
+.carga th { text-align: left; color: var(--muted); font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: .8px; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.carga td { padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.carga .bar { width: 120px; display: inline-block; vertical-align: middle; }
+
+/* carreiras */
+.seletor { background: #050806; color: var(--text); border: 1px solid #2c3a30; border-radius: 8px; padding: 4px 8px; font: 600 12px var(--f-body); max-width: 260px; }
+.lab { display: none; background: repeating-linear-gradient(45deg, #3a2c05, #3a2c05 12px, #2e2304 12px, #2e2304 24px); color: var(--gold);
+  font: 700 13px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; padding: 7px 22px; border-bottom: 1px solid #5a4a10; }
+body.somente-leitura .lab { display: block; }
+body.somente-leitura .opcao, body.somente-leitura .plano { pointer-events: none; opacity: .55; }
+
+.nativa { border-radius: 8px; padding: 10px 12px; margin: 8px 0; border: 1px solid var(--line); background: var(--panel2); }
+.nativa b { font: 700 13px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; }
+.nativa.tranquilo b { color: var(--good); } .nativa.sem_objetivo b { color: var(--muted); }
+.nativa.pressao { border-color: var(--bad); } .nativa.pressao b { color: var(--bad); }
+.nativa.ultimato { border-color: var(--worse); background: #2a1010; } .nativa.ultimato b { color: var(--worse); }
+.nativa.demitido { border-color: var(--worse); } .nativa.demitido b { color: var(--worse); }
+
+/* próximo jogo */
+.pj { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; text-align: center; }
+.pj .t { font: 700 16px var(--f-score); letter-spacing: 1px; text-transform: uppercase; }
+.pj .vs { font: 700 22px var(--f-score); color: var(--muted); }
+.prob { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 10px 0 4px; font: 700 12px var(--f-score); }
+.prob span { display: grid; place-items: center; color: #08140d; }
+.forma-mini { font: 700 12px var(--f-score); letter-spacing: 2px; }
+
+/* jogo da rodada 4 x 4 */
+.duelo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.duelo .lado h3 { margin: 0 0 6px; font: 700 12px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.dj { display: grid; grid-template-columns: 34px 1fr; gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.dj .n { font-weight: 700; } .dj .s { color: var(--muted); font-size: 11px; }
+.analise { margin-top: 8px; font-size: 12.5px; } .analise p { margin: 4px 0; }
+.faixa-classico { margin: 6px 0 10px; padding: 6px 12px; border-radius: 8px; font: 700 13px var(--f-score); letter-spacing: 1.5px;
+  text-transform: uppercase; color: #fff; background: linear-gradient(90deg, var(--red2), var(--red) 55%, #ff7a2e); box-shadow: 0 0 18px #da291c66; }
+.faixa-final { color: #241a00; background: linear-gradient(90deg, #b8860b, var(--gold) 50%, #fff3b0); box-shadow: 0 0 22px #f5c54288; }
+/* imprensa: frentes (11/10/2026) */
+.subabas { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+.subabas button { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 14px;
+  font: 700 12px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; cursor: pointer; }
+.subabas button.on { background: var(--gold); color: #141414; border-color: var(--gold); }
+.subabas button .novo { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--red); margin-left: 6px; vertical-align: middle; }
+.sub { display: none; } .sub.on { display: block; }
+.clube .sub { display: block; }   /* a linha do técnico no placar usa a mesma classe das sub-abas */
+.materia { background: var(--paper); color: var(--ink); border-radius: 4px; padding: 18px 22px 20px; box-shadow: 0 10px 30px #000a; margin-bottom: 16px; }
+.materia .cart { display: flex; justify-content: space-between; gap: 8px; font: 600 10.5px var(--f-body); text-transform: uppercase; letter-spacing: 1px;
+  color: var(--ink2); border-bottom: 1px solid #0003; padding-bottom: 6px; margin-bottom: 8px; }
+.materia .cart .ia { color: #1d3557; }
+.materia h3 { font: 900 28px/1.1 var(--f-news); margin: 4px 0 6px; }
+.materia .fina { font: italic 15px/1.35 Georgia, serif; color: #444; margin-bottom: 12px; }
+.materia p { font: 15.5px/1.55 Georgia, serif; margin: 0 0 10px; }
+.materia .bloco { border-top: 1px solid #0002; margin-top: 12px; padding-top: 10px; }
+.materia h4 { font: 700 12px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; color: #8f1a12; margin: 0 0 6px; }
+.placar-grande { display: flex; align-items: center; justify-content: center; gap: 16px; font: 700 18px var(--f-score); text-transform: uppercase; margin: 6px 0 10px; }
+.placar-grande .g { font-size: 40px; color: #111; }
+.escal { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.escal .lin { display: flex; justify-content: space-between; border-bottom: 1px dotted #0003; padding: 3px 0; font: 13.5px Georgia, serif; }
+.escal .lin b { font: 700 11px var(--f-score); color: #8f1a12; width: 38px; display: inline-block; }
+.notas { width: 100%; border-collapse: collapse; font: 13px Georgia, serif; }
+.notas td { padding: 3px 4px; border-bottom: 1px dotted #0002; } .notas td.n { text-align: right; font-family: var(--f-score); }
+.notas .top { color: #0b6b2e; font-weight: 700; } .notas .ruim { color: #a3150c; }
+.materia .prob span { color: #fff; }
+.hist-materias { margin-bottom: 10px; }
+@media (max-width: 760px) { .escal { grid-template-columns: 1fr; } .materia { padding: 14px 16px; } .materia h3 { font-size: 23px; } }
+/* Bola na Mesa: estúdio */
+.estudio-bnm { background: #05080c; border: 1px solid #22303c; border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+.palco { position: relative; }
+.palco svg { display: block; width: 100%; height: auto; }
+.palco .sil { transition: opacity .35s; opacity: .55; }
+.palco .sil.fala { opacity: 1; }
+.palco .sil.fala .corpo { stroke: var(--gold); stroke-width: 3; }
+.palco .sil .luz { opacity: 0; transition: opacity .35s; }
+.palco .sil.fala .luz { opacity: 1; }
+.legenda { position: absolute; left: 3%; right: 3%; bottom: 4%; display: flex; align-items: stretch; filter: drop-shadow(0 6px 14px #000c); }
+.legenda .qm { background: var(--red); color: #fff; padding: 8px 14px; font: 700 15px/1.1 var(--f-score); letter-spacing: 1px; text-transform: uppercase;
+  display: flex; flex-direction: column; justify-content: center; min-width: 150px; }
+.legenda .qm small { font: 600 10px var(--f-body); letter-spacing: .5px; text-transform: none; opacity: .85; margin-top: 3px; }
+.legenda .tx { background: #f3f6f8; color: #111; padding: 10px 16px; font: 600 15.5px/1.4 var(--f-body); flex: 1; }
+.bnm-ctrl { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid #1c2731; flex-wrap: wrap; }
+.bnm-ctrl > button { background: #111a22; border: 1px solid #2a3946; color: var(--text); border-radius: 8px; padding: 6px 12px; cursor: pointer; font: 700 13px var(--f-score); }
+.bnm-ctrl > button:hover { border-color: var(--gold); }
+.bnm-ctrl > button[aria-pressed="true"] { background: var(--gold); color: #141414; border-color: var(--gold); }
+.bnm-ctrl .pautas { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.bnm-ctrl .pautas button { background: transparent; border: 1px solid #2a3946; color: var(--muted); border-radius: 999px; padding: 4px 10px; font: 600 11.5px var(--f-body); cursor: pointer; }
+.bnm-ctrl .pautas button.on { color: #141414; background: var(--gold); border-color: var(--gold); }
+.transcricao { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; }
+.transcricao summary { cursor: pointer; font: 700 13px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.transcricao h4 { margin: 14px 0 6px; font: 700 12px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); }
+.transcricao p { margin: 4px 0; font-size: 13.5px; } .transcricao p b { color: var(--text); }
+@media (max-width: 760px) { .legenda { position: static; } .legenda .qm { min-width: 0; font-size: 12px; } .legenda .tx { font-size: 13.5px; } }
+/* redes */
+.post { display: grid; grid-template-columns: 40px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.post .av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 700 14px var(--f-score); color: #fff; }
+.post .hd { font-size: 12.5px; color: var(--muted); } .post .hd b { color: var(--text); }
+.post .tx { margin: 3px 0 5px; font-size: 14.5px; line-height: 1.4; }
+.post .ac { font-size: 12px; color: var(--muted); display: flex; gap: 16px; }
+.enq { margin-bottom: 16px; } .enq b { display: block; margin-bottom: 6px; font-size: 14px; }
+.enq .op { position: relative; background: #0d1410; border: 1px solid var(--line); border-radius: 8px; margin: 4px 0; padding: 6px 10px; font-size: 13px; overflow: hidden; }
+.enq .op i { position: absolute; inset: 0 auto 0 0; background: #1f7a3c55; } .enq .op.top i { background: #f5c54255; }
+.enq .op span { position: relative; display: flex; justify-content: space-between; gap: 8px; }
+
+/* avisos */
+.toasts { position: fixed; right: 18px; bottom: 18px; display: grid; gap: 8px; z-index: 10; max-width: 420px; }
+.toast { background: #101a14; border: 1px solid var(--good); border-left-width: 5px; border-radius: 8px; padding: 10px 14px; box-shadow: 0 8px 24px #000a;
+  animation: entra .3s ease-out; }
+.toast.erro { border-color: var(--worse); }
+.toast b { display: block; font: 700 13px var(--f-score); letter-spacing: 1px; text-transform: uppercase; }
+@keyframes entra { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+footer { color: var(--muted); font-size: 11px; padding: 0 22px 16px; }
+
+/* ===== cara de futebol (11/10/2026): gramado ao fundo, títulos com faixa, tudo responsivo ===== */
+body { background:
+  radial-gradient(1200px 500px at 50% -200px, #18412a 0%, transparent 70%),
+  repeating-linear-gradient(90deg, #0d1510 0 90px, #0b120e 90px 180px), var(--bg); }
+section h2::before { content: ""; width: 4px; height: 14px; background: var(--red); border-radius: 2px; margin-right: 8px; flex: none; }
+section h2 { justify-content: flex-start; }
+section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
+.grade, .grid2 > *, .grid3 > * { min-width: 0; }
+.tab-rola { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ----- vestiário: o painel do grupo */
+.vest-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.vt { position: relative; overflow: hidden; background: linear-gradient(160deg, #18231c, #101712); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.vt::after { content: ""; position: absolute; inset: auto -20px -30px auto; width: 110px; height: 110px; border-radius: 50%; border: 2px solid #ffffff08; }
+.vt .r { font: 600 11px var(--f-score); letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+.vt .v { font: 700 30px/1.1 var(--f-score); letter-spacing: .5px; margin: 2px 0; }
+.vt .s { font-size: 12px; color: var(--muted); }
+.humores { display: flex; height: 10px; border-radius: 99px; overflow: hidden; margin: 8px 0 6px; background: #26332b; }
+.humores i { display: block; height: 100%; }
+.legenda-h { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; color: var(--muted); }
+.legenda-h b { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.vt.assunto { grid-column: 1 / -1; }
+.vt.assunto .chips .chip { background: #2a2414; color: #ffd27a; font-size: 12px; padding: 3px 10px; }
+.setor { margin: 4px 0 14px; }
+.setor > h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font: 700 13px var(--f-score); letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+.setor > h3::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #f5c54255, transparent); }
+.setor > h3 small { color: var(--muted); font: 600 11px var(--f-body); letter-spacing: 0; text-transform: none; }
+
+/* ----- vestiário: cada jogador é um armário */
+.armarios { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px; }
+.armario { position: relative; min-width: 0; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;
+  background: linear-gradient(180deg, #223028 0%, #1a241e 38%, #141c17 100%); border: 1px solid #2f3e34;
+  box-shadow: inset 0 1px 0 #ffffff10, 0 6px 16px #0006; transition: transform .15s, box-shadow .15s; }
+.armario:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 #ffffff14, 0 10px 22px #000a; }
+.armario.revoltado { border-color: #6b2525; } .armario.insatisfeito { border-color: #5c4420; } .armario.motivado { border-color: #24563a; }
+.armario.mexeu { animation: brilho 2.5s ease-out; }
+.arm-placa { display: flex; align-items: center; gap: 8px; padding: 7px 10px 6px; background:
+  repeating-linear-gradient(90deg, transparent 0 7px, #00000040 7px 9px) top / 100% 5px no-repeat, linear-gradient(180deg, #2c3b32, #223028);
+  border-bottom: 1px solid #00000055; }
+.arm-pos { font: 700 12px var(--f-score); letter-spacing: 1px; padding: 1px 7px; border-radius: 4px; background: #0b100d; color: var(--gold); }
+.arm-pos.GK { color: #ffb86b; } .arm-pos.def { color: #8fd3ff; } .arm-pos.mei { color: #8ee6b0; } .arm-pos.ata { color: #ff8a80; }
+.arm-ovr { margin-left: auto; font: 700 24px/1 var(--f-score); color: var(--text); text-shadow: 0 2px 6px #000; }
+.arm-ovr small { font-size: 10px; color: var(--muted); margin-left: 2px; letter-spacing: 1px; }
+.arm-seta { font-size: 18px; font-weight: 900; line-height: 1; }
+.arm-corpo { display: grid; grid-template-columns: 62px 1fr; gap: 10px; padding: 10px 10px 4px; min-width: 0; }
+.arm-corpo > div { min-width: 0; }
+.arm-nome { font-weight: 700; font-size: 14.5px; line-height: 1.2; overflow-wrap: anywhere; }
+.arm-nome .apelido { display: block; font-size: 12px; }
+.arm-medidores { padding: 4px 10px 2px; display: grid; gap: 5px; }
+.medidor { display: grid; grid-template-columns: 62px 1fr 34px; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.medidor .barra { margin: 0; height: 6px; }
+.medidor b { color: var(--text); text-align: right; font: 700 12px var(--f-score); }
+.arm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 10px; }
+.arm-stats div { background: #0b100d; border: 1px solid #1f2b23; border-radius: 6px; text-align: center; padding: 3px 0; }
+.arm-stats b { display: block; font: 700 16px/1.1 var(--f-score); }
+.arm-stats span { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+.arm-rodape { padding: 0 10px 8px; font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.arm-motivos { margin-top: auto; padding: 7px 10px 9px; border-top: 1px dashed #2b392f; font-size: 11.5px; color: #b8c8bc; }
+.arm-motivos ul { margin: 0; padding-left: 15px; } .arm-motivos li { margin: 1px 0; }
+.arm-motivos .mais { color: var(--muted); font-style: italic; }
+.arm-quer { font-size: 11.5px; color: #ffd27a; margin-top: 3px; }
+
+/* ----- jornal: texto, aspas e quadros */
+.capa .abre { font: 14.5px/1.5 Georgia, serif; color: #222; margin: 0 0 10px; text-align: justify; hyphens: auto; }
+.capa .abre::first-letter { float: left; font: 900 40px/0.9 var(--f-news); margin: 4px 6px 0 0; color: #8f1a12; }
+.capa blockquote { margin: 10px 0 12px; padding: 8px 12px; border-left: 4px solid #8f1a12; background: #0000000a; font: italic 15px/1.4 var(--f-news); }
+.capa blockquote cite { display: block; margin-top: 4px; font: 600 11px var(--f-body); font-style: normal; color: var(--ink2); text-transform: uppercase; letter-spacing: .6px; }
+.capa .quadros { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.capa .quadro { border: 1px solid #0003; border-radius: 3px; padding: 6px 8px; background: #fffaf0; }
+.capa .quadro h5 { margin: 0 0 4px; font: 700 10.5px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; color: #8f1a12; border-bottom: 1px solid #0002; padding-bottom: 3px; }
+.capa .quadro div { display: flex; justify-content: space-between; gap: 6px; font: 12px/1.35 Georgia, serif; }
+.capa .quadro div.eu { font-weight: 700; color: #8f1a12; }
+.capa.sensacionalista blockquote { border-left-color: #c1121f; } .capa.analitico blockquote { border-left-color: #1d3557; }
+@media (max-width: 520px) { .capa .quadros { grid-template-columns: 1fr; } .capa h3 { font-size: 23px; } }
+
+/* ----- redes: comentários */
+.post .resp { margin-top: 6px; border-left: 2px solid var(--line); padding-left: 10px; display: grid; gap: 4px; }
+.post .resp div { font-size: 13px; } .post .resp b { color: var(--text); font-weight: 600; margin-right: 4px; }
+.post .resp span { color: var(--muted); font-size: 11px; margin-left: 6px; }
+
+/* ----- mundo: seleção da temporada no gramado */
+.premio-cab { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; margin-bottom: 10px; }
+.premio-cab h3 { margin: 0; font: 700 22px var(--f-score); letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+.campo { position: relative; width: 100%; max-width: 620px; margin: 0 auto; aspect-ratio: 4 / 5; border-radius: 12px; overflow: hidden;
+  background: repeating-linear-gradient(180deg, #1d6e37 0 10%, #1a6532 10% 20%); border: 2px solid #2f8a4c; box-shadow: inset 0 0 60px #0007; }
+.campo::before { content: ""; position: absolute; inset: 4%; border: 2px solid #ffffff55; border-radius: 2px; }
+.campo .meio { position: absolute; left: 4%; right: 4%; top: 50%; border-top: 2px solid #ffffff55; }
+.campo .circ { position: absolute; left: 50%; top: 50%; width: 22%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 2px solid #ffffff55; border-radius: 50%; }
+.campo .area { position: absolute; left: 25%; right: 25%; height: 13%; border: 2px solid #ffffff55; }
+.campo .area.baixo { bottom: 4%; border-bottom: 0; } .campo .area.cima { top: 4%; border-top: 0; }
+.peca { position: absolute; transform: translate(-50%, -50%); width: 21%; text-align: center; }
+.peca .bola { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 2px solid #fff; background: #0b100d;
+  display: grid; place-items: center; font: 700 15px var(--f-score); color: var(--muted); box-shadow: 0 4px 10px #0009; position: relative; }
+.peca .bola img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.peca.nosso .bola { border-color: var(--gold); box-shadow: 0 0 0 3px #f5c54266, 0 4px 10px #0009; }
+.peca .nm { margin-top: 3px; font: 700 12px/1.15 var(--f-body); color: #fff; text-shadow: 0 1px 3px #000; overflow-wrap: anywhere; }
+.peca .cl { font-size: 10.5px; color: #e4f3e8; text-shadow: 0 1px 3px #000; }
+.peca .votos { display: inline-block; margin-top: 2px; padding: 0 6px; border-radius: 99px; background: #000a; color: var(--gold); font: 700 10.5px var(--f-score); letter-spacing: .5px; }
+@media (max-width: 560px) { .peca .bola { width: 38px; height: 38px; font-size: 12px; } .peca .nm { font-size: 10.5px; } .peca .cl { display: none; } }
+.ranking .lin { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.ranking .lin:last-child { border-bottom: 0; } .ranking .lin .n { font: 700 16px var(--f-score); color: var(--gold); text-align: right; }
+.ranking .lin.eu { color: var(--gold); } .ranking .lin small { color: var(--muted); display: block; font-size: 11.5px; }
+.revel { display: grid; grid-template-columns: 56px 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.revel:last-child { border-bottom: 0; } .revel .nmr { font-weight: 700; } .revel .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.olho { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.olho > div { border: 1px solid #0002; border-radius: 4px; padding: 8px 10px; background: #fffaf0; font: 13px/1.35 Georgia, serif; }
+.olho b { display: block; font: 700 15px var(--f-news); }
+
+/* ----- painel "antes do próximo jogo" */
+.pend-painel { border-color: #5a4a10; background: linear-gradient(180deg, #221d0d, var(--panel)); }
+.pend-painel.limpo { border-color: #24563a; background: linear-gradient(180deg, #11241a, var(--panel)); }
+.pend { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #ffffff10; font-size: 13px; }
+.pend:last-of-type { border-bottom: 0; }
+.pend i { width: 9px; height: 9px; border-radius: 50%; background: var(--mid); }
+.pend i.u2 { background: var(--worse); box-shadow: 0 0 8px var(--worse); } .pend i.u0 { background: #4aa3df; }
+.pend small { display: block; color: var(--muted); font-size: 11.5px; }
+.pend button { background: #2a2414; border: 1px solid #5a4a10; color: var(--gold); border-radius: 6px; padding: 3px 9px; font: 700 11px var(--f-score); letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+.pend button:hover { background: var(--gold); color: #141414; }
+
+/* ----- celular do técnico */
+.celular { max-width: 560px; margin: 0 auto; background: #0e1512; border: 1px solid #263a2e; border-radius: 26px; padding: 12px 12px 18px;
+  box-shadow: 0 20px 50px #000a, inset 0 0 0 6px #070b09; }
+.cel-topo { display: flex; justify-content: space-between; padding: 6px 12px 12px; font: 700 13px var(--f-score); letter-spacing: 1px; color: var(--muted); }
+.conversa { background: #121c17; border: 1px solid #22322a; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+.conversa.nova { border-color: #3d6b4e; }
+.conversa .cab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #16241d; border-bottom: 1px solid #22322a; }
+.conversa .cab .ic { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; background: #22352b; flex: none; }
+.conversa .cab b { display: block; font-size: 14px; } .conversa .cab small { color: var(--muted); font-size: 11.5px; }
+.conversa .cab .dt { margin-left: auto; font-size: 11px; color: var(--muted); }
+.balao-lista { padding: 10px 12px; display: grid; gap: 6px; }
+.balao { max-width: 85%; padding: 8px 11px; border-radius: 14px 14px 14px 4px; background: #24332b; font-size: 14px; line-height: 1.4; justify-self: start; }
+.balao.eu { justify-self: end; border-radius: 14px 14px 4px 14px; background: #1f6b3a; color: #f2fff6; }
+.balao.eu.vacuo { background: #3a3f3c; color: var(--muted); font-style: italic; }
+.respostas { padding: 0 12px 12px; display: grid; gap: 6px; }
+.respostas .opcao { border-radius: 18px; padding: 8px 12px; margin: 0; font-size: 13.5px; }
+.respostas .opcao b { display: none; }
+
+/* ----- história do clube */
+.linha-tempo { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.temp-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: linear-gradient(180deg, #1b251f, #121a15); position: relative; }
+.temp-card.ouro { border-color: #8a6d1a; background: linear-gradient(180deg, #2a2412, #141a12); }
+.temp-card .ano { font: 700 22px var(--f-score); color: var(--gold); letter-spacing: 1px; }
+.temp-card .liga { font: 700 13px var(--f-score); letter-spacing: 1px; text-transform: uppercase; margin: 2px 0 6px; }
+.temp-card .tacas { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.temp-card .tacas span { font-size: 11px; background: #3a2e0e; color: var(--gold); border-radius: 99px; padding: 1px 8px; }
+.temp-card .ln { font-size: 12.5px; color: #cdd8cf; margin: 2px 0; }
+.recordes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.recorde { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 10px; padding: 10px 12px; background: var(--panel2); }
+.recorde .r { font: 600 11px var(--f-score); letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); }
+.recorde .v { font: 700 15px/1.3 var(--f-body); margin-top: 3px; }
+
+/* ----- gráficos (linha; série validada contra o fundo escuro: âmbar #bf8410; referência em cinza tracejado) */
+:root { --serie: #bf8410; --serie-ref: #7d8a81; --grade: #26332b; }
+.graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.graf { position: relative; }
+.graf svg { display: block; width: 100%; height: auto; overflow: visible; }
+.graf .eixo { fill: var(--muted); font: 11px var(--f-body); }
+.graf .valor { fill: var(--text); font: 600 11.5px var(--f-body); }
+.leg-g { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin: -4px 0 6px; }
+.leg-g b { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--serie); vertical-align: middle; margin-right: 5px; }
+.leg-g b.ref { border-top: 2px dashed var(--serie-ref); }
+.graf .dica-g { position: absolute; pointer-events: none; background: #0b100d; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px;
+  font-size: 12px; line-height: 1.4; box-shadow: 0 6px 18px #000a; white-space: nowrap; transform: translate(-50%, -110%); display: none; z-index: 2; }
+.graf .dica-g b { color: var(--text); } .graf .dica-g span { color: var(--muted); }
+.graf .tabela-g { margin-top: 6px; } .graf .tabela-g summary { cursor: pointer; font-size: 11.5px; color: var(--muted); }
+.graf .tabela-g table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+.graf .tabela-g td { padding: 2px 4px; border-bottom: 1px solid var(--line); }
+
+/* ----- arquibancada */
+.termo { height: 12px; border-radius: 99px; background: linear-gradient(90deg, #eb5757, #f2994a 30%, #f2c94c 50%, #9ad64b 70%, #3ecf6e); position: relative; margin: 8px 0 4px; }
+.termo i { position: absolute; top: -4px; width: 4px; height: 20px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 2px #000a; transform: translateX(-50%); }
+.faixas { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.faixa { font: 700 12px var(--f-score); letter-spacing: 1px; padding: 5px 10px; color: #fff; border-radius: 2px; transform: rotate(-1deg);
+  background: repeating-linear-gradient(135deg, #8f1a12 0 14px, #a8231a 14px 28px); box-shadow: 0 3px 8px #0008; border-top: 2px solid #ffffff30; }
+.faixa:nth-child(2n) { transform: rotate(1deg); background: repeating-linear-gradient(135deg, #1b1b1b 0 14px, #262626 14px 28px); border-top-color: var(--gold); }
+.faixa:nth-child(3n) { background: repeating-linear-gradient(135deg, #b8860b 0 14px, #c99a1d 14px 28px); color: #1a1300; }
+.canto { font-style: italic; color: #e9d8a6; margin: 6px 0; }
+
+/* ----- telas pequenas */
+@media (max-width: 900px) {
+  .placar { grid-template-columns: auto 1fr; padding: 12px 14px; gap: 10px 12px; }
+  .mostrador { grid-column: 1 / -1; justify-content: flex-start; }
+  .lcd { min-width: 0; flex: 1 1 88px; padding: 4px 8px; } .lcd .v { font-size: 17px; }
+  nav.abas { flex-wrap: nowrap; overflow-x: auto; padding: 8px 12px 0; scrollbar-width: none; }
+  nav.abas::-webkit-scrollbar { display: none; }
+  nav.abas button { flex: none; padding: 8px 12px 9px; font-size: 13px; }
+  main { padding: 12px 12px 24px; }
+  section { padding: 12px; }
+  .subabas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .subabas::-webkit-scrollbar { display: none; }
+  .subabas button { flex: none; }
+  .duelo { grid-template-columns: 1fr; }
+  .carga { display: block; overflow-x: auto; }
+  .seletor { max-width: 100%; }
+  footer { padding: 0 12px 14px; }
+}
+@media (max-width: 520px) {
+  .clube h1 { font-size: 19px; } .escudo { width: 44px; height: 44px; }
+  .armarios { grid-template-columns: 1fr; }
+  .pj .t { font-size: 13px; }
+  .materia { padding: 12px 14px; }
+}
+</style>
+</head>
+<body>
+<header class="placar">
+  <div class="escudo" id="escudo" aria-hidden="true">MU</div>
+  <div class="clube">
+    <h1 id="time">Central do Técnico</h1>
+    <div class="sub" id="sub">conectando…</div>
+  </div>
+  <div class="mostrador">
+    <div class="lcd"><div class="r">Data</div><div class="v" id="lcdData">—</div></div>
+    <div class="lcd"><div class="r">Tabela</div><div class="v" id="lcdPos">—</div></div>
+    <div class="lcd"><div class="r">Diretoria</div><div class="v" id="lcdConf">—</div></div>
+    <div class="lcd"><div class="r">Orçamento</div><div class="v" id="lcdOrc">—</div></div>
+    <div class="lcd"><div class="r">Forma</div><div class="v forma" id="forma">—</div></div>
+    <div class="vivo" id="vivo" title="conexão em tempo real com o jogo"><i></i><span>OFFLINE</span></div>
+  </div>
+</header>
+<div class="lab" id="lab">Carreira de laboratório (teste): a Central só mostra. Nada aqui é escrito no jogo.</div>
+<div class="lab" id="atraso" style="display:none;background:#3a0b0b;color:#ffb4a8;border-bottom-color:#7a1d1d"></div>
+<div class="plantao" aria-label="plantão de notícias"><b>PLANTÃO</b><div class="fita"><span id="fita">carregando…</span></div></div>
+<nav class="abas" role="tablist">
+  <button role="tab" data-aba="resumo">Resumo</button>
+  <button role="tab" data-aba="vestiario">Vestiário</button>
+  <button role="tab" data-aba="imprensa">Imprensa</button>
+  <button role="tab" data-aba="coletiva">Coletiva<span class="badge" id="badgeCol" hidden></span></button>
+  <button role="tab" data-aba="analise">Análise</button>
+  <button role="tab" data-aba="disciplina">Disciplina<span class="badge" id="badgeDisc" hidden></span></button>
+  <button role="tab" data-aba="calendario">Calendário<span class="badge" id="badgeCal" hidden></span></button>
+  <button role="tab" data-aba="celular">Celular<span class="badge" id="badgeCel" hidden></span></button>
+  <button role="tab" data-aba="diretoria">Diretoria</button>
+  <button role="tab" data-aba="mercado">Mercado</button>
+  <button role="tab" data-aba="historia">História</button>
+</nav>
+<main>
+  <div class="tela" id="t-resumo">
+    <div class="grid3">
+      <div>
+        <section id="resCasos" class="pend-painel"></section>
+        <section id="proxJogo"></section>
+        <section id="arquibancada"></section>
+        <section id="resColetiva"></section>
+        <section><h2>Últimos jogos</h2><div id="jogos"></div></section>
+        <section><h2>Diretoria</h2><div id="resDir"></div></section>
+      </div>
+      <div>
+        <div id="resCapa"></div>
+        <section style="margin-top:16px"><h2>Jornal do clube</h2><div id="jornal"></div></section>
+      </div>
+      <div>
+        <section id="secPedido"><h2>Sala de reunião</h2><div id="pedido"></div></section>
+        <section><h2>Conflitos no grupo</h2><div id="conflitos"></div></section>
+        <section><h2>Atividade ao vivo</h2><div id="atividade"></div></section>
+      </div>
+    </div>
+  </div>
+  <div class="tela" id="t-vestiario">
+    <div class="vest-topo" id="vestTopo"></div>
+    <div class="grid2">
+      <section>
+        <h2>Armários do elenco
+          <select id="ordem" aria-label="ordenar">
+            <option value="pos">por setor</option>
+            <option value="moral">pior moral primeiro</option>
+            <option value="status">por status</option>
+            <option value="nota">por nota</option>
+          </select>
+        </h2>
+        <div id="elenco"></div>
+      </section>
+      <div>
+        <section><h2>Pedidos e vida pessoal</h2><div id="casosExig"></div></section>
+        <section><h2>Promessas</h2><div id="promessas"></div></section>
+        <section><h2>Liderança</h2><div id="lideranca"></div></section>
+      </div>
+    </div>
+  </div>
+  <div class="tela" id="t-imprensa">
+    <nav class="subabas" id="subImp" aria-label="frentes da imprensa">
+      <button data-sub="pre">Pré-jogo</button><button data-sub="x4">Jogo da rodada</button><button data-sub="pos">Pós-jogo</button>
+      <button data-sub="temp">Temporada</button><button data-sub="mundo">Mundo</button><button data-sub="merc">Mercado</button><button data-sub="bnm">Bola na Mesa</button>
+      <button data-sub="redes">Redes</button><button data-sub="bancas">Bancas</button>
+    </nav>
+    <div class="sub" data-sub="bnm">
+      <div class="hist-materias"><select id="selBnm" aria-label="programa" class="seletor"></select></div>
+      <div class="estudio-bnm">
+        <div class="palco" id="bnmPalco"></div>
+        <div class="bnm-ctrl">
+          <button id="bnmAnt" aria-label="fala anterior">◀</button><button id="bnmPlay" aria-label="reproduzir">▶</button><button id="bnmProx" aria-label="próxima fala">▶▶</button><button id="bnmVoz" aria-pressed="false" title="ouvir o programa com voz">🔈 Voz</button>
+          <div class="pautas" id="bnmPautas"></div>
+        </div>
+      </div>
+      <details class="transcricao"><summary>Transcrição completa do programa</summary><div id="bnmTrans"></div></details>
+    </div>
+    <div class="sub" data-sub="redes"><div class="hist-materias"><select id="selRedes" aria-label="edição das redes" class="seletor"></select></div>
+      <div class="grid2"><section><h2>No feed</h2><div id="redesFeed"></div></section>
+      <section><h2>Enquetes</h2><div id="redesEnq"></div></section></div></div>
+    <div class="sub" data-sub="pre"><div id="impPre"></div></div>
+    <div class="sub" data-sub="x4"><div id="impX4"></div><section><h2>Os quatro de cada lado</h2><div id="duelo1"></div></section></div>
+    <div class="sub" data-sub="pos"><div class="hist-materias"><select id="selPos" aria-label="jogo" class="seletor"></select></div><div id="impPos"></div></div>
+    <div class="sub" data-sub="temp"><div id="impTemp"></div><div id="hallFama"></div><div class="grid3" id="rodada" style="margin-bottom:16px"></div></div>
+    <div class="sub" data-sub="mundo"><div id="impRodada"></div><div id="impPremios"></div><div id="oficiais"></div><div id="mundoPainel"></div><div id="impRevel"></div></div>
+    <div class="sub" data-sub="merc"><div id="impMerc"></div></div>
+    <div class="sub" data-sub="bancas">
+      <section><h2>Bancas de hoje <select id="edicao" aria-label="edição"></select></h2><div class="bancas" id="bancas"></div></section>
+      <div class="tv" id="tv" hidden></div>
+    </div>
+  </div>
+  <div class="tela" id="t-coletiva">
+    <div class="grid2">
+      <section class="sala"><h2>Sala de imprensa</h2>
+        <div class="backdrop" aria-hidden="true" id="backdrop"></div>
+        <div id="coletiva"></div></section>
+      <section><h2>Coletivas anteriores</h2><div id="colHist"></div></section>
+    </div>
+  </div>
+  <div class="tela" id="t-analise">
+    <div class="grid2"><section><h2>Relatório da comissão técnica</h2><div id="tatica"></div></section>
+      <section><h2>Jogo da rodada · 4 x 4</h2><div id="duelo2"></div></section></div>
+  </div>
+  <div class="tela" id="t-disciplina">
+    <div class="grid2">
+      <section><h2>Casos disciplinares</h2><div id="casosDisc"></div></section>
+      <div>
+        <section><h2>Compromissos (cobrados pela súmula)</h2><div id="compromissos"></div></section>
+        <section><h2>Ficha disciplinar</h2><div id="ficha"></div></section>
+      </div>
+    </div>
+  </div>
+  <div class="tela" id="t-calendario">
+    <div class="grid2">
+      <div>
+        <section><h2>Calendário</h2><div id="densidade"></div></section>
+        <section><h2>Carga do elenco</h2><div id="carga"></div></section>
+      </div>
+      <div>
+        <section><h2>Plano de treino da semana</h2><div id="treino"></div></section>
+        <section><h2>Pedidos do elenco</h2><div id="casosCal"></div></section>
+      </div>
+    </div>
+  </div>
+  <div class="tela" id="t-diretoria"><div class="grid2"><section id="secDir"><h2>Diretoria</h2><div id="diretoria"></div></section>
+    <div><section><h2>Patrocínio</h2><div id="patrocinio"></div></section></div></div></div>
+  <div class="tela" id="t-celular"><div class="celular"><div class="cel-topo"><span>📱 Celular do técnico</span><span id="celHora"></span></div><div id="celConversas"></div></div></div>
+  <div class="tela" id="t-historia"><div id="historia"></div></div>
+  <div class="tela" id="t-mercado"><div class="grid2"><section><h2>Insatisfeitos em outros clubes</h2><div id="foraClube"></div></section><div></div></div></div>
+</main>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<footer id="rodape"></footer>
+<script>
+const SETAS = ['↓', '↘', '→', '↗', '↑'];
+const ORDEM_STATUS = ['Lenda', 'Ídolo', 'Superastro', 'Craque', 'Promessa', 'Veterano', 'Elenco'];
+const ORDEM_POS = ['GK', 'CB', 'LB', 'RB', 'DMF', 'CMF', 'LMF', 'RMF', 'AMF', 'LWF', 'RWF', 'SS', 'CF'];
+const TOM = {sensacionalista: 'sensacionalista', 'analítico': 'analitico', torcedor: 'torcedor'};
+let dados = null, aba = 'resumo', vistos = null, mexidos = new Set();
+let confirmandoCaso = null, erroCaso = '', confirmandoTreino = null, erroTreino = '';
+let confirmando = null, erroResp = '', confirmandoDir = null, erroDir = '', confirmandoCol = null, erroCol = '';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const dataBR = d => d ? `${String(d[2]).padStart(2, '0')}/${String(d[1]).padStart(2, '0')}/${d[0]}` : '';
+const corMoral = m => m >= 80 ? 'var(--good)' : m >= 60 ? 'var(--ok)' : m >= 40 ? 'var(--bad)' : 'var(--worse)';
+const mi = v => 'R$ ' + (v / 1e6).toFixed(1).replace('.', ',') + ' mi';
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+               set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+
+const crest = (nome, tam) => nome ? `<img class="crest" src="/escudo/${encodeURIComponent(nome)}" alt="" width="${tam}" height="${tam}" loading="lazy" onerror="this.style.visibility='hidden'">` : '';
+function foto(j, tam) {
+  const ini = esc((j.nome || '?').split(' ').map(p => p[0]).slice(0, 2).join(''));
+  return `<div class="foto" style="width:${tam}px;height:${tam}px">${j.pid ? `<img src="/foto/${j.pid}" alt="" onerror="this.remove()">` : ''}${ini}</div>`;
+}
+function nomeK(k) {
+  if (k === '*') return 'elenco';
+  const j = (dados.jogadores || []).find(j => `${j.reg}:${j.pid}` === k);
+  return j ? j.nome : k;
+}
+
+// ------------------------------------------------------------- abas
+function irPara(a) {
+  aba = a; store.set('aba', a);
+  document.querySelectorAll('nav.abas button').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === a));
+  document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === 't-' + a));
+}
+document.querySelectorAll('nav.abas button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.aba)));
+
+// ------------------------------------------------------------- render
+function render() {
+  const d = dados;
+  if (!d || d.vazio) { $('sub').textContent = 'Sem dados ainda: jogue uma partida (a reunião automática gera tudo).'; return; }
+  const dir = d.diretoria || {};
+  const eu = (dir.tabela || []).find(t => t.eu);
+  $('time').textContent = d.time;
+  $('backdrop').innerHTML = [1, 2, 3].map(() => `<span>${esc(d.time)}</span>`).join('<span>·</span>');
+  document.body.classList.toggle('somente-leitura', !!d.laboratorio);
+  if ($('escudo').dataset.time !== d.time) { $('escudo').classList.remove('tem'); $('escudo').textContent = (d.time || '').split(' ').map(p => p[0]).slice(0, 2).join(''); }
+  if (!$('escudo').dataset.time || $('escudo').dataset.time !== d.time) {
+    $('escudo').dataset.time = d.time;
+    const im = new Image(); im.alt = '';
+    im.onload = () => { $('escudo').innerHTML = ''; $('escudo').appendChild(im); $('escudo').classList.add('tem'); };
+    im.src = '/escudo/' + encodeURIComponent(d.time);
+  }
+  $('sub').textContent = `Técnico ${d.tecnico || '—'} · capitão ${d.capitao || '—'} · ${d.pontos_por_jogo.toFixed(1).replace('.', ',')} pts/jogo (últimos 5)`;
+  $('lcdData').textContent = dataBR(d.data_jogo);
+  $('lcdPos').textContent = eu && eu.j ? `${eu.pos}º · ${eu.pts}` : 'PRÉ';
+  const nat = d.diretoria_nativa && d.diretoria_nativa.estado;
+  $('lcdConf').textContent = nat === 'ultimato' ? 'ULTIMATO' : nat === 'pressao' ? `${dir.confianca ?? '—'} ⚠` : (dir.confianca != null ? dir.confianca : '—');
+  $('lcdConf').style.color = dir.confianca != null ? corMoral(dir.confianca) : '';
+  $('lcdOrc').textContent = dir.orcamento_atual ? mi(dir.orcamento_atual).replace('R$ ', '') : '—';
+  $('forma').innerHTML = (d.ultimos_jogos || []).slice(-5).map(g => {
+    const r = g.pro > g.contra ? 'V' : g.pro === g.contra ? 'E' : 'D';
+    return `<span class="res ${r}" title="${esc(g.adversario)} ${g.pro}x${g.contra}">${r}</span>`;
+  }).join('') || '—';
+  renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
+  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFrentes(d);
+  $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
+    (d.ao_vivo ? ` · ao vivo da memória do jogo: ${new Date(d.ao_vivo.quando * 1000).toLocaleTimeString('pt-BR')}` : '') +
+    ' · o que você faz aqui vai para o jogo na hora quando possível') + (REDE ? ` · <b style="color:var(--gold)">📱 No celular (mesmo Wi-Fi): ${esc(REDE.url)} · PIN ${esc(REDE.pin)}</b>` : '');
+}
+
+function renderFita(d) {
+  const at = d.atraso, box = $('atraso');
+  box.style.display = at ? 'block' : 'none';
+  if (at) box.textContent = at.vigia_vivo
+    ? `Imprensa atrasada: o jogo salvou há ${at.minutos} min e a reunião ainda não saiu (o vigia está trabalhando ou deu erro — veja historico/vigia_erros.txt).`
+    : `Imprensa parada: o jogo salvou há ${at.minutos} min, mas o VIGIA não está rodando. Dê dois cliques em Ferramentas\\REINICIAR_VIGIA.bat (ele recupera a rodada sozinho).`;
+  const itens = [];
+  if (d.vigia && d.vigia.texto) itens.push('VIGIA: ' + d.vigia.texto);
+  (d.midia?.capas || []).forEach(c => itens.push(`${c.nome.toUpperCase()}: ${c.manchete}`));
+  (d.noticias || []).filter(n => n.data && n.data[0] >= 2020).slice(-6).reverse().forEach(n => itens.push(n.texto));
+  $('fita').innerHTML = itens.map(esc).join('<em>●</em>') || 'sem notícias';
+}
+
+function capaHTML(c) {
+  return `<article class="capa ${TOM[c.tom] || ''}">
+    <div class="topo"><div class="marca">${esc(c.nome)}</div><div class="slogan">${esc(c.slogan)}</div></div>
+    <div class="ed"><span>${dataBR(c.data)}</span><span>${crest(dados && dados.time, 16)} Edição de esportes</span><span>R$ 3,50</span></div>
+    <h3>${esc(c.manchete)}</h3><div class="fina">${esc(c.fina)}</div>
+    ${c.texto && c.texto !== c.fina ? `<p class="abre">${esc(c.texto)}</p>` : ''}
+    ${c.aspas ? `<blockquote>“${esc(c.aspas.texto)}”<cite>${esc(c.aspas.quem)} · ${esc(c.aspas.papel)}</cite></blockquote>` : ''}
+    ${c.chamadas.map(x => `<div class="chamada"><b>${esc(x.titulo)}</b><span>${esc(x.texto)}</span></div>`).join('')}
+    ${(c.quadros || []).length ? `<div class="quadros">${c.quadros.map(q => `<div class="quadro"><h5>${esc(q.titulo)}</h5>${q.linhas.map(l =>
+      `<div class="${l.eu ? 'eu' : ''}"><span>${esc(l.a)}</span><span>${esc(l.b)}</span></div>`).join('')}</div>`).join('')}</div>` : ''}
+  </article>`;
+}
+
+function renderResumo(d) {
+  const col = d.coletiva, resp = d.coletiva_respostas || {};
+  const faltam = col ? col.perguntas.filter(p => !resp[p.id]).length : 0;
+  $('badgeCol').hidden = !faltam; $('badgeCol').textContent = faltam;
+  $('resColetiva').innerHTML = `<h2>Coletiva de imprensa</h2>` + (col
+    ? `<div class="chamar"><div>${faltam ? `<b>${faltam} pergunta(s)</b> esperando você.<div class="dica">Suas respostas mexem na moral, e a seta muda no jogo na hora.</div>` : 'Coletiva encerrada: todas respondidas.'}</div>
+       ${faltam ? '<button class="btn" data-ir="coletiva">Entrar</button>' : ''}</div>`
+    : '<div class="vazio">Sem coletiva nesta rodada.</div>');
+  const capas = d.midia?.capas || [];
+  const principal = capas[Math.floor(Date.now() / 60000) % Math.max(1, capas.length)];
+  $('resCapa').innerHTML = principal ? `<div class="destaque-capa" data-ir="imprensa" title="ver todas as bancas">${capaHTML(principal)}</div>` : '';
+  $('jogos').innerHTML = (d.ultimos_jogos || []).slice().reverse().map(g =>
+    `<div class="jogo"><span>${dataBR(g.data)} · ${g.casa ? 'vs' : '@'} ${crest(g.adversario, 20)} ${esc(g.adversario)}</span><span class="pl">${g.pro} x ${g.contra}</span></div>`
+  ).join('') || '<div class="vazio">nenhum jogo oficial ainda na temporada</div>';
+  const dir = d.diretoria;
+  $('resDir').innerHTML = nativaHTML(d) + (dir ? `<div class="conf-dir"><span class="num" style="color:${corMoral(dir.confianca)}">${dir.confianca}</span><span>confiança</span></div>
+    <div class="barra"><i style="width:${dir.confianca}%;background:${corMoral(dir.confianca)}"></i></div>
+    <div class="meta-linha">${esc(dir.metas?.liga_texto || '')}</div>${dir.reuniao ? `<div class="meta-linha" style="color:var(--gold)">Reunião pendente: ${esc(dir.reuniao.titulo)}</div>` : ''}` : '<div class="vazio">—</div>');
+  const novas = new Set(d.noticias_rodada || []);
+  $('jornal').innerHTML = (d.noticias || []).filter(n => n.data && n.data[0] >= 2020).slice().reverse().slice(0, 12).map(n =>
+    `<div class="item" ${novas.has(n.texto) ? 'style="border-left:3px solid var(--red);padding-left:8px"' : ''}><span class="dica">${dataBR(n.data)}</span><br>${esc(n.texto)}</div>`
+  ).join('') || '<div class="vazio">nenhuma notícia ainda</div>';
+  $('conflitos').innerHTML = (d.conflitos || []).map(c => `<div class="item"><span class="tag">${esc(c.tipo)}</span>${esc(c.texto)}</div>`).join('') || '<div class="vazio">grupo tranquilo</div>';
+  renderPedido(d);
+  document.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => irPara(b.dataset.ir));
+}
+
+function renderPedido(d) {
+  const p = d.pedido;
+  const porNome = Object.fromEntries((d.jogadores || []).map(j => [j.nome, j]));
+  if (!p) { $('secPedido').classList.remove('pedido'); $('pedido').innerHTML = '<div class="vazio">Ninguém pediu conversa nesta rodada.</div>'; return; }
+  const j = porNome[p.nome] || {nome: p.nome, pid: 0};
+  const resp = d.resposta_overlay;
+  $('secPedido').classList.add('pedido');
+  $('pedido').innerHTML = `
+    <div class="quem">${foto(j, 64)}<div><div class="nome">${esc(p.nome)}</div><div class="meta">${esc(p.status)} pede uma conversa · ${dataBR(p.data)}</div></div></div>
+    <div class="fala">${esc(p.fala)}</div>
+    ${p.opcoes.map((o, i) => { const n = String(i + 1), conf = confirmando === n;
+      return `<button class="opcao ${resp === n ? 'escolhida' : ''} ${conf ? 'confirmar' : ''}" data-op="${n}"><b>${n}</b>${esc(o)}
+        ${conf ? `<span class="conf">Confirmar? <span class="sim" data-sim="${n}">Sim</span> <span class="nao" data-nao="1">Não</span></span>` : ''}</button>`; }).join('')}
+    <div class="dica">${erroResp ? `<span style="color:var(--worse)">${esc(erroResp)}</span><br>` : ''}${resp ? `Resposta registrada: <b>${resp}</b>. Vale na próxima reunião.` : 'A resposta vale na próxima reunião (depois do próximo jogo).'}</div>`;
+  $('pedido').querySelectorAll('[data-op]').forEach(b => b.addEventListener('click', ev => {
+    if (ev.target.dataset.sim) return responder(ev.target.dataset.sim, p.id, 'vestiario');
+    if (ev.target.dataset.nao) { confirmando = null; return render(); }
+    confirmando = b.dataset.op; erroResp = ''; render();
+  }));
+}
+
+function numerosTxt(n) {
+  const p = v => v == null ? '—' : v + '%', partes = [`${n.minutos} min`];
+  if (n.chutes) partes.push(`chutes ${n.chutes} (${p(n.chutes_gol_pct)} no gol)`);
+  if (n.dribles) partes.push(`dribles ${p(n.dribles_pct)}`);
+  if (n.passes) partes.push(`passes ${p(n.passes_pct)}`);
+  if (n.aereas) partes.push(`aéreas ${p(n.aereas_pct)}`);
+  if (n.desarmes || n.interceptacoes) partes.push(`desarmes ${n.desarmes} · intercep. ${n.interceptacoes}`);
+  return partes.join(' · ');
+}
+
+const SETORES = [['Goleiros', ['GK']], ['Defensores', ['CB', 'LB', 'RB']], ['Meio-campo', ['DMF', 'CMF', 'LMF', 'RMF', 'AMF']], ['Ataque', ['LWF', 'RWF', 'SS', 'CF']]];
+const classePos = p => p === 'GK' ? 'GK' : ['CB', 'LB', 'RB'].includes(p) ? 'def' : ['LWF', 'RWF', 'SS', 'CF'].includes(p) ? 'ata' : 'mei';
+const DESEJOS = {penalti: 'pênaltis', falta_longa: 'faltas', capitao: 'braçadeira', camisa10: 'camisa 10'};
+const HUMORES = [['Motivado', 'var(--good)'], ['Satisfeito', 'var(--ok)'], ['Insatisfeito', 'var(--bad)'], ['Revoltado', 'var(--worse)']];
+const num1 = x => x ? x.toFixed(1).replace('.', ',') : '—';
+
+// motivos que valem para quase todo o grupo (treino, patrocínio, saída de um ídolo) sobem para o painel do vestiário;
+// no armário fica só o que é do jogador
+function motivosComuns(js) {
+  const c = {};
+  js.forEach(j => new Set(j.motivos || []).forEach(m => c[m] = (c[m] || 0) + 1));
+  return new Set(Object.keys(c).filter(m => js.length >= 6 && c[m] >= js.length * 0.6));
+}
+function armarioHTML(j, comuns) {
+  const t = j.temporada, k = `${j.reg}:${j.pid}`;
+  const min = j.minutos_recentes == null ? '—' : Math.round(j.minutos_recentes * 100) + '%';
+  const proprios = (j.motivos || []).filter(m => !comuns.has(m));
+  const contrato = j.contrato_fim ? `contrato até ${j.contrato_fim[0]}` : '';
+  return `<article class="armario ${j.humor.toLowerCase()} ${mexidos.has(k) ? 'mexeu' : ''}">
+    <div class="arm-placa"><span class="arm-pos ${classePos(j.pos)}">${esc(j.pos)}</span>
+      ${j.capitao ? '<span class="cap" title="capitão">C</span>' : ''}
+      ${j.seta == null ? '' : `<span class="arm-seta s${j.seta}" title="seta de condição no jogo">${SETAS[j.seta]}</span>`}
+      <span class="arm-ovr" title="nota geral">${j.nota}<small>OVR</small></span></div>
+    <div class="arm-corpo">${foto(j, 62)}<div>
+      <div class="arm-nome">${j.apelido ? `<span class="apelido">“${esc(j.apelido)}”</span>` : ''}${esc(j.nome)}</div>
+      <div class="meta">${j.idade} anos · ${String(j.anos_clube).replace('.', ',')} anos de clube</div>
+      <div class="chips"><span class="chip st-${esc(j.status)}">${esc(j.status)}</span>${j.funcao ? `<span class="chip">${esc(j.funcao)}</span>` : ''}${(j.perfil?.tracos || []).filter(t => t !== 'discreto').map(t => `<span class="chip" style="background:#3a2a10;color:#ffd27a">${esc(t)}</span>`).join('')}</div>
+      ${(j.perfil?.desejos || []).length ? `<div class="arm-quer" title="o que ele quer">quer: ${j.perfil.desejos.map(x => DESEJOS[x] || x).join(', ')}</div>` : ''}
+    </div></div>
+    <div class="arm-medidores">
+      <div class="medidor" title="moral ${j.moral}"><span>${esc(j.humor)}</span><div class="barra"><i style="width:${j.moral}%;background:${corMoral(j.moral)}"></i></div><b>${j.moral}</b></div>
+      ${j.condicao != null ? `<div class="medidor" title="condição física no jogo"><span>Condição</span><div class="barra"><i style="width:${j.condicao}%;background:${corCond(j.condicao)}"></i></div><b>${j.condicao}</b></div>` : ''}
+      <div class="medidor" title="carinho da torcida"><span>Torcida</span><div class="barra"><i style="width:${j.torcida}%;background:var(--gold)"></i></div><b>${j.torcida}</b></div>
+    </div>
+    <div class="arm-stats"><div><b>${t.jogos}</b><span>jogos</span></div><div><b>${t.gols}</b><span>gols</span></div><div><b>${t.assist}</b><span>assist.</span></div><div><b>${num1(t.nota)}</b><span>média</span></div></div>
+    <div class="arm-rodape"><span>minutos ${min}</span>${contrato ? `<span>${contrato}</span>` : ''}${j.salario_rs ? `<span>salário ${mi(j.salario_rs)}</span>` : ''}</div>
+    ${j.numeros ? `<div class="arm-rodape" style="color:#b8c8bc">${numerosTxt(j.numeros)}</div>` : ''}
+    ${proprios.length ? `<div class="arm-motivos"><ul>${proprios.slice(0, 3).map(m => `<li>${esc(m)}</li>`).join('')}</ul>${proprios.length > 3 ? `<span class="mais" title="${esc(proprios.slice(3).join(' · '))}">+${proprios.length - 3} motivo(s)</span>` : ''}</div>` : ''}
+  </article>`;
+}
+function renderVestTopo(d, js, comuns) {
+  const n = js.length || 1, med = k => js.reduce((a, j) => a + (j[k] || 0), 0) / n;
+  const dif = d.dificuldade || {};
+  const cnt = HUMORES.map(([h, c]) => [h, c, js.filter(j => j.humor === h).length]);
+  const conds = js.filter(j => j.condicao != null), cansados = conds.filter(j => j.condicao < 70);
+  const folha = js.reduce((a, j) => a + (j.salario_rs || 0), 0);
+  const lid = (d.lideres || []).slice(0, 3);
+  const corClima = {blindado: 'var(--good)', estavel: 'var(--ok)', 'estável': 'var(--ok)', tenso: 'var(--bad)', explosivo: 'var(--worse)'}[dif.nivel] || 'var(--gold)';
+  $('vestTopo').innerHTML = `
+    <div class="vt"><div class="r">Clima do vestiário</div><div class="v" style="color:${corClima}">${esc((dif.nivel || '—').toUpperCase())}</div>
+      <div class="s">${dif.espirito != null ? `espírito de equipe ${dif.espirito} · ` : ''}${dif.dias_clube != null ? `${dif.dias_clube} dias de técnico` : ''}</div></div>
+    <div class="vt"><div class="r">Moral do grupo</div><div class="v" style="color:${corMoral(med('moral'))}">${Math.round(med('moral'))}</div>
+      <div class="humores">${cnt.map(([h, c, q]) => q ? `<i style="width:${100 * q / n}%;background:${c}" title="${h}: ${q}"></i>` : '').join('')}</div>
+      <div class="legenda-h">${cnt.map(([h, c, q]) => `<span><b style="background:${c}"></b>${q} ${h.toLowerCase()}${q === 1 ? '' : 's'}</span>`).join('')}</div></div>
+    <div class="vt"><div class="r">Físico</div><div class="v" style="color:${conds.length ? corCond(conds.reduce((a, j) => a + j.condicao, 0) / conds.length) : 'var(--muted)'}">${conds.length ? Math.round(conds.reduce((a, j) => a + j.condicao, 0) / conds.length) : '—'}</div>
+      <div class="s">${cansados.length ? `abaixo de 70: ${cansados.map(j => esc(j.nome)).slice(0, 4).join(', ')}${cansados.length > 4 ? '…' : ''}` : 'ninguém abaixo de 70 de condição'}</div></div>
+    <div class="vt"><div class="r">Liderança</div><div class="v" style="font-size:22px">${esc(d.capitao || '—')} <span class="cap">C</span></div>
+      <div class="s">${lid.map(l => `${esc(l.nome)} (${l.lider})`).join(' · ') || '—'}</div></div>
+    <div class="vt"><div class="r">Elenco</div><div class="v">${js.length}</div>
+      <div class="s">idade média ${num1(med('idade'))} · nota média ${Math.round(med('nota'))}${folha ? ` · folha ${mi(folha)}` : ''}</div></div>
+    ${comuns.size ? `<div class="vt assunto"><div class="r">O assunto no vestiário (pesa para quase todo o grupo)</div><div class="chips" style="margin-top:6px">${[...comuns].map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div></div>` : ''}`;
+}
+
+function renderElenco(d) {
+  const ordem = $('ordem').value;
+  const todos = d.jogadores || [], comuns = motivosComuns(todos);
+  renderVestTopo(d, todos, comuns);
+  const js = todos.slice().sort((a, b) =>
+    ordem === 'moral' ? a.moral - b.moral :
+    ordem === 'status' ? ORDEM_STATUS.indexOf(a.status) - ORDEM_STATUS.indexOf(b.status) || b.nota - a.nota :
+    ordem === 'pos' ? ORDEM_POS.indexOf(a.pos) - ORDEM_POS.indexOf(b.pos) || b.nota - a.nota : b.nota - a.nota);
+  $('elenco').innerHTML = ordem === 'pos'
+    ? SETORES.map(([nome, ps]) => { const g = js.filter(j => ps.includes(j.pos));
+        return g.length ? `<div class="setor"><h3>${nome} <small>${g.length} · moral média ${Math.round(g.reduce((a, j) => a + j.moral, 0) / g.length)}</small></h3><div class="armarios">${g.map(j => armarioHTML(j, comuns)).join('')}</div></div>` : ''; }).join('')
+    : `<div class="armarios">${js.map(j => armarioHTML(j, comuns)).join('')}</div>`;
+  const nomesTipo = {minutos: 'mais minutos', capitao: 'braçadeira', renovacao: 'renovação'};
+  $('promessas').innerHTML =
+    (d.promessas || []).map(pr => `<div class="item"><span class="tag">em aberto</span>${esc(pr.nome)}: ${nomesTipo[pr.tipo] || pr.tipo} (desde ${dataBR(pr.data)})</div>`).join('') +
+    (d.promessas_fechadas || []).slice().reverse().map(pr => `<div class="item"><span class="tag" style="color:${pr.status === 'cumprida' ? 'var(--good)' : 'var(--worse)'}">${esc(pr.status)}</span>${esc(pr.nome)}: ${nomesTipo[pr.tipo] || pr.tipo}</div>`).join('')
+    || '<div class="vazio">nenhuma promessa feita</div>';
+  $('lideranca').innerHTML = (d.lideres || []).map((l, i) => `<div class="item">${i + 1}º ${esc(l.nome)} <span class="meta">(${l.lider})</span></div>`).join('') +
+    `<div class="dica">capitão atual: ${esc(d.capitao || '—')}</div>`;
+}
+
+function renderImprensa(d) {
+  const sel = $('edicao'), eds = [{data: d.midia?.data, capas: d.midia?.capas || []}, ...(d.midia_hist || []).slice().reverse()];
+  const atual = sel.value;
+  sel.innerHTML = eds.map((e, i) => `<option value="${i}">${i ? 'edição de ' : 'hoje · '}${dataBR(e.data)}</option>`).join('');
+  if (atual && +atual < eds.length) sel.value = atual;
+  const ed = eds[+sel.value || 0];
+  $('bancas').innerHTML = (ed.capas || []).map(capaHTML).join('') || '<div class="vazio">As bancas abrem depois da próxima rodada.</div>';
+  const pr = d.midia?.programa;
+  if (!pr) { $('tv').innerHTML = ''; return; }
+  const ids = {};
+  $('tv').innerHTML = `<div class="vinheta"><strong>${esc(pr.nome)}</strong><span class="bug">AO VIVO · ${dataBR(pr.data)}</span></div>
+    <div class="estudio">${pr.linhas.map(l => {
+      if (!(l.quem in ids)) ids[l.quem] = l.papel === 'apresentador' ? 'apresentador' : 'c' + (Object.keys(ids).length - 1) % 3;
+      const ini = l.quem.split(' ').map(p => p[0]).slice(0, 2).join('');
+      return `<div class="gc"><div class="av ${ids[l.quem]}">${esc(ini)}</div><div class="tarja"><div class="qm">${esc(l.quem)}<small>${esc(l.papel)}</small></div>${esc(l.texto)}</div></div>`;
+    }).join('')}</div>
+    ${pr.enquete ? `<div class="enquete"><b>Enquete:</b> ${esc(pr.enquete.pergunta)} <span class="dica">· ${pr.enquete.sim}% sim</span><div class="bar"><i style="width:${pr.enquete.sim}%"></i></div></div>` : ''}`;
+}
+$('edicao').addEventListener('change', () => renderImprensa(dados));
+
+// ------------------------------------------------------------- imprensa: frentes (banco historico/imprensa.db)
+let subImp = (() => { try { return localStorage.getItem('subImp') || 'pos'; } catch (e) { return 'pos'; } })();
+function mostrarSub(s) {
+  subImp = s;
+  try { localStorage.setItem('subImp', s); } catch (e) { /* sem armazenamento: só nesta visita */ }
+  document.querySelectorAll('#subImp button').forEach(b => b.classList.toggle('on', b.dataset.sub === s));
+  document.querySelectorAll('#t-imprensa .sub').forEach(x => x.classList.toggle('on', x.dataset.sub === s));
+}
+document.querySelectorAll('#subImp button').forEach(b => b.addEventListener('click', () => mostrarSub(b.dataset.sub)));
+$('selPos').addEventListener('change', () => renderFrentes(dados));
+
+function materiaHTML(m, extra) {
+  if (!m) return '';
+  return `<article class="materia"><div class="cart"><span>${esc(m.autor || 'Redação')} · ${dataBR(m.data)}</span>${m.ia ? '<span class="ia">texto com IA</span>' : ''}</div>
+    <h3>${esc(m.titulo)}</h3>${m.linha_fina ? `<div class="fina">${esc(m.linha_fina)}</div>` : ''}
+    ${(m.corpo || []).map(p => `<p>${esc(p)}</p>`).join('')}${extra || ''}</article>`;
+}
+function escalHTML(e, nome) {
+  if (!e) return `<div><h4>${esc(nome)}</h4><div class="dica">escalação indisponível</div></div>`;
+  return `<div><h4>${crest(nome, 16)} ${esc(nome)} · ${esc(e.formacao)}</h4>${e.jogadores.map(j =>
+    `<div class="lin"><span><b>${esc(j.pos)}</b>${esc(j.nome)}</span><span>${j.nota ?? ''}</span></div>`).join('')}</div>`;
+}
+function notasHTML(js, nome) {
+  return `<div><h4>${crest(nome, 16)} ${esc(nome)}</h4><table class="notas">${js.map(j => {
+    const n = j.numeros, extra = n ? [n.passes ? `${n.passes_ok}/${n.passes} passes` : '', n.chutes ? `${n.chutes} chutes` : '',
+      (n.desarmes + n.interceptacoes) ? `${n.desarmes + n.interceptacoes} rec.` : ''].filter(Boolean).join(' · ') : '';
+    return `<tr><td>${esc(j.pos)}</td><td>${esc(j.nome)}${j.gols ? ' ⚽'.repeat(j.gols) : ''}${j.assist ? ` <span title="assistências">🅰${j.assist > 1 ? j.assist : ''}</span>` : ''}
+      ${extra ? `<div style="font-size:11px;color:#666">${extra}</div>` : ''}</td><td class="n">${j.min}'</td>
+      <td class="n ${j.nota >= 7.5 ? 'top' : j.nota && j.nota < 6 ? 'ruim' : ''}">${j.nota ? String(j.nota).replace('.', ',') : '—'}</td></tr>`; }).join('')}</table></div>`;
+}
+// ----- Bola na Mesa: estúdio com bancada redonda e silhuetas (quem fala acende)
+const LUGARES = [['toninho', 150], ['carlao', 325], ['rogerio', 500], ['helena', 675], ['beto', 850]];
+const bnm = { id: null, seq: [], i: 0, play: false, timer: null, blocos: [] };
+function palcoSVG(bancada) {
+  const sil = ([q, x]) => `<g class="sil" data-q="${q}">
+      <ellipse class="luz" cx="${x}" cy="215" rx="120" ry="150" fill="url(#gLuz)"/>
+      <path class="corpo" d="M${x - 82},318 Q${x - 80},252 ${x - 30},240 L${x - 14},236 L${x - 14},222 Q${x},228 ${x + 14},222 L${x + 14},236 L${x + 30},240 Q${x + 80},252 ${x + 82},318 Z" fill="url(#gSil)" stroke="#2c3b48" stroke-width="2"/>
+      <circle class="corpo" cx="${x}" cy="196" r="31" fill="url(#gSil)" stroke="#2c3b48" stroke-width="2"/></g>`;
+  return `<svg viewBox="0 0 1000 440" role="img" aria-label="Bancada do Bola na Mesa">
+    <defs>
+      <radialGradient id="gFundo" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#16324a"/><stop offset=".55" stop-color="#08121c"/><stop offset="1" stop-color="#030508"/></radialGradient>
+      <linearGradient id="gTela" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d2238"/><stop offset="1" stop-color="#06101b"/></linearGradient>
+      <linearGradient id="gSil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121a22"/><stop offset="1" stop-color="#020405"/></linearGradient>
+      <radialGradient id="gLuz" cx="50%" cy="30%" r="60%"><stop offset="0" stop-color="#f5c542" stop-opacity=".28"/><stop offset="1" stop-color="#f5c542" stop-opacity="0"/></radialGradient>
+      <linearGradient id="gMesa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3a55"/><stop offset="1" stop-color="#0a1724"/></linearGradient>
+      <pattern id="pGrade" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M18 0H0V18" fill="none" stroke="#1b3550" stroke-width=".6"/></pattern>
+    </defs>
+    <rect width="1000" height="440" fill="url(#gFundo)"/>
+    <polygon points="120,0 220,0 330,330 40,330" fill="#ffffff" opacity=".025"/><polygon points="780,0 880,0 960,330 670,330" fill="#ffffff" opacity=".025"/>
+    <rect x="250" y="14" width="500" height="132" rx="8" fill="url(#gTela)" stroke="#24476a"/><rect x="250" y="14" width="500" height="132" rx="8" fill="url(#pGrade)"/>
+    <text x="500" y="72" text-anchor="middle" fill="#f5c542" font-family="Oswald, Arial Narrow, sans-serif" font-size="44" font-weight="700" letter-spacing="4">BOLA NA MESA</text>
+    <text id="bnmTela" x="500" y="106" text-anchor="middle" fill="#cfe3f5" font-family="Inter, Segoe UI, sans-serif" font-size="17"></text>
+    <rect x="250" y="122" width="500" height="18" fill="#da291c"/><text x="500" y="135" text-anchor="middle" fill="#fff" font-family="Oswald, Arial Narrow, sans-serif" font-size="11" letter-spacing="3">AO VIVO</text>
+    ${LUGARES.map(sil).join('')}
+    <ellipse cx="500" cy="372" rx="470" ry="60" fill="#050a10"/><rect x="30" y="322" width="940" height="50" fill="#07101a"/>
+    <ellipse cx="500" cy="322" rx="470" ry="44" fill="url(#gMesa)" stroke="#da291c" stroke-width="2"/>
+    ${LUGARES.map(([q, x]) => `<rect x="${x - 62}" y="331" width="124" height="22" rx="3" fill="#0b1118" stroke="#3a4a58"/><text x="${x}" y="346" text-anchor="middle" fill="#dfe7ee" font-family="Oswald, Arial Narrow, sans-serif" font-size="12" letter-spacing="1">${esc(((bancada || {})[q] || {}).nome || q).toUpperCase()}</text>`).join('')}
+  </svg><div class="legenda" id="bnmLegenda"></div>`;
+}
+function bnmMostra() {
+  const s = bnm.seq[bnm.i];
+  if (!s) return;
+  document.querySelectorAll('#bnmPalco .sil').forEach(g => g.classList.toggle('fala', g.dataset.q === s.quem));
+  const bc = bnm.bancada || {}, p = bc[s.quem] || {nome: s.quem, papel: ''};
+  $('bnmLegenda').innerHTML = `<div class="qm">${esc(p.nome)}<small>${esc(p.papel)}</small></div><div class="tx">${esc(s.texto)}</div>`;
+  const tela = document.getElementById('bnmTela');
+  if (tela) tela.textContent = (bnm.blocos[s.b] || {}).titulo || '';
+  document.querySelectorAll('#bnmPautas button').forEach(b => b.classList.toggle('on', +b.dataset.b === s.b));
+  $('bnmPlay').textContent = bnm.play ? '❚❚' : '▶';
+}
+// ----- voz (12/10/2026): cada comentarista com voz, tom e ritmo próprios (vozes pt-BR do navegador/Windows)
+const TTS = window.speechSynthesis;
+const FEM = /francisca|maria|luciana|thalita|female|brenda|leila|manuela|yara|giovanna|heloisa|vit[oó]ria|fernanda/i;
+const JEITO = {rogerio: {fem: false, pitch: 1.0, rate: 1.04}, carlao: {fem: false, pitch: 0.75, rate: 0.96}, helena: {fem: true, pitch: 1.05, rate: 1.02},
+               beto: {fem: false, pitch: 0.95, rate: 1.12}, toninho: {fem: false, pitch: 1.25, rate: 1.1}};
+function vozDe(q) {
+  const vs = (TTS ? TTS.getVoices() : []).filter(v => /^pt(-|_)?BR/i.test(v.lang) || /portugu[eê]s.*brasil/i.test(v.name));
+  if (!vs.length) return null;
+  const j = JEITO[q] || JEITO.rogerio, mesmo = vs.filter(v => FEM.test(v.name) === j.fem), pool = mesmo.length ? mesmo : vs;
+  const ordem = Object.keys(JEITO).filter(x => JEITO[x].fem === j.fem);   // homens em vozes diferentes quando há mais de uma
+  return pool[Math.max(0, ordem.indexOf(q)) % pool.length];
+}
+function falar(s, depois) {
+  if (!TTS) return depois();
+  TTS.cancel();
+  const u = new SpeechSynthesisUtterance(s.texto.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ''));
+  const j = JEITO[s.quem] || JEITO.rogerio, v = vozDe(s.quem);
+  if (v) u.voice = v;
+  u.lang = 'pt-BR'; u.pitch = j.pitch; u.rate = j.rate;
+  let feito = false;
+  const fim = () => { if (!feito) { feito = true; bnm.timer = setTimeout(depois, 450); } };
+  u.onend = fim; u.onerror = fim;
+  TTS.speak(u);
+}
+bnm.voz = (() => { try { return localStorage.getItem('bnmVoz') === '1'; } catch (e) { return false; } })();
+function bnmVozBotao() { $('bnmVoz').setAttribute('aria-pressed', bnm.voz); $('bnmVoz').textContent = bnm.voz ? '🔊 Voz' : '🔈 Voz'; }
+if (!TTS) $('bnmVoz').hidden = true;
+else TTS.getVoices();   // o Chrome/Edge carrega a lista de vozes na primeira consulta
+$('bnmVoz').addEventListener('click', () => {
+  bnm.voz = !bnm.voz;
+  try { localStorage.setItem('bnmVoz', bnm.voz ? '1' : '0'); } catch (e) { /* só nesta visita */ }
+  bnmVozBotao();
+  if (!bnm.voz && TTS) TTS.cancel();
+  if (bnm.play) bnmIr(bnm.i);
+});
+bnmVozBotao();
+function bnmIr(i) {
+  bnm.i = Math.max(0, Math.min(bnm.seq.length - 1, i));
+  bnmMostra();
+  clearTimeout(bnm.timer);
+  if (TTS) TTS.cancel();
+  if (bnm.play) {
+    const ultimo = bnm.i >= bnm.seq.length - 1;
+    const proximo = () => { if (ultimo) { bnm.play = false; bnmMostra(); } else bnmIr(bnm.i + 1); };
+    if (bnm.voz && TTS) falar(bnm.seq[bnm.i], proximo);
+    else if (ultimo) { bnm.play = false; bnmMostra(); }
+    else bnm.timer = setTimeout(proximo, Math.max(3800, bnm.seq[bnm.i].texto.length * 60));
+  }
+}
+$('bnmAnt').addEventListener('click', () => bnmIr(bnm.i - 1));
+$('bnmProx').addEventListener('click', () => bnmIr(bnm.i + 1));
+$('bnmPlay').addEventListener('click', () => { bnm.play = !bnm.play; if (bnm.play && bnm.i >= bnm.seq.length - 1) bnm.i = 0; bnmIr(bnm.i); });
+// edição padrão = a do DIA ATUAL do jogo (12/10/2026): o pós-jogo se o jogo de hoje já foi; senão a prévia do próximo
+// jogo; senão o pós-jogo mais recente. A escolha manual vale até o dia do jogo mudar (e é guardada pelo id do programa,
+// não pela posição na lista: um programa novo no topo empurrava a lista e a escolha "andava").
+// 12/10/2026: havia dois "change" no mesmo seletor; o 1º redesenhava com a escolha antiga antes do 2º guardar a nova -> travava.
+const escolhaManual = {};
+['selBnm', 'selRedes'].forEach(id => $(id).addEventListener('change', () => {
+  escolhaManual[id] = {id: $(id).value, dia: (dados.data_jogo || []).join('-')};
+  renderFrentes(dados);
+}));
+function edicaoPadrao(lista) {
+  const dt = a => a ? Date.UTC(a[0], a[1] - 1, a[2]) : 0, hoje = dt(dados.data_jogo);
+  const posHoje = lista.find(m => m.dados.fase === 'pos' && dt(m.data) === hoje);
+  if (posHoje) return posHoje;
+  const pres = lista.filter(m => m.dados.fase === 'pre' && dt(m.data) >= hoje).sort((a, b) => dt(a.data) - dt(b.data));
+  if (pres.length) return pres[0];
+  return lista.find(m => m.dados.fase === 'pos') || lista[0];
+}
+function edicaoEscolhida(id, lista) {
+  const e = escolhaManual[id];
+  if (e && e.dia === (dados.data_jogo || []).join('-')) {
+    const m = lista.find(m => String(m.id) === e.id);
+    if (m) return m;
+  }
+  delete escolhaManual[id];
+  return edicaoPadrao(lista);
+}
+function renderBnm(I) {
+  const eps = I.bola_na_mesa || [], sel = $('selBnm');
+  const ep = eps.length ? edicaoEscolhida('selBnm', eps) : null;
+  sel.innerHTML = eps.map((m, i) => `<option value="${m.id}">${esc(m.dados.jogo || ((i ? 'programa de ' : 'hoje · ') + dataBR(m.data)))}</option>`).join('');
+  if (ep) sel.value = String(ep.id);
+  sel.hidden = eps.length < 2;
+  if (!ep) { $('bnmPalco').innerHTML = '<div class="vazio" style="padding:30px">O Bola na Mesa vai ao ar depois da próxima reunião (próximo jogo salvo).</div>'; $('bnmTrans').innerHTML = ''; $('bnmPautas').innerHTML = ''; return; }
+  if (bnm.id !== ep.id) {
+    clearTimeout(bnm.timer);
+    Object.assign(bnm, { id: ep.id, i: 0, play: false, blocos: ep.dados.blocos, bancada: ep.dados.bancada,
+      seq: ep.dados.blocos.flatMap((b, bi) => b.falas.map(f => ({ ...f, b: bi }))) });
+    $('bnmPalco').innerHTML = palcoSVG(ep.dados.bancada);
+    $('bnmPautas').innerHTML = ep.dados.blocos.map((b, bi) => `<button data-b="${bi}">${esc(b.titulo)}</button>`).join('');
+    $('bnmPautas').querySelectorAll('button').forEach(b => b.addEventListener('click', () => bnmIr(bnm.seq.findIndex(s => s.b === +b.dataset.b))));
+    const bc = ep.dados.bancada || {};
+    $('bnmTrans').innerHTML = (ep.ia ? '<div class="dica">texto com IA</div>' : '') + ep.dados.blocos.map(b => `<h4>${esc(b.titulo)}</h4>${b.falas.map(f => `<p><b>${esc((bc[f.quem] || {}).nome || f.quem)}:</b> ${esc(f.texto)}</p>`).join('')}`).join('');
+  }
+  bnmMostra();
+}
+function mil(n) { return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' mi' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.', ',') + ' mil' : String(n); }
+function renderRedes(I) {
+  const rs = I.redes || [], sel = $('selRedes');
+  const r = rs.length ? edicaoEscolhida('selRedes', rs) : null;
+  sel.innerHTML = rs.map(m => `<option value="${m.id}">${esc(m.dados.jogo || dataBR(m.data))}</option>`).join('');
+  if (r) sel.value = String(r.id);
+  sel.hidden = rs.length < 2;
+  if (!r) { $('redesFeed').innerHTML = $('redesEnq').innerHTML = '<div class="vazio">As redes acordam depois da próxima reunião.</div>'; return; }
+  const cor = s => `hsl(${[...s].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % 360} 55% 38%)`;
+  $('redesFeed').innerHTML = r.dados.posts.map(p => `<div class="post"><div class="av" style="background:${cor(p.autor)}">${esc(p.autor.replace('@', '').slice(0, 2).toUpperCase())}</div>
+    <div><div class="hd"><b>${esc(p.autor)}</b> · ${dataBR(r.data)}</div><div class="tx">${esc(p.texto)}</div>
+    <div class="ac"><span>♥ ${mil(p.curtidas)}</span><span>⟲ ${mil(p.reposts)}</span>${(p.respostas || []).length ? `<span>💬 ${p.respostas.length}</span>` : ''}</div>
+    ${(p.respostas || []).length ? `<div class="resp">${p.respostas.map(x => `<div><b>${esc(x.autor)}</b>${esc(x.texto)}<span>♥ ${mil(x.curtidas)}</span></div>`).join('')}</div>` : ''}</div></div>`).join('') || '<div class="vazio">feed vazio</div>';
+  $('redesEnq').innerHTML = r.dados.enquetes.map(e => { const mx = Math.max(...e.opcoes.map(o => o.pct));
+    return `<div class="enq"><b>${esc(e.pergunta)}</b>${e.opcoes.map(o => `<div class="op ${o.pct === mx ? 'top' : ''}"><i style="width:${o.pct}%"></i><span><span>${esc(o.texto)}</span><b style="display:inline;margin:0">${o.pct}%</b></span></div>`).join('')}</div>`; }).join('')
+    || '<div class="vazio">sem enquetes</div>';
+}
+
+function renderHall(h) {
+  if (!h || !(h.bolas || []).length && !(h.titulos || []).length) { $('hallFama').innerHTML = ''; return; }
+  const porTemp = {};
+  (h.titulos || []).filter(t => t.campeao === dados.time).forEach(t => (porTemp[t.temporada] = porTemp[t.temporada] || []).push(t.comp));
+  const ap = h.apuracao || [], mx = Math.max(1, ...ap.map(a => a.votos || 0));
+  $('hallFama').innerHTML = `<div class="grid3" style="margin-bottom:16px">
+    <section><h2>Bola de Ouro · melhor do mundo</h2>${(h.bolas || []).map(b => `<div class="item"><b style="color:var(--gold)">${b.ano}</b> · ${esc(b.nome || '?')}${b.clube ? ` <span class="meta">${crest(b.clube, 14)} ${esc(b.clube)}</span>` : ''}${b.votos ? `<span style="float:right" class="dica">${b.votos} votos</span>` : ''}</div>`).join('') || '<div class="vazio">sem registros</div>'}
+      ${(h.tecnicos || []).length ? `<div class="dica" style="margin-top:8px">Melhor técnico do mundo (prêmio do jogo): ${h.tecnicos.map(t => `<b>${t.ano}</b> ${esc(t.nome)}`).join(' · ')}</div>` : ''}
+      ${(h.na_trave || []).length ? `<div class="dica" style="margin-top:8px">Na trave: ${h.na_trave.map(([n, a]) => `${esc(n)} (pódio ${a.join(', ')})`).join(' · ')}</div>` : ''}</section>
+    <section><h2>Última apuração${ap.length ? ' · ' + ap[0].ano : ''}</h2>${ap.map(a => `<div class="enq"><div class="op ${a.posicao === 1 ? 'top' : ''}"><i style="width:${Math.round(100 * a.votos / mx)}%"></i><span><span>${a.posicao}º ${esc(a.nome)} <span class="dica">${esc(a.clube || '')}</span></span><b style="display:inline;margin:0">${a.votos}</b></span></div></div>`).join('') || '<div class="vazio">a eleição sai em 2 de dezembro</div>'}
+      ${(h.continentais || []).length ? `<div class="dica" style="margin-top:6px">${h.continentais.map(c => `${{europa: 'Europa', america_sul: 'América do Sul', asia: 'Ásia'}[c.categoria] || c.categoria} ${c.ano}: <b>${esc(c.nome)}</b>`).join(' · ')}</div>` : ''}</section>
+    <section><h2>Sala de troféus · ${esc(dados.time || '')}</h2>${Object.entries(porTemp).map(([t, cs]) => `<div class="item"><b style="color:var(--gold)">${esc(t)}</b> · ${cs.map(esc).join(' · ')}</div>`).join('') || '<div class="vazio">nenhum título registrado ainda</div>'}</section>
+  </div>`;
+}
+
+// ----- Mundo: seleção da temporada no gramado, rankings do mundo e as revelações (destaques.py)
+const LADO = {LWF: 0, LMF: 0, LB: 0, SS: 1, CF: 1, AMF: 1, DMF: 1, CMF: 1, CB: 1, GK: 1, RWF: 2, RMF: 2, RB: 2};
+function campoHTML(sel, time) {
+  const t = sel.time || [], por = s => t.filter(x => x.slot === s);
+  // qualquer formação (4-3-3 da imprensa, 4-4-2 do Time do mês do jogo): cada linha se espalha pela largura do campo
+  const xs = n => n <= 1 ? [50] : Array.from({length: n}, (_, i) => 12 + i * 76 / (n - 1));
+  const linha = (lista, y) => lista.map((x, i, a) => [x, xs(a.length)[i], y]);
+  const ord = lista => lista.slice().sort((a, b) => (LADO[a.pos] ?? 1) - (LADO[b.pos] ?? 1));
+  const pecas = [...linha(ord(por('ATA')), 15), ...linha(ord(por('MEI')), 40),
+    ...linha([...por('LB'), ...por('CB'), ...por('RB')], 66), ...linha(por('GK'), 87)];
+  return `<div class="campo"><div class="meio"></div><div class="circ"></div><div class="area cima"></div><div class="area baixo"></div>
+    ${pecas.map(([x, px, py]) => `<div class="peca ${x.time === time ? 'nosso' : ''}" style="left:${px}%;top:${py}%">
+      <div class="bola">${esc(x.nome.split(' ').map(p => p[0]).slice(0, 2).join(''))}${x.k ? `<img src="/foto/${x.k[1]}" alt="" onerror="this.remove()">` : ''}</div>
+      <div class="nm">${esc(x.nome)}</div><div class="cl">${crest(x.time, 12)} ${esc(x.time || '')}</div>
+      <span class="votos">${x.votos != null ? `${x.votos}/${sel.jurados} votos` : `nota ${num1(x.nota)}${x.gols ? ` · ${x.gols}⚽` : ''}`}</span></div>`).join('')}</div>`;
+}
+function tecnicosHTML(titulo, xs) {
+  return (xs || []).length ? `<section><h2>${titulo}</h2><div class="ranking">${xs.map((x, i) => `<div class="lin ${x.nosso ? 'eu' : ''}"><span>${i + 1}º</span>
+    <span><b>${esc(x.nome)}</b> <small>${crest(x.time, 12)} ${esc(x.time)} · ${x.pos}º na ${esc(x.liga)} (elenco ${x.esperado}º) · ${x.jogos} jogos${x.mata_mata_champions ? ` · ${x.mata_mata_champions} jogos de mata-mata na Champions` : ''}</small></span>
+    <span class="n">${x.aproveitamento}%</span></div>`).join('')}</div></section>` : '';
+}
+function rankingHTML(titulo, xs, valor, time, extra) {
+  return xs && xs.length ? `<section><h2>${titulo}</h2><div class="ranking">${xs.map((x, i) => `<div class="lin ${x.time === time ? 'eu' : ''}"><span>${i + 1}º</span>
+    <span><b>${esc(x.nome)}</b> <small>${crest(x.time, 12)} ${esc(x.time || '')} · ${esc(x.pos)} · ${x.jogos} jogos${extra ? ' · ' + extra(x) : ''}</small></span><span class="n">${valor(x)}</span></div>`).join('')}</div></section>` : '';
+}
+const ANUAIS_N = ['Brasileirão Série A', 'Brasileirão Série B', 'Copa do Brasil', 'Libertadores'];
+const SLOT_DE = p => ({GK: 'GK', CB: 'CB', LB: 'LB', RB: 'RB', LWF: 'ATA', RWF: 'ATA', SS: 'ATA', CF: 'ATA'})[p] || 'MEI';
+function oficiaisHTML(lista, time) {
+  if (!(lista || []).length) return '';
+  return `<section><h2>Prêmios oficiais de fim de temporada <span class="dica">a escolha do jogo, competição por competição</span></h2>
+    <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr))">${lista.map(e => {
+      const temp = ANUAIS_N.includes(e.nome) ? String(e.ano) : `${e.ano - 1}/${String(e.ano).slice(2)}`;
+      const linha = (rot, j, v) => j ? `<div class="lin ${j.time === time ? 'eu' : ''}"><span>${rot}</span><span><b>${esc(j.nome)}</b> <small>${crest(j.time, 12)} ${esc(j.time)}</small></span><span class="n">${v}</span></div>` : '';
+      const sel = {time: (e.time || []).map(j => ({...j, slot: SLOT_DE(j.pos)})), jurados: null};
+      return `<div><h3 style="margin:0 0 6px;font:700 16px var(--f-score);letter-spacing:1px;text-transform:uppercase;color:var(--gold)">${esc(e.nome)} · ${temp}</h3>
+        <div class="ranking">${linha('⚽', e.artilheiro[0], (e.artilheiro[0] || {}).valor)}${linha('🎯', e.garcom[0], (e.garcom[0] || {}).valor)}${linha('⭐', e.melhor, e.melhor ? num1(e.melhor.valor / 10) : '')}</div>
+        ${sel.time.length >= 11 ? campoHTML(sel, time) : ''}</div>`; }).join('')}</div></section>`;
+}
+function renderMundo(d, I) {
+  $('oficiais').innerHTML = oficiaisHTML((d.hall || {}).oficiais, d.time);
+  const W = d.mundo, time = d.time, vazio = t => `<div class="vazio">${t}</div>`;
+  const pr = (I.premios || [])[0];
+  $('impPremios').innerHTML = pr ? `<section><div class="premio-cab"><h3>🏆 ${esc(pr.titulo)}</h3><span class="dica">${esc(pr.linha_fina || '')} · ${dataBR(pr.data)}</span></div>
+      <div class="grid2"><div>${campoHTML(pr.dados.selecao, time)}</div>
+      <div>${materiaHTML(pr)}
+        ${tecnicosHTML('Técnico da temporada · top 5 da imprensa', pr.dados.tecnicos)}
+        ${(pr.dados.selecao.mencoes || []).length ? `<div class="dica">Também votados: ${pr.dados.selecao.mencoes.sort((a, b) => b.votos - a.votos).slice(0, 6).map(x => `${esc(x.nome)} (${x.votos})`).join(' · ')}</div>` : ''}</div></div></section>`
+    : '';
+  const sel = W && W.selecao && (W.selecao.time || []).length === 11 && W.max_jogos >= 8;
+  $('mundoPainel').innerHTML = W && W.max_jogos ? `
+    <div class="grid3">
+      ${rankingHTML(`Artilharia do mundo · ${esc(W.temporada)}`, (W.artilheiros || []).slice(0, 8), x => x.gols, time)}
+      ${rankingHTML('Garçons do mundo', (W.garcons || []).slice(0, 6), x => x.assist, time)}
+      ${W.max_jogos < 8 ? '' : rankingHTML('Corrida da Bola de Ouro', (W.bola_de_ouro || []).slice(0, 5), x => `${x.gols}G ${x.assist}A`, time, x => `média ${num1(x.media)}`)}
+    </div>
+    ${W.max_jogos >= 10 ? tecnicosHTML(`Técnico do ano · corrida ${esc(W.temporada)}`, W.tecnicos) : ''}
+    ${sel && !(pr && pr.dados.temporada === W.temporada) ? `<section><h2>Se a votação fosse hoje · seleção parcial de ${esc(W.temporada)}</h2>
+      <div class="dica" style="margin-bottom:10px">${W.selecao.jurados} jornalistas votam no fim da liga. Por enquanto, os números de ${W.jogos} jogos oficiais no mundo apontam este 4-3-3:</div>${campoHTML(W.selecao, time)}</section>` : ''}
+    ${(W.revelacoes || []).length ? `<section><h2>As revelações · quem ninguém conhecia</h2>${W.revelacoes.map(x => `<div class="revel">${foto({nome: x.nome, pid: x.k && x.k[1]}, 56)}
+      <div><div class="nmr">${esc(x.nome)} <span class="meta">${crest(x.time, 14)} ${esc(x.time)} · ${esc(x.pos)} · ${x.idade} anos · nota ${x.ovr}</span></div>
+      <div>${x.jogos} jogos · <b>${x.gols} gols</b> · ${x.assist} assistências${x.media ? ` · média ${num1(x.media)}` : ''}</div>
+      <div class="tags">${x.idade <= 19 ? '<span class="chip st-Superastro">joia</span>' : ''}${x.sel_jogos ? `<span class="chip st-Craque">seleção: ${x.sel_jogos} jogos, ${x.sel_gols} gols</span>` : '<span class="chip">ainda sem seleção</span>'}${(x.rank || 0) > 60 ? '<span class="chip">clube pequeno</span>' : ''}</div></div></div>`).join('')}</section>` : ''}`
+    : (pr ? '' : vazio('Os números do mundo aparecem depois da próxima reunião com jogos oficiais na temporada (o jogo zera as estatísticas na virada).'));
+  $('impRevel').innerHTML = [...(I.selecoes || []).slice(0, 2), ...(I.revelacao || [])].map(m => materiaHTML(m)).join('');
+  const rds = I.rodada || [], rod = rds.find(m => m.dados.tipo === 'rodada'), mes = rds.find(m => m.dados.tipo === 'mes');
+  const tdm = rds.find(m => m.dados.tipo === 'tdm');
+  $('impRodada').innerHTML = (tdm ? `<section><div class="premio-cab"><h3>🗓️ ${esc(tdm.titulo)}</h3><span class="dica">${esc(tdm.linha_fina || '')}</span></div>
+      <div class="grid2"><div><div class="dica" style="margin-bottom:6px">Time oficial do jogo (Base de dados › Títulos individuais › Time do mês)</div>${campoHTML(tdm.dados.selecao, time)}
+        ${tdm.dados.imprensa ? `<div class="dica" style="margin:10px 0 6px">A seleção da imprensa no mesmo mês · ${tdm.dados.ambos.length} nomes em comum</div>${campoHTML(tdm.dados.imprensa, time)}` : ''}</div>
+      <div>${materiaHTML(tdm)}</div></div></section>` : '') + (rod ? `<section><div class="premio-cab"><h3>⭐ ${esc(rod.titulo)}</h3><span class="dica">${esc(rod.linha_fina || '')} · ${dataBR(rod.data)}</span></div>
+      <div class="grid2"><div>${campoHTML(rod.dados.selecao, time)}</div><div>${materiaHTML(rod)}</div></div></section>` : '')
+    + (mes ? `<section><div class="premio-cab"><h3>🏅 ${esc(mes.titulo)}</h3><span class="dica">${dataBR(mes.data)}</span></div>
+      <div class="grid2"><div>${mes.dados.selecao ? campoHTML(mes.dados.selecao, time) : ''}${materiaHTML(mes)}</div><div>${rankingHTML(`Ranking de ${esc(mes.dados.mes)}`, mes.dados.ranking || [], x => num1(x.media), time, x => `${x.gols} gols · ${x.assist} assist.`)}</div></div></section>` : '');
+}
+
+function renderFrentes(d) {
+  const I = d.imprensa || {}, vazio = t => `<div class="vazio">${t}</div>`;
+  renderBnm(I); renderRedes(I); renderHall(d.hall); renderMundo(d, I);
+  // pré-jogo
+  // a prévia do jogo que é de fato o próximo (o pulso diz qual é; a reunião deixa os próximos 3 prontos)
+  const pjA = d.proximo_jogo || {}, mesmo = m => m && m.dados && m.dados.casa === pjA.casa && m.dados.fora === pjA.fora &&
+    (m.data || []).join() === (pjA.data || []).join();
+  const dn = a => a ? a[0] * 10000 + a[1] * 100 + a[2] : 0;
+  const pre = (I.pre_jogo || []).find(mesmo) || (I.pre_jogo || []).slice().reverse().find(m => dn(m.data) >= dn(d.data_jogo)) || (I.pre_jogo || [])[0];
+  $('impPre').innerHTML = pre ? materiaHTML(pre, (() => { const D = pre.dados, p = D.prob, euCasa = D.casa === D.escalacao.nos_nome;
+    const cor = nos => nos ? 'var(--good)' : 'var(--bad)';
+    return `<div class="bloco"><h4>Probabilidades · ${esc(D.casa)} / empate / ${esc(D.fora)}</h4><div class="prob"><span style="width:${p.casa}%;background:${cor(euCasa)}">${p.casa}%</span><span style="width:${p.empate}%;background:var(--mid)">${p.empate}%</span><span style="width:${p.fora}%;background:${cor(!euCasa)}">${p.fora}%</span></div></div>
+      <div class="bloco"><h4>Possível escalação</h4><div class="escal">${escalHTML(D.casa === D.escalacao.nos_nome ? D.escalacao.nos : D.escalacao.adv, D.casa)}${escalHTML(D.fora === D.escalacao.nos_nome ? D.escalacao.nos : D.escalacao.adv, D.fora)}</div></div>
+      ${(D.olho || []).length ? `<div class="bloco"><h4>De olho no ${esc(D.adv || 'adversário')} · os números da temporada</h4><div class="olho">${D.olho.map(x =>
+        `<div><b>${esc(x.nome)}</b>${esc(x.pos)} · ${x.idade} anos · nota ${x.ovr ?? '—'}<br>${x.jogos} jogos · <b style="display:inline;font-size:14px">${x.gols}</b> gols · ${x.assist} assist.${x.media ? ` · média ${num1(x.media)}` : ''}</div>`).join('')}</div></div>` : ''}
+      <div class="bloco"><h4>Enquete da torcida</h4>${esc(D.enquete.pergunta)} <b>${D.enquete.sim}% sim</b><div class="bar" style="background:#0002"><i style="width:${D.enquete.sim}%"></i></div></div>
+      <div class="bloco"><h4>Palpites do Bola na Mesa</h4>${D.palpites.map(x => `<p style="font-size:14px;margin:0 0 6px"><b>${esc(x.quem)}</b>: ${esc(x.texto)} — “${esc(x.fala)}”</p>`).join('')}</div>`; })())
+    : vazio('A prévia sai na próxima reunião (depois do próximo jogo salvo).');
+  // jogo da rodada
+  const x4 = (I.jogo_da_rodada || []).find(m => m.dados && m.dados.duelo && m.dados.duelo.casa === pjA.casa && m.dados.duelo.fora === pjA.fora)
+    || (I.jogo_da_rodada || [])[0];
+  $('impX4').innerHTML = x4 ? materiaHTML(x4) : vazio('O 4 x 4 sai na próxima reunião.');
+  // pós-jogo (com histórico)
+  const pos = I.pos_jogo || [], sel = $('selPos'), atual = sel.value;
+  sel.innerHTML = pos.map((m, i) => `<option value="${i}">${dataBR(m.data)} · ${esc(m.dados.casa)} ${m.dados.g1} x ${m.dados.g2} ${esc(m.dados.fora)}</option>`).join('');
+  if (atual && +atual < pos.length) sel.value = atual;
+  sel.hidden = pos.length < 2;
+  const pm = pos[+sel.value || 0];
+  $('impPos').innerHTML = pm ? materiaHTML(pm, `<div class="bloco"><div class="placar-grande">${crest(pm.dados.casa, 34)} ${esc(pm.dados.casa)} <span class="g">${pm.dados.g1} x ${pm.dados.g2}</span> ${esc(pm.dados.fora)} ${crest(pm.dados.fora, 34)}</div>
+      <div class="dica" style="text-align:center;color:#555">${esc(pm.dados.competicao)}${pm.dados.rodada ? ' · rodada ' + pm.dados.rodada : ''}${pm.dados.numeros_do_jogo ? ' · com estatísticas detalhadas do jogo' : ''}</div></div>
+      <div class="bloco"><h4>Notas do jogo</h4><div class="escal">${notasHTML(pm.dados.casa === d.time ? pm.dados.nos : pm.dados.eles, pm.dados.casa)}${notasHTML(pm.dados.fora === d.time ? pm.dados.nos : pm.dados.eles, pm.dados.fora)}</div></div>`)
+    : vazio('O pós-jogo sai depois do próximo jogo salvo.');
+  // temporada
+  $('impTemp').innerHTML = (I.temporada || [])[0] ? materiaHTML(I.temporada[0]) : vazio('O panorama da temporada sai na próxima reunião.');
+  // mercado
+  $('impMerc').innerHTML = (I.mercado || []).map(m => materiaHTML(m, `<div class="bloco"><h4>Todos os negócios</h4><table class="notas">${m.dados.negocios.map(n =>
+      `<tr><td>${crest(n.para, 14)} ${esc(n.para)}</td><td>${esc(n.jogador)} <span style="color:#666">(${esc(n.pos)}, ${n.idade})</span></td><td>de ${esc(n.de)}</td><td class="n">${String(n.valor).replace('.', ',')} mi</td></tr>`).join('')}</table></div>`)).join('')
+    || vazio('Nenhuma movimentação registrada ainda. O mercado abre nas janelas de transferência.');
+  mostrarSub(subImp);
+}
+function jogoLinha(g) {
+  return `<div class="jogo" ${g.meu ? 'style="color:var(--gold)"' : ''}><span>${crest(g.casa, 18)} ${esc(g.casa)}</span><span class="pl">${g.g1} x ${g.g2}</span><span>${esc(g.fora)} ${crest(g.fora, 18)}</span></div>`;
+}
+function renderProximo(d) {
+  const p = d.proximo_jogo;
+  if (!p) { $('proxJogo').innerHTML = '<h2>Próximo jogo</h2><div class="vazio">Calendário indisponível.</div>'; return; }
+  if (p.parcial) {
+    const tb0 = t => t ? `${t.pos}º · ${t.pts} pts` : '';
+    $('proxJogo').innerHTML = `<h2>Próximo jogo <span class="dica">${esc(p.competicao)}${p.rodada ? ' · rodada ' + p.rodada : ''} · ${dataBR(p.data)}</span></h2>
+      ${p.final ? `<div class="faixa-classico faixa-final">🏆 Final · ${esc(p.competicao)}</div>` : ''}
+      <div class="pj"><div>${crest(p.casa, 46)}<div class="t">${esc(p.casa)}</div><div class="dica">${tb0(p.tabela.casa)}</div></div><div class="vs">x</div>
+      <div>${crest(p.fora, 46)}<div class="t">${esc(p.fora)}</div><div class="dica">${tb0(p.tabela.fora)}</div></div></div>
+      <div class="dica" style="margin-top:8px">Ao vivo da memória do jogo. Probabilidades, enquete e palpites chegam com a próxima reunião (depois do salvamento).</div>`;
+    ['duelo1', 'duelo2', 'tatica'].forEach(id => $(id).innerHTML = '<div class="vazio">Sai na próxima reunião (depois do próximo jogo salvo).</div>');
+    return;
+  }
+  const fr = s => (s || '').split('').map(c => `<span style="color:${c === 'V' ? 'var(--good)' : c === 'E' ? 'var(--mid)' : 'var(--worse)'}">${c}</span>`).join('');
+  const tb = t => t ? `${t.pos}º · ${t.pts} pts` : '';
+  $('proxJogo').innerHTML = `<h2>Próximo jogo <span class="dica">${esc(p.competicao)}${p.rodada ? ' · rodada ' + p.rodada : ''} · ${dataBR(p.data)}</span></h2>
+    ${p.final ? `<div class="faixa-classico faixa-final">🏆 Final · ${esc(p.competicao)}</div>` : ''}
+    ${p.classico ? `<div class="faixa-classico">⚔ Clássico · ${esc(p.classico)}</div>` : ''}
+    <div class="pj"><div>${crest(p.casa, 46)}<div class="t">${esc(p.casa)}</div><div class="dica">${tb(p.tabela.casa)}</div><div class="forma-mini">${fr(p.forma.casa)}</div></div>
+      <div class="vs">x</div>
+      <div>${crest(p.fora, 46)}<div class="t">${esc(p.fora)}</div><div class="dica">${tb(p.tabela.fora)}</div><div class="forma-mini">${fr(p.forma.fora)}</div></div></div>
+    <div class="prob"><span style="width:${p.prob.casa}%;background:var(--good)">${p.prob.casa}%</span><span style="width:${p.prob.empate}%;background:var(--mid)">${p.prob.empate}%</span><span style="width:${p.prob.fora}%;background:var(--bad)">${p.prob.fora}%</span></div>
+    <div class="dica">força do elenco: ${p.forca.casa ?? '—'} x ${p.forca.fora ?? '—'} · placar provável: <b>${esc(p.placar_provavel)}</b>${p.confrontos.length ? ' · confrontos: ' + p.confrontos.map(esc).join(' · ') : ''}</div>
+    <div class="enquete" style="margin:10px 0 6px"><b>Enquete da torcida:</b> ${esc(p.enquete.pergunta)} <span class="dica">· ${p.enquete.sim}% sim</span><div class="bar"><i style="width:${p.enquete.sim}%"></i></div></div>
+    ${p.palpites.map(x => `<div class="item"><b>${esc(x.quem)}</b>: ${esc(x.texto)}<div class="dica">“${esc(x.fala)}”</div></div>`).join('')}
+    <div class="dica" style="margin-top:8px">4 x 4 na aba Imprensa · relatório tático na aba Análise.</div>`;
+  $('duelo1').innerHTML = p.duelo ? duelo4x4(p.duelo, true) : '<div class="vazio">Sai na próxima reunião.</div>';
+  $('duelo2').innerHTML = p.duelo ? duelo4x4(p.duelo, true) : '<div class="vazio">Sai na próxima reunião.</div>';
+  const T = p.tatica, bloco = (t, xs) => xs && xs.length ? `<h3 style="margin:10px 0 4px;font:700 12px var(--f-score);letter-spacing:1.2px;text-transform:uppercase;color:var(--gold)">${t}</h3>${xs.map(x => `<div class="item">${esc(x)}</div>`).join('')}` : '';
+  $('tatica').innerHTML = T ? (p.classico ? `<div class="faixa-classico">⚔ Semana de ${esc(p.classico)}: o CT está em clima de clássico</div>` : '') +
+    `<div class="dica">Adversário: <b>${esc(T.adversario)}</b> · formação ${esc(T.formacao)}</div>` +
+    bloco('Como o adversário ataca', T.ataque) + bloco('Onde ele é fraco', T.fracos_deles) +
+    bloco('Nossos elos fortes', T.nossos_fortes) + bloco('Nossos elos fracos', T.nossos_fracos) + bloco('O que fazer', T.recomendacoes)
+    : '<div class="vazio">O relatório sai na próxima reunião (depois do próximo jogo salvo).</div>';
+}
+function duelo4x4(D, semTitulo) {
+  if (!D) return '';
+  const seta = t => t === 'alta' ? '<span style="color:var(--good)">▲ em alta</span>' : t === 'baixa' ? '<span style="color:var(--worse)">▼ em baixa</span>' : '';
+  const lado = (nome, js, m) => `<div class="lado"><h3>${crest(nome, 16)} ${esc(nome)}</h3>
+    ${m && m.gp != null ? `<div class="dica">${m.gp} gols feitos · ${m.gc} sofridos por jogo</div>` : ''}
+    ${js.map(j => `<div class="dj">${foto({nome: j.nome, pid: j.pid}, 32)}<div><div class="n">${esc(j.nome)} <span class="s">${esc(j.pos)} · ${j.nota}</span></div>
+      <div class="s">${j.jogos}J ${j.gols}G ${j.assist}A${j.media ? ' · média ' + String(j.media).replace('.', ',') : ''} · ${esc(j.forte)} ${seta(j.tendencia)}</div></div></div>`).join('')}</div>`;
+  return `${semTitulo ? '' : '<h2 style="margin-top:14px">Jogo da rodada · 4 x 4</h2>'}
+    <div class="duelo">${lado(D.casa, D.jogadores.casa, D.medias.casa)}${lado(D.fora, D.jogadores.fora, D.medias.fora)}</div>
+    <div class="analise">${(D.analise || []).map(t => `<p>${esc(t)}</p>`).join('')}</div>`;
+}
+
+function renderRodada(d) {
+  const L = d.liga;
+  if (!L) { $('rodada').innerHTML = ''; return; }
+  const tab = L.classificacao || [];
+  $('rodada').innerHTML = `
+    <section><h2>${esc(L.competicao)} · últimos jogos</h2>${(L.resultados || []).slice().reverse().map(jogoLinha).join('') || '<div class="vazio">sem jogos</div>'}
+      </section>
+    ${(L.outras || []).map(o => `<section><h2>${esc(o.competicao)}</h2>
+      ${(o.grupo || []).length ? `<table class="tab">${o.grupo.map(t => `<tr class="${t.eu ? 'eu' : ''}"><td>${t.pos}º</td><td>${crest(t.time, 16)} ${esc(t.time)}</td><td class="n">${t.j}J</td><td class="n">${t.gp - t.gc >= 0 ? '+' : ''}${t.gp - t.gc}</td><td class="n"><b>${t.pts}</b></td></tr>`).join('')}</table>` : ''}
+      <div style="margin-top:8px">${o.resultados.slice().reverse().map(jogoLinha).join('') || '<div class="vazio">sem jogos ainda</div>'}</div>
+      ${(o.artilheiros || []).length ? `<div class="dica" style="margin-top:6px">Artilharia: ${o.artilheiros.map(a => `${esc(a.nome)} (${esc(a.time)}) ${a.gols}`).join(' · ')}</div>` : ''}</section>`).join('')}
+    <section><h2>Classificação</h2>${tab.length ? `<table class="tab">${tab.map(t => `<tr class="${t.eu ? 'eu' : ''}"><td>${t.pos}º</td><td>${crest(t.time, 16)} ${esc(t.time)}</td><td class="n">${t.j}J</td><td class="n">${t.gp - t.gc >= 0 ? '+' : ''}${t.gp - t.gc}</td><td class="n"><b>${t.pts}</b></td></tr>`).join('')}</table>` : '<div class="vazio">tabela indisponível</div>'}</section>
+    <section><h2>Artilharia</h2>${(L.artilheiros || []).map((a, i) => `<div class="item">${i + 1}º <b>${esc(a.nome)}</b> <span class="meta">${crest(a.time, 14)} ${esc(a.time)}</span><span style="float:right;font:700 15px var(--f-score)">${a.gols}</span></div>`).join('') || '<div class="vazio">sem gols ainda</div>'}</section>`;
+}
+
+function efeitosHTML(efs) {
+  return `<div class="efeitos">${efs.filter(e => 'k' in e).map(e =>
+    `<span class="ef ${e.delta > 0 ? 'mais' : 'menos'}">${esc(nomeK(e.k))} ${e.delta > 0 ? '+' : ''}${e.delta} moral · ${e.rodadas} rod.</span>`).join('')}
+    ${efs.filter(e => 'historia' in e).map(e => `<span class="ef ${e.restam < 0 ? 'mais' : 'menos'}">polêmica ${e.restam < 0 ? 'esfria' : 'esquenta'}</span>`).join('')}
+    ${efs.length ? '' : '<span class="ef">sem efeito no vestiário</span>'}</div>`;
+}
+
+function renderColetiva(d) {
+  const col = d.coletiva, resp = d.coletiva_respostas || {};
+  if (!col) { $('coletiva').innerHTML = '<div class="vazio">Nenhuma coletiva marcada. Ela acontece depois de cada rodada.</div>'; }
+  else {
+    const evs = d.eventos || [];
+    $('coletiva').innerHTML = `<div class="dica" style="margin-bottom:10px">Coletiva de ${dataBR(col.data)}${col.ao_vivo ? ` · <b style="color:var(--gold)">pós-jogo contra o ${esc(col.adversario)} (${esc(col.placar)}), ao vivo</b>` : ''}. Cada resposta mexe na moral de quem foi citado. Se a moral mudar a seta de condição, ela é escrita no jogo na hora.</div>` +
+      col.perguntas.map(p => {
+        const r = resp[p.id];
+        const ev = evs.find(e => e.tipo === 'coletiva' && e.coletiva === col.id && e.pergunta === p.id);
+        const vivo = ev && evs.filter(e => e.ref === ev.n);
+        let status = '';
+        if (ev) {
+          const ok = (vivo || []).find(e => e.tipo === 'ao_vivo'), er = (vivo || []).find(e => e.tipo === 'ao_vivo_erro');
+          status = ok ? `<div class="ao-vivo-msg">No jogo: ${Object.entries(ok.setas).map(([k, [a, b]]) => `${esc(ok.nomes?.[k] || nomeK(k))} ${SETAS[a]} → ${SETAS[b]}`).join(' · ')}${ok.ensaio ? ' (ensaio)' : ''}</div>`
+            : er ? `<div class="ao-vivo-msg" style="color:var(--worse)">Não deu para escrever no jogo agora (${esc(er.erro)}). O efeito vale na próxima reunião.</div>`
+            : (d.trabalhando_n || []).includes(ev.n) ? '<div class="ao-vivo-msg">Escrevendo no jogo…</div>'
+            : '<div class="ao-vivo-msg" style="color:var(--muted)">Nenhuma seta precisou mudar; o efeito na moral vale a partir de agora.</div>';
+        }
+        return `<div class="pergunta"><div class="rep"><b>${esc(p.reporter)}</b> · ${esc(p.jornal_nome)}</div>
+          <div class="q">“${esc(p.texto)}”</div>
+          ${p.opcoes.map(o => { const key = p.id + '|' + o.id, conf = confirmandoCol === key, esc_ = r === o.id;
+            return `<button class="opcao ${esc_ ? 'escolhida' : ''} ${conf ? 'confirmar' : ''}" data-col="${key}" ${r ? 'disabled' : ''}><b>${o.id}</b>${esc(o.texto)}
+              ${conf ? `<span class="conf">Responder isso? <span class="sim" data-csim="${key}">Sim</span> <span class="nao" data-cnao="1">Não</span></span>` : ''}
+              ${esc_ ? efeitosHTML(o.efeitos) : ''}</button>`; }).join('')}
+          ${status}</div>`;
+      }).join('') + (erroCol ? `<div class="dica" style="color:var(--worse)">${esc(erroCol)}</div>` : '');
+    $('coletiva').querySelectorAll('[data-col]').forEach(b => b.addEventListener('click', ev => {
+      if (b.disabled) return;
+      if (ev.target.dataset.csim) { const [pid, oid] = ev.target.dataset.csim.split('|'); return responderColetiva(col.id, pid, oid); }
+      if (ev.target.dataset.cnao) { confirmandoCol = null; return render(); }
+      confirmandoCol = b.dataset.col; erroCol = ''; render();
+    }));
+  }
+  $('colHist').innerHTML = (d.coletivas_hist || []).slice().reverse().map(c =>
+    `<div class="item"><span class="tag">${dataBR(c.data)} · ${esc(c.jornal)}</span><i>“${esc(c.pergunta)}”</i><br><b>${esc(c.resposta)}</b><div class="dica">Repercussão: ${esc(c.eco)}</div></div>`
+  ).join('') || '<div class="vazio">Nenhuma coletiva concluída ainda.</div>';
+}
+
+const NOMES_COMP = {afastamento: 'afastado', descanso: 'poupar (não titular)', titular: 'titular', jogar: 'entrar em campo'};
+const corCond = c => c >= 90 ? 'var(--good)' : c >= 80 ? 'var(--ok)' : c >= 70 ? 'var(--mid)' : 'var(--worse)';
+
+function casoHTML(c, d) {
+  const resp = (d.casos_respostas || {})[c.id];
+  const evs = d.eventos || [];
+  const ev = evs.find(e => e.tipo === 'caso' && e.caso === c.id);
+  const filhos = ev ? evs.filter(e => e.ref === ev.n) : [];
+  const js = c.envolvidos.map((k, i) => (d.jogadores || []).find(j => `${j.reg}:${j.pid}` === k) || {nome: c.nomes[i], pid: 0});
+  let status = '';
+  if (ev) {
+    const partes = [];
+    filhos.forEach(e => {
+      if (e.tipo === 'ao_vivo') {
+        Object.entries(e.setas || {}).forEach(([k, [a, b]]) => partes.push(`${esc(e.nomes?.[k] || nomeK(k))} seta ${SETAS[a]} → ${SETAS[b]}`));
+        Object.entries(e.condicoes || {}).forEach(([k, [a, b]]) => partes.push(`${esc(e.nomes?.[k] || nomeK(k))} condição ${a} → ${b}`));
+      }
+      if (e.tipo === 'ao_vivo_orcamento') partes.push(`${e.valor >= 0 ? '+' : '−'}${mi(Math.abs(e.valor))} no orçamento (${mi(e.depois)})`);
+      if (e.tipo === 'ao_vivo_verba') partes.push(`verba de salários ${mi(e.antes)} → ${mi(e.depois)}`);
+      if (e.tipo === 'ao_vivo_erro') partes.push(`<span style="color:var(--worse)">${esc(e.erro)}</span>`);
+    });
+    status = partes.length ? `<div class="ao-vivo-msg">No jogo: ${partes.join(' · ')}${filhos.some(e => e.ensaio) ? ' (ensaio)' : ''}</div>`
+      : (d.trabalhando_n || []).includes(ev.n) ? '<div class="ao-vivo-msg">Escrevendo no jogo…</div>'
+      : '<div class="ao-vivo-msg" style="color:var(--muted)">Decidido. O efeito na moral vale a partir de agora.</div>';
+  }
+  const cal = c.tipo === 'calendario' || c.tipo === 'exigencia' || c.tipo === 'pessoal' || c.tipo === 'patrocinio';
+  return `<div class="caso ${cal ? 'cal' : 'g-' + c.gravidade}">
+    <div class="cab">${js.map(j => foto(j, 44)).join('')}<div><div class="tit">${esc(c.titulo)}</div>
+      <div><span class="grav ${cal ? 'cal' : c.gravidade}">${c.tipo === 'exigencia' ? 'pedido · ' + esc((c.perfil || []).join(', ')) : c.tipo === 'pessoal' ? 'vida pessoal' : c.tipo === 'patrocinio' ? 'comercial · ' + esc((c.perfil || []).join(', ')) : cal ? 'calendário' : esc(c.gravidade)}</span>${c.reincidente ? ' <span class="grav grave">reincidente</span>' : ''} <span class="dica">${dataBR(c.data)}</span></div></div></div>
+    <div class="relato">${esc(c.relato)}</div>
+    ${c.opcoes.map(o => { const key = c.id + '|' + o.id, conf = confirmandoCaso === key, esc_ = resp === o.id;
+      return `<button class="opcao ${esc_ ? 'escolhida' : ''} ${conf ? 'confirmar' : ''}" data-caso="${esc(key)}" ${resp ? 'disabled' : ''}><b>${o.id}</b>${esc(o.texto)}
+        ${conf ? `<span class="conf">Decidir isso? <span class="sim" data-ksim="${esc(key)}">Sim</span> <span class="nao" data-knao="1">Não</span></span>` : ''}
+        ${esc_ ? efeitosHTML(o.efeitos || []) : ''}</button>`; }).join('')}
+    ${status}</div>`;
+}
+
+function ligarCasos(el) {
+  el.querySelectorAll('[data-caso]').forEach(b => b.addEventListener('click', ev => {
+    if (b.disabled) return;
+    if (ev.target.dataset.ksim) { const i = ev.target.dataset.ksim.lastIndexOf('|'); return decidirCaso(ev.target.dataset.ksim.slice(0, i), ev.target.dataset.ksim.slice(i + 1)); }
+    if (ev.target.dataset.knao) { confirmandoCaso = null; return render(); }
+    confirmandoCaso = b.dataset.caso; erroCaso = ''; render();
+  }));
+}
+
+function renderDisciplina(d) {
+  const casos = (d.casos || []).filter(c => c.tipo === 'disciplina' || c.tipo === 'crise');
+  const resp = d.casos_respostas || {};
+  const faltam = casos.filter(c => !resp[c.id]).length;
+  $('badgeDisc').hidden = !faltam; $('badgeDisc').textContent = faltam;
+  const dif = d.dificuldade;
+  $('casosDisc').innerHTML = (dif ? `<div class="nativa ${dif.nivel === 'explosivo' ? 'ultimato' : dif.nivel === 'tenso' ? 'pressao' : 'tranquilo'}"><b>Clima do vestiário · ${esc(dif.nivel)}</b> <span class="dica">(${dif.m}x · espírito ${dif.espirito} · ${dif.dias_clube} dias no clube)</span><br>${esc(dif.texto)}</div>` : '') +
+    (casos.map(c => casoHTML(c, d)).join('') || '<div class="vazio">Vestiário em ordem: nenhum caso disciplinar aberto.</div>') +
+    (erroCaso ? `<div class="dica" style="color:var(--worse)">${esc(erroCaso)}</div>` : '') +
+    '<div class="dica">Multa: o dinheiro entra no orçamento de transferências na hora. Afastamento: não escale o jogador; a súmula confere. Caso sem resposta até a próxima rodada vira advertência, e o grupo percebe.</div>';
+  ligarCasos($('casosDisc'));
+  const comps = d.compromissos || [];
+  $('compromissos').innerHTML = comps.map(c => `<div class="item comp"><span><b>${esc(c.nome || nomeK(c.k))}</b>: ${NOMES_COMP[c.tipo] || c.tipo}${c.jogos > 1 ? ` (${c.jogos} jogos)` : ''}<br><span class="dica">desde ${dataBR(c.desde)}</span></span><span class="st-${c.status}">${c.status}</span></div>`).join('')
+    || '<div class="vazio">Nenhum compromisso em aberto.</div>';
+  $('ficha').innerHTML = (d.disciplina_hist || []).slice().reverse().map(h =>
+    `<div class="item"><span class="tag">${dataBR(h.data)} · ${esc(h.gravidade || '')}</span><b>${esc(h.nome || (nomeK(h.k) !== h.k ? nomeK(h.k) : 'ex-jogador do elenco'))}</b>: ${esc(h.titulo || h.sub)}<div class="dica">Decisão: ${esc(h.decisao || '—')}</div></div>`).join('')
+    || '<div class="vazio">Ficha limpa.</div>';
+}
+
+function renderCalendario(d) {
+  const cal = d.calendario || {}, cg = cal.carga;
+  const pedidos = (d.casos || []).filter(c => c.tipo === 'calendario');
+  const resp = d.casos_respostas || {};
+  const faltam = pedidos.filter(c => !resp[c.id]).length + (d.treino_feito || !d.jogadores ? 0 : 1);
+  $('badgeCal').hidden = !faltam; $('badgeCal').textContent = faltam;
+  $('densidade').innerHTML = cg ? `<div class="densidade"><span class="num">${cg.jogos14}</span><span>jogos em 14 dias · ${cg.jogos7} nos últimos 7 · calendário <b>${esc(cg.densidade)}</b></span></div>
+    <div class="dica">Condição = desgaste físico do próprio jogo (a barra verde do Plano de jogo). Abaixo de 70, risco de queda de rendimento.</div>`
+    : '<div class="vazio">O calendário aparece depois da próxima reunião.</div>';
+  const linhas = cg ? Object.entries(cg.jogadores).map(([k, c]) => {
+    const j = (d.jogadores || []).find(j => `${j.reg}:${j.pid}` === k);
+    return {k, ...c, condicao: j && j.condicao != null ? j.condicao : c.condicao};
+  }).sort((a, b) => (a.condicao ?? 100) - (b.condicao ?? 100)) : [];
+  $('carga').innerHTML = linhas.length ? `<table class="carga"><tr><th>Jogador</th><th>Condição</th><th>Estado</th><th>Min 14d</th><th>Titular seguido</th><th>Idade</th></tr>
+    ${linhas.map(c => `<tr><td>${esc(c.nome)}</td><td><span class="barra bar"><i style="width:${c.condicao ?? 0}%;background:${corCond(c.condicao ?? 0)}"></i></span> ${c.condicao ?? '—'}</td>
+      <td>${esc(c.estado)}</td><td>${c.min14}'</td><td>${c.seguidos}</td><td>${c.idade}</td></tr>`).join('')}</table>` : '';
+  const feito = d.treino_feito;
+  const PL = [['leve', 'Regenerativo', 'Condição +12 para todos. Semana tranquila: +1 de moral no grupo.'],
+              ['normal', 'Normal', 'Carga padrão. Nada muda.'],
+              ['intenso', 'Intenso', 'Condição −8 para todos. Quem está com seta baixa (até →), moral 55+ e até 30 anos sobe uma seta. Grupo −1 de moral, veteranos −2.']];
+  $('treino').innerHTML = `<div class="dica">Um plano por rodada. Mexe na condição e na seta <b>no jogo, na hora</b>.</div>
+    <div class="planos">${PL.map(([id, nome, txt]) => `<button class="plano ${feito === id ? 'escolhido' : ''}" data-plano="${id}" ${feito ? 'disabled' : ''}><b>${nome}</b>${txt}
+      ${confirmandoTreino === id ? `<span class="conf">Confirmar? <span class="sim" data-tsim="${id}">Sim</span> <span class="nao" data-tnao="1">Não</span></span>` : ''}</button>`).join('')}</div>
+    ${erroTreino ? `<div class="dica" style="color:var(--worse)">${esc(erroTreino)}</div>` : ''}`;
+  $('treino').querySelectorAll('[data-plano]').forEach(b => b.addEventListener('click', ev => {
+    if (b.disabled) return;
+    if (ev.target.dataset.tsim) return definirTreino(ev.target.dataset.tsim);
+    if (ev.target.dataset.tnao) { confirmandoTreino = null; return render(); }
+    confirmandoTreino = b.dataset.plano; erroTreino = ''; render();
+  }));
+  $('casosCal').innerHTML = pedidos.map(c => casoHTML(c, d)).join('') || '<div class="vazio">Nenhum pedido nesta rodada.</div>';
+  ligarCasos($('casosCal'));
+  const exig = (d.casos || []).filter(c => c.tipo === 'exigencia' || c.tipo === 'pessoal');
+  $('casosExig').innerHTML = exig.map(c => casoHTML(c, d)).join('') || '<div class="vazio">Ninguém pedindo nada agora. Craques vaidosos pedem pênalti, faltas e a camisa 10; líderes pedem a braçadeira.</div>';
+  ligarCasos($('casosExig'));
+  renderPendencias(d, resp, feito, cg);
+}
+
+// ----- ANTES DO PRÓXIMO JOGO (12/10/2026): tudo que espera uma decisão sua, num lugar só, com o prazo
+const ABA_CASO = {disciplina: 'disciplina', crise: 'disciplina', calendario: 'calendario', exigencia: 'vestiario', pessoal: 'vestiario',
+                  patrocinio: 'diretoria', celular: 'celular'};
+const NOME_CASO = {disciplina: 'disciplina', crise: 'crise', calendario: 'calendário', exigencia: 'pedido de jogador', pessoal: 'vida pessoal',
+                   patrocinio: 'comercial', celular: 'celular'};
+const PRAZO_CASO = {celular: 7, exigencia: 14, crise: 10, pessoal: 10};   // depois disso vale a resposta "omissa"
+const diasEntre = (a, b) => Math.round((Date.UTC(a[0], a[1] - 1, a[2]) - Date.UTC(b[0], b[1] - 1, b[2])) / 864e5);
+function renderArquibancada(d) {
+  const T = d.torcida, el = $('arquibancada');
+  if (!T) { el.innerHTML = ''; el.hidden = true; return; }
+  el.hidden = false;
+  const cor = T.humor >= 80 ? 'var(--good)' : T.humor >= 62 ? 'var(--ok)' : T.humor >= 45 ? 'var(--mid)' : T.humor >= 28 ? 'var(--bad)' : 'var(--worse)';
+  const dif = T.anterior != null ? T.humor - T.anterior : null;
+  el.innerHTML = `<h2>Arquibancada</h2>
+    <div class="conf-dir"><span class="num" style="color:${cor}">${T.humor}</span><span>torcida <b style="color:${cor}">${esc(T.estado)}</b>${dif ? ` <span class="dica">(${dif > 0 ? '+' : ''}${dif})</span>` : ''}</span></div>
+    <div class="termo" title="humor da torcida: ${T.humor} de 100"><i style="left:${T.humor}%"></i></div>
+    <div class="dica">público estimado: <b style="color:var(--text)">${T.publico.toLocaleString('pt-BR')}</b> (${T.ocupacao}% do estádio)</div>
+    <div class="faixas">${(T.faixas || []).map(f => `<span class="faixa">${esc(f)}</span>`).join('')}</div>
+    <div class="canto">♪ ${esc(T.canto)}</div>
+    <div class="dica">${(T.motivos || []).map(esc).join(' · ')}</div>`;
+}
+
+function renderPendencias(d, resp, feito, cg) {
+  const it = [], hoje = d.data_jogo || [2000, 1, 1];
+  const col = d.coletiva, rc = d.coletiva_respostas || {};
+  const faltam = col ? col.perguntas.filter(p => !rc[p.id]).length : 0;
+  if (faltam) it.push({u: 2, tag: 'coletiva', txt: `${faltam} pergunta(s) esperando na sala de imprensa`, sub: 'Cada resposta mexe na moral de quem foi citado.', ir: 'coletiva'});
+  if (d.pedido && !d.resposta_overlay) it.push({u: 1, tag: 'sala de reunião', txt: `${d.pedido.nome} pediu uma conversa`, sub: d.pedido.status, ir: 'resumo'});
+  if (d.diretoria && d.diretoria.reuniao && !d.resposta_diretoria) it.push({u: 1, tag: 'diretoria', txt: d.diretoria.reuniao.titulo, ir: 'diretoria'});
+  (d.casos || []).filter(c => !resp[c.id]).forEach(c => {
+    const prazo = PRAZO_CASO[c.tipo], resta = prazo && c.data ? Math.min(prazo, prazo - diasEntre(hoje, c.data)) : null;
+    it.push({u: c.tipo === 'crise' || c.gravidade === 'grave' || (resta != null && resta <= 2) ? 2 : 1, tag: NOME_CASO[c.tipo] || c.tipo,
+             txt: c.tipo === 'celular' ? `${(c.contato || {}).nome || ''}: ${c.titulo}` : c.titulo,
+             sub: resta != null ? (resta > 0 ? `sem resposta em ${resta} dia(s) vale o silêncio` : 'vence nesta reunião') : (c.tipo === 'calendario' ? 'vale só para o próximo jogo' : ''),
+             ir: ABA_CASO[c.tipo] || 'resumo'});
+  });
+  if (!feito && cg) it.push({u: 1, tag: 'treino', txt: 'Plano de treino da semana ainda não definido', ir: 'calendario'});
+  (d.compromissos || []).filter(c => c.status === 'aberto' && c.tipo !== 'posto').forEach(c =>
+    it.push({u: 0, tag: 'lembrete', txt: `${c.nome || nomeK(c.k)}: ${NOMES_COMP[c.tipo] || c.tipo}${c.jogos > 1 ? ` (${c.jogos} jogos)` : ''}`,
+             sub: 'promessa conferida pela súmula do próximo jogo', ir: 'disciplina'}));
+  (d.promessas || []).forEach(p => {
+    if (p.tipo === 'renovacao' && p.data) {
+      const resta = Math.min(75, 75 - diasEntre(hoje, p.data));
+      it.push({u: resta <= 15 ? 2 : 0, tag: 'renovação', txt: `Renovar ${p.nome} no jogo`, sub: resta > 0 ? `faltam ${resta} dias (o save confere contrato ou salário)` : 'prazo estourado', ir: 'vestiario'});
+    } else it.push({u: 0, tag: 'promessa', txt: `${p.nome}: ${({minutos: 'mais minutos', capitao: 'braçadeira'})[p.tipo] || p.tipo}`, ir: 'vestiario'});
+  });
+  it.sort((a, b) => b.u - a.u);
+  const pj = d.proximo_jogo, quando = pj && pj.data ? diasEntre(pj.data, hoje) : null;
+  const box = $('resCasos');
+  box.classList.toggle('limpo', !it.some(x => x.u > 0));
+  box.innerHTML = `<h2>Antes do próximo jogo</h2>${pj && pj.adversario ? `<div class="dica" style="margin:-4px 0 6px">${crest(pj.adversario, 14)} ${esc(pj.adversario)}${quando != null && quando >= 0 ? ` · ${quando ? `em ${quando} dia(s)` : 'hoje'}` : ''}</div>` : ''}`
+    + (it.length ? it.map(x => `<div class="pend"><i class="u${x.u}"></i><div><span class="tag" style="display:inline;margin-right:6px">${esc(x.tag)}</span>${esc(x.txt)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</div>
+        <button data-ir="${x.ir}">abrir</button></div>`).join('')
+      : '<div class="vazio">Tudo respondido. Pode jogar tranquilo.</div>');
+  box.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => irPara(b.dataset.ir));
+}
+
+function renderPatrocinio(d) {
+  const p = d.patrocinio || {}, at = p.atratividade, c = p.contrato;
+  const casos = (d.casos || []).filter(x => x.tipo === 'patrocinio');
+  $('patrocinio').innerHTML =
+    (at ? `<div class="conf-dir"><span class="num" style="color:${corMoral(at.indice)}">${at.indice}</span><span>atratividade comercial</span></div>
+      <div class="barra"><i style="width:${at.indice}%;background:${corMoral(at.indice)}"></i></div>
+      <div class="dica" style="margin-top:4px">${Object.entries(at.partes).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')} · sócios ${at.socios.toLocaleString('pt-BR')}</div>` : '') +
+    (p.imagem != null ? `<div class="meta-linha">Imagem do clube: <b style="color:${corMoral(p.imagem)}">${p.imagem}/100</b>${p.imagem < 30 ? ' <span style="color:var(--worse)">· patrocinador em alerta</span>' : ''}</div>
+      ${(p.imagem_hist || []).slice(-3).reverse().map(h => `<div class="dica">${dataBR(h.data)}: ${h.delta > 0 ? '+' : ''}${h.delta} · ${esc(h.motivo)}</div>`).join('')}` : '') +
+    (c ? `<div class="nativa tranquilo" style="margin-top:10px"><b>${esc(c.marca)}</b> · ${esc(c.setor)}<br>
+      ${mi(c.anual)} por temporada na verba de salários · meta: <b>${c.meta_pos}º ou melhor</b><br>
+      <span class="dica">bônus ${mi(c.bonus)} se cumprir · multa ${mi(c.multa)} se falhar · temporada ${c.temporada}/${String(c.temporada + 1).slice(2)}</span></div>`
+      : '<div class="vazio" style="margin-top:8px">Sem patrocinador master no momento.</div>') +
+    casos.map(x => casoHTML(x, d)).join('') +
+    ((p.historico || []).slice().reverse().map(h => `<div class="item"><span class="tag">${h.temporada}/${String(h.temporada + 1).slice(2)}</span>${esc(h.marca)}: meta ${h.meta_pos}º, terminou ${h.posicao_final ?? '?'}º</div>`).join(''));
+  ligarCasos($('patrocinio'));
+}
+
+function renderAtividade(d) {
+  const evs = (d.eventos || []).slice().reverse().slice(0, 10);
+  $('atividade').innerHTML = ((d.trabalhando || []).map(t => `<div class="item" style="color:var(--gold)">⏳ ${esc(t)}</div>`).join('') +
+    evs.map(e => {
+      if (e.tipo === 'coletiva') return `<div class="item"><span class="tag">coletiva</span>${esc(e.texto_resposta)}</div>`;
+      if (e.tipo === 'ao_vivo') return `<div class="item"><span class="tag" style="color:var(--good)">escrito no jogo${e.ensaio ? ' (ensaio)' : ''}</span>${resumoVivo(e)}</div>`;
+      if (e.tipo === 'ao_vivo_erro') return `<div class="item"><span class="tag">não escrito no jogo</span>${esc(e.erro)}</div>`;
+      if (e.tipo === 'caso') return `<div class="item"><span class="tag">${e.caso_tipo === 'calendario' ? 'calendário' : 'disciplina'}</span>${esc(e.titulo)}: ${esc(e.texto_resposta)}</div>`;
+      if (e.tipo === 'treino') return `<div class="item"><span class="tag">treino</span>Plano da semana: ${esc(e.texto_resposta)}</div>`;
+      if (e.tipo === 'ao_vivo_orcamento') return `<div class="item"><span class="tag" style="color:var(--good)">orçamento${e.ensaio ? ' (ensaio)' : ''}</span>+${mi(e.valor)} (${esc(e.motivo)})</div>`;
+      return '';
+    }).join('')) || '<div class="vazio">Nada ainda. Responda a coletiva para ver o efeito no jogo.</div>';
+}
+
+function renderCelular(d) {
+  const resp = d.casos_respostas || {}, evs = d.eventos || [];
+  const abertos = (d.casos || []).filter(c => c.tipo === 'celular');
+  const faltam = abertos.filter(c => !resp[c.id]).length;
+  $('badgeCel').hidden = !faltam; $('badgeCel').textContent = faltam;
+  $('celHora').textContent = dataBR(d.data_jogo);
+  const cab = (ct, data) => `<div class="cab"><span class="ic">${esc(ct.icone || '💬')}</span><div><b>${esc(ct.nome)}</b><small>${esc((ct.papel || '').split('|')[0])}</small></div><span class="dt">${dataBR(data)}</span></div>`;
+  const abertosHTML = abertos.map(c => {
+    const r = resp[c.id], o = r && c.opcoes.find(o => o.id === r);
+    return `<div class="conversa ${r ? '' : 'nova'}">${cab(c.contato || {nome: c.titulo}, c.data)}
+      <div class="balao-lista">${(c.mensagens || []).map(m => `<div class="balao">${esc(m)}</div>`).join('')}
+        ${o ? `<div class="balao eu ${o.texto.startsWith('(') ? 'vacuo' : ''}">${esc(o.texto)}</div>` : ''}</div>
+      ${o ? `<div class="respostas">${efeitosHTML(o.efeitos || [])}</div>` : `<div class="respostas">${c.opcoes.map(op => { const key = c.id + '|' + op.id, conf = confirmandoCaso === key;
+        return `<button class="opcao ${conf ? 'confirmar' : ''}" data-caso="${esc(key)}"><b>${op.id}</b>${esc(op.texto)}
+          ${conf ? `<span class="conf">Enviar? <span class="sim" data-ksim="${esc(key)}">Sim</span> <span class="nao" data-knao="1">Não</span></span>` : ''}</button>`; }).join('')}</div>`}</div>`;
+  }).join('');
+  const hist = (d.celular || []).slice().reverse().filter(h => !abertos.some(c => c.id === h.id)).slice(0, 12).map(h => `<div class="conversa">${cab(h.contato || {nome: '—'}, h.data)}
+      <div class="balao-lista">${(h.mensagens || []).map(m => `<div class="balao">${esc(m)}</div>`).join('')}
+        <div class="balao eu ${(h.resposta || '').startsWith('(') ? 'vacuo' : ''}">${esc(h.resposta || '')}</div></div></div>`).join('');
+  $('celConversas').innerHTML = (abertosHTML || hist ? abertosHTML + hist : '<div class="vazio" style="padding:20px">Nenhuma mensagem. Quando o presidente, um empresário ou um jogador quiser falar com você, aparece aqui.</div>')
+    + (erroCaso ? `<div class="dica" style="color:var(--worse)">${esc(erroCaso)}</div>` : '');
+  ligarCasos($('celConversas'));
+}
+
+// ----- gráficos de linha em SVG (12/10/2026): 1 eixo só, linha de 2px, pontos de 8px, grade discreta,
+// legenda quando há mais de uma série, rótulo direto só no último ponto, dica com os valores ao passar o mouse
+const GRAFS = {};
+function grafLinha(id, series, o) {
+  o = Object.assign({w: 520, h: 210, inverter: false, fmt: v => String(v), rotX: i => String(i + 1)}, o || {});
+  const todos = series.flatMap(s => s.pontos.map(p => p.y)).filter(v => v != null);
+  if (!todos.length) return '<div class="vazio">Sem dados ainda.</div>';
+  let lo = o.yMin ?? Math.min(...todos), hi = o.yMax ?? Math.max(...todos);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const n = Math.max(...series.map(s => s.pontos.length)), m = {l: 44, r: 54, t: 12, b: 26}, W = o.w - m.l - m.r, H = o.h - m.t - m.b;
+  const X = i => m.l + (n <= 1 ? W / 2 : i * W / (n - 1));
+  const Y = v => o.inverter ? m.t + (v - lo) * H / (hi - lo) : m.t + H - (v - lo) * H / (hi - lo);
+  const ticks = [lo, lo + (hi - lo) / 2, hi].map(v => Math.round(v * 10) / 10);
+  const grade = ticks.map(v => `<line x1="${m.l}" x2="${m.l + W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grade)" stroke-width="1"/>
+      <text class="eixo" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${esc(o.fmt(v))}</text>`).join('');
+  const passo = Math.max(1, Math.ceil(n / 6));
+  const xs = Array.from({length: n}, (_, i) => i).filter(i => (i % passo === 0 && n - 1 - i >= passo / 2) || i === n - 1)
+    .map(i => `<text class="eixo" x="${X(i)}" y="${m.t + H + 18}" text-anchor="middle">${esc(o.rotX(i))}</text>`).join('');
+  const linhas = series.map(s => {
+    const pts = s.pontos.map((p, i) => p.y == null ? null : [X(i), Y(p.y)]).filter(Boolean);
+    const d = pts.map((q, i) => `${i ? 'L' : 'M'}${q[0].toFixed(1)},${q[1].toFixed(1)}`).join('');
+    const ult = pts[pts.length - 1], vu = [...s.pontos].reverse().find(p => p.y != null);
+    return `<path d="${d}" fill="none" stroke="${s.cor}" stroke-width="2" ${s.ref ? 'stroke-dasharray="5 4"' : ''} stroke-linejoin="round" stroke-linecap="round"/>
+      ${ult && !s.ref ? `<circle cx="${ult[0]}" cy="${ult[1]}" r="4" fill="${s.cor}" stroke="var(--panel)" stroke-width="2"/>
+        <text class="valor" x="${ult[0] + 8}" y="${ult[1] + 4}">${esc(o.fmt(vu.y))}</text>` : ''}`;
+  }).join('');
+  GRAFS[id] = {series, o, X, n, m, W};
+  const leg = series.length > 1 ? `<div class="leg-g">${series.map(s => `<span><b class="${s.ref ? 'ref' : ''}" style="border-top-color:${s.cor}"></b>${esc(s.nome)}</span>`).join('')}</div>` : '';
+  const tabela = `<details class="tabela-g"><summary>ver em tabela</summary><table>${Array.from({length: n}, (_, i) =>
+    `<tr><td>${esc(o.rotX(i))}</td>${series.map(s => `<td>${s.pontos[i] && s.pontos[i].y != null ? esc(o.fmt(s.pontos[i].y)) : '—'}</td>`).join('')}</tr>`).join('')}</table></details>`;
+  return `${leg}<div class="graf" data-graf="${id}"><svg viewBox="0 0 ${o.w} ${o.h}" role="img" aria-label="${esc(o.titulo || '')}">${grade}${xs}${linhas}
+      <line class="cruz" y1="${m.t}" y2="${m.t + H}" stroke="var(--muted)" stroke-width="1" visibility="hidden"/>
+      <rect x="${m.l}" y="${m.t}" width="${W}" height="${H}" fill="transparent"/></svg><div class="dica-g"></div>${tabela}</div>`;
+}
+function ligarGrafs(raiz) {
+  raiz.querySelectorAll('[data-graf]').forEach(el => {
+    const g = GRAFS[el.dataset.graf], svg = el.querySelector('svg'), dica = el.querySelector('.dica-g'), cruz = el.querySelector('.cruz');
+    if (!g) return;
+    const mover = ev => {
+      const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * g.o.w / r.width;
+      const i = Math.max(0, Math.min(g.n - 1, Math.round((x - g.m.l) / (g.n <= 1 ? 1 : g.W / (g.n - 1)))));
+      cruz.setAttribute('x1', g.X(i)); cruz.setAttribute('x2', g.X(i)); cruz.setAttribute('visibility', 'visible');
+      dica.innerHTML = `<span>${esc(g.o.rotX(i))}</span>` + g.series.map(s => s.pontos[i] && s.pontos[i].y != null
+        ? `<div><b>${esc(g.o.fmt(s.pontos[i].y))}</b> <span>${esc(s.nome)}${s.pontos[i].extra ? ' · ' + esc(s.pontos[i].extra) : ''}</span></div>` : '').join('');
+      dica.style.display = 'block'; dica.style.left = (g.X(i) * r.width / g.o.w) + 'px'; dica.style.top = (ev.clientY - r.top) + 'px';
+    };
+    svg.onmousemove = mover;
+    svg.onmouseleave = () => { dica.style.display = 'none'; cruz.setAttribute('visibility', 'hidden'); };
+  });
+}
+function graficosHTML(d) {
+  const H = d.historia || {}, ts = H.temporadas || [];
+  const atual = ts.find(t => (t.serie_liga || []).length) || null;
+  const ant = atual ? ts.find(t => t !== atual && (t.serie_liga || []).length && !t.parcial) : null;
+  const sl = atual ? atual.serie_liga : [], sa = ant ? ant.serie_liga : [];
+  const dt = a => `${String(a[2]).padStart(2, '0')}/${String(a[1]).padStart(2, '0')}`;
+  const blocos = [];
+  if (sl.length) {
+    blocos.push(`<section><h2>Posição na ${esc((atual.liga || {}).competicao || 'liga')} · ${esc(atual.temporada.replace('-', '/'))}</h2>` +
+      grafLinha('g_pos', [{nome: 'posição', cor: 'var(--serie)', pontos: sl.map(x => ({y: x.pos, extra: `${x.pts} pts · ${dt(x.d)}`}))}],
+        {inverter: true, yMin: 1, yMax: Math.max(6, ...sl.map(x => x.pos)), fmt: v => `${Math.round(v)}º`, rotX: i => `${i + 1}ª`, titulo: 'posição na liga após cada jogo'}) + '</section>');
+    blocos.push(`<section><h2>Ritmo de pontos · ${esc(atual.temporada.replace('-', '/'))}${ant ? ` x ${esc(ant.temporada.replace('-', '/'))}` : ''}</h2>` +
+      grafLinha('g_pts', [{nome: atual.temporada.replace('-', '/'), cor: 'var(--serie)', pontos: sl.map(x => ({y: x.pts, extra: `${x.pos}º`}))}]
+        .concat(ant ? [{nome: ant.temporada.replace('-', '/'), cor: 'var(--serie-ref)', ref: true, pontos: sa.map(x => ({y: x.pts, extra: `${x.pos}º`}))}] : []),
+        {yMin: 0, fmt: v => `${Math.round(v)}`, rotX: i => `${i + 1}ª rodada`, titulo: 'pontos acumulados na liga, rodada a rodada'}) + '</section>');
+  }
+  const sr = (d.serie || []).filter(x => x.moral != null);
+  if (sr.length >= 2) blocos.push('<section><h2>Moral média do grupo</h2>' + grafLinha('g_moral', [{nome: 'moral', cor: 'var(--serie)', pontos: sr.map(x => ({y: x.moral}))}],
+    {yMin: 0, yMax: 100, fmt: v => `${Math.round(v)}`, rotX: i => dt(sr[i].d), titulo: 'moral média do elenco a cada reunião'}) + '</section>');
+  const so = (d.serie || []).filter(x => x.orc != null);
+  if (so.length >= 2) blocos.push('<section><h2>Orçamento de transferências</h2>' + grafLinha('g_orc', [{nome: 'orçamento', cor: 'var(--serie)', pontos: so.map(x => ({y: x.orc / 1e6}))}],
+    {fmt: v => `R$ ${Math.round(v)} mi`, rotX: i => dt(so[i].d), titulo: 'orçamento de transferências ao longo do tempo'}) + '</section>');
+  const sc = (d.serie || []).filter(x => x.conf != null);
+  if (sc.length >= 2) blocos.push('<section><h2>Confiança da diretoria</h2>' + grafLinha('g_conf', [{nome: 'confiança', cor: 'var(--serie)', pontos: sc.map(x => ({y: x.conf}))}],
+    {yMin: 0, yMax: 100, fmt: v => `${Math.round(v)}`, rotX: i => dt(sc[i].d), titulo: 'confiança da diretoria a cada reunião'}) + '</section>');
+  return blocos.length ? `<div class="graficos">${blocos.join('')}</div>` +
+    (sr.length < 2 ? '<div class="dica" style="margin:-6px 0 14px">Moral e confiança começam a desenhar a curva a partir das próximas reuniões.</div>' : '') : '';
+}
+
+const NOMES_REC = {gols_temporada: 'Mais gols numa temporada', assist_temporada: 'Mais assistências numa temporada', jogos_temporada: 'Mais jogos numa temporada',
+  media_temporada: 'Melhor média numa temporada', time_gols: 'Ataque mais goleador', time_defesa: 'Defesa menos vazada', seq_vitorias: 'Maior sequência de vitórias',
+  invencibilidade: 'Maior invencibilidade', titulos_temporada: 'Mais títulos numa temporada', pontos_liga: 'Mais pontos na liga', maior_vitoria: 'Maior goleada'};
+function renderHistoria(d) {
+  const H = d.historia;
+  if (!H) { $('historia').innerHTML = '<section><h2>História do clube</h2><div class="vazio">O livro dos recordes começa a ser escrito na próxima reunião.</div></section>'; return; }
+  const rk = (titulo, xs, val, sub) => `<section><h2>${titulo}</h2><div class="ranking">${xs.map((x, i) => `<div class="lin"><span>${i + 1}º</span>
+    <span><b>${esc(x.nome)}</b> <small>${esc(x.pos || '')} · ${sub(x)}</small></span><span class="n">${val(x)}</span></div>`).join('') || '<div class="vazio">—</div>'}</div></section>`;
+  $('historia').innerHTML = graficosHTML(d) + `
+    <section><h2>Linha do tempo · desde ${esc(H.desde)} <span class="dica">${H.temporadas.length} temporadas registradas</span></h2>
+      <div class="linha-tempo">${H.temporadas.map(t => { const L = t.liga || {}, tit = t.titulos || [];
+        return `<div class="temp-card ${tit.length ? 'ouro' : ''}"><div class="ano">${esc(t.temporada.replace('-', '/'))}${t.parcial ? ' <span class="dica" style="font:600 11px var(--f-body)">registro parcial · não entra nos recordes</span>' : ''}</div>
+          <div class="liga">${L.pos ? `${L.pos}º na ${esc(L.competicao || 'liga')}` : esc(L.competicao || '')}${L.pts != null ? ` · ${L.pts} pts` : ''}</div>
+          ${tit.length ? `<div class="tacas">${tit.map(c => `<span>🏆 ${esc(c)}</span>`).join('')}</div>` : ''}
+          <div class="ln">${t.jogos} jogos · ${t.v}V ${t.e}E ${t.d}D · ${t.gp} gols pró, ${t.gc} contra</div>
+          ${t.artilheiro ? `<div class="ln">⚽ ${esc(t.artilheiro.nome)} (${t.artilheiro.gols})</div>` : ''}
+          ${t.garcom ? `<div class="ln">🎯 ${esc(t.garcom.nome)} (${t.garcom.assist})</div>` : ''}
+          ${t.destaque ? `<div class="ln">⭐ ${esc(t.destaque.nome)} (média ${num1(t.destaque.media)})</div>` : ''}
+          ${t.maior_vitoria ? `<div class="ln dica">maior vitória: ${esc(t.maior_vitoria.placar)} no ${esc(t.maior_vitoria.adv)}</div>` : ''}</div>`; }).join('')}</div></section>
+    ${(H.marcos || []).length ? `<section><h2>Marcos recentes</h2>${H.marcos.map(m => `<div class="item"><span class="tag" style="color:var(--gold)">${esc(m.data.split('-').reverse().join('/'))}</span>${esc(m.texto)}</div>`).join('')}</section>` : ''}
+    <section><h2>Livro dos recordes</h2><div class="recordes">${Object.entries(H.recordes || {}).filter(([k]) => NOMES_REC[k]).map(([k, r]) =>
+      `<div class="recorde"><div class="r">${NOMES_REC[k]}</div><div class="v">${esc(r.texto)}</div></div>`).join('')}</div></section>
+    <div class="grid3">
+      ${rk('Artilheiros da era', H.artilheiros || [], x => x.gols, x => `${x.jogos} jogos · ${x.de}–${x.ate}`)}
+      ${rk('Garçons da era', H.garcons || [], x => x.assist, x => `${x.jogos} jogos · ${x.de}–${x.ate}`)}
+      ${rk('Mais jogos', H.mais_jogos || [], x => x.jogos, x => `${x.gols} gols · ${x.temporadas} temporada(s)`)}
+    </div>`;
+  ligarGrafs($('historia'));
+}
+
+function renderMercado(d) {
+  $('foraClube').innerHTML = (d.insatisfeitos_fora || []).map(v =>
+    `<div class="item"><b>${esc(v.nome)}</b> <span class="meta">${esc(v.pos)} · ${v.idade} anos · nota ${v.nota}</span><br><span class="meta">${crest(v.clube, 16)} ${esc(v.clube)}: ${esc(v.motivo)}</span></div>`).join('') +
+    ((d.insatisfeitos_fora || []).length ? '' : '<div class="vazio">Ninguém insatisfeito em outros clubes agora. No começo da temporada ainda não há jogos suficientes para medir minutos.</div>') +
+    '<div class="dica">Insatisfeitos ficam mais baratos e aceitam sair (Mercado IA).</div>';
+}
+
+const NATIVA = {sem_objetivo: 'Sem objetivo', tranquilo: 'Cargo seguro', pressao: 'Sob pressão', ultimato: 'Ultimato', demitido: 'Demitido'};
+function nativaHTML(d) {
+  const n = d.diretoria_nativa;
+  if (!n) return '';
+  const desde = n.ultimato_desde || n.pressao_desde || n.objetivo_desde;
+  return `<div class="nativa ${esc(n.estado)}"><b>Diretoria do jogo · ${esc(NATIVA[n.estado] || n.estado)}</b><br>${esc(n.texto)}${desde ? ` <span class="dica">(desde ${dataBR(desde)})</span>` : ''}
+    <div class="dica">Lido do save: é a diretoria do próprio PES. Ela avalia os resultados de liga na virada de cada mês.</div></div>`;
+}
+function renderDiretoria(d) {
+  const el = $('diretoria'), dir = d.diretoria;
+  if (!dir) { el.innerHTML = '<div class="vazio">A diretoria se reúne na próxima reunião do vestiário.</div>'; return; }
+  const c = dir.confianca, tom = c >= 80 ? 'muito satisfeita' : c >= 60 ? 'satisfeita' : c >= 40 ? 'preocupada' : 'irritada';
+  const tab = dir.tabela || [], eu = tab.find(t => t.eu), m = dir.metas, dentro = eu && m ? eu.pos <= m.liga_alvo : null;
+  let linhas = tab.slice(0, 6); if (eu && eu.pos > 6) linhas = linhas.concat([eu]);
+  const ult = (dir.avaliacoes || []).slice(-1)[0];
+  let html = nativaHTML(d) + `<div class="conf-dir"><span class="num" style="color:${corMoral(c)}">${c}</span><span>confiança · diretoria ${tom}</span></div>
+    <div class="barra"><i style="width:${c}%;background:${corMoral(c)}"></i></div>
+    ${m ? `<div class="meta-linha">Meta ${esc(dir.temporada)}: <b>${esc(m.liga_texto)}</b><br>Hoje: ${eu ? eu.pos + 'º lugar' : '—'} ${dentro === null ? '' : dentro ? '<span style="color:var(--good)">· dentro da meta</span>' : '<span style="color:var(--worse)">· fora da meta</span>'}</div>` : ''}
+    ${linhas.length ? `<table class="tab">${linhas.map(t => `<tr class="${t.eu ? 'eu' : ''}"><td>${t.pos}º</td><td>${crest(t.time, 18)} ${esc(t.time)}</td><td class="n">${t.j}J</td><td class="n">${t.gp - t.gc >= 0 ? '+' : ''}${t.gp - t.gc}</td><td class="n"><b>${t.pts}</b></td></tr>`).join('')}</table>` : ''}
+    ${dir.orcamento_atual ? `<div class="meta-linha">Orçamento de transferências: <b>${mi(dir.orcamento_atual)}</b></div>` : ''}
+    ${(dir.orcamento_hist || []).slice(-3).reverse().map(h => `<div class="dica">${dataBR(h.data)}: <span style="color:${h.delta > 0 ? 'var(--good)' : 'var(--worse)'}">${h.delta > 0 ? '+' : '−'}${mi(Math.abs(h.delta))}</span> · ${esc(h.motivo)}</div>`).join('')}
+    ${ult ? `<div class="dica" style="margin-top:6px">Última avaliação (${dataBR(ult.data)}): ${ult.delta >= 0 ? '+' : ''}${ult.delta} · ${ult.motivos.map(esc).join(' · ')}</div>` : ''}`;
+  const reu = dir.reuniao;
+  if (reu) {
+    const resp = d.resposta_diretoria;
+    html += `<div class="reuniao-dir"><div class="titulo">${esc(reu.titulo)}</div><div class="fala">${esc(reu.fala)}</div>
+      ${(reu.opcoes || []).map((o, i) => { const n = String(i + 1), conf = confirmandoDir === n;
+        return `<button class="opcao ${resp === n ? 'escolhida' : ''} ${conf ? 'confirmar' : ''}" data-dop="${n}"><b>${n}</b>${esc(o)}
+          ${conf ? `<span class="conf">Confirmar? <span class="sim" data-dsim="${n}">Sim</span> <span class="nao" data-dnao="1">Não</span></span>` : ''}</button>`; }).join('')}
+      <div class="dica">${erroDir ? `<span style="color:var(--worse)">${esc(erroDir)}</span><br>` : ''}${resp ? `Resposta registrada: <b>${resp}</b>. Vale na próxima reunião.` : 'Vale na próxima reunião.'}</div></div>`;
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('[data-dop]').forEach(b => b.addEventListener('click', ev => {
+    if (ev.target.dataset.dsim) return responder(ev.target.dataset.dsim, reu.id, 'diretoria');
+    if (ev.target.dataset.dnao) { confirmandoDir = null; return render(); }
+    confirmandoDir = b.dataset.dop; erroDir = ''; render();
+  }));
+}
+
+// ------------------------------------------------------------- ações
+async function post(url, corpo) {
+  corpo = {...corpo, slot: dados && dados.carreira_ativa};
+  const r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Central': '1'}, body: JSON.stringify(corpo)});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function responder(opcao, pedidoId, canal) {
+  try { await post('/api/responder', {opcao, pedido: pedidoId, canal}); confirmando = confirmandoDir = null; erroResp = erroDir = ''; }
+  catch (e) { if (canal === 'diretoria') { confirmandoDir = null; erroDir = 'Não consegui registrar: ' + e.message; } else { confirmando = null; erroResp = 'Não consegui registrar: ' + e.message; } }
+  render();
+}
+async function responderColetiva(colId, pergunta, opcao) {
+  try { await post('/api/acao', {tipo: 'coletiva', coletiva: colId, pergunta, opcao}); confirmandoCol = null; erroCol = ''; }
+  catch (e) { confirmandoCol = null; erroCol = 'Não consegui registrar: ' + e.message; }
+  render();
+}
+
+function resumoVivo(e, texto) {
+  const n = k => texto ? (e.nomes?.[k] || k) : esc(e.nomes?.[k] || k);
+  const s = Object.entries(e.setas || {}).map(([k, [a, b]]) => `${n(k)} seta ${SETAS[a]} → ${SETAS[b]}`);
+  const c = Object.entries(e.condicoes || {});
+  if (c.length > 4) s.push(`condição de ${c.length} jogadores (${c[0][1][1] - c[0][1][0] > 0 ? '+' : ''}${c[0][1][1] - c[0][1][0]})`);
+  else c.forEach(([k, [a, b]]) => s.push(`${n(k)} condição ${a} → ${b}`));
+  return s.join(' · ');
+}
+async function decidirCaso(caso, opcao) {
+  try { await post('/api/acao', {tipo: 'caso', caso, opcao}); confirmandoCaso = null; erroCaso = ''; }
+  catch (e) { confirmandoCaso = null; erroCaso = 'Não consegui registrar: ' + e.message; }
+  render();
+}
+async function definirTreino(plano) {
+  try { await post('/api/acao', {tipo: 'treino', plano}); confirmandoTreino = null; erroTreino = ''; }
+  catch (e) { confirmandoTreino = null; erroTreino = 'Não consegui registrar: ' + e.message; }
+  render();
+}
+
+// ------------------------------------------------------------- avisos (eventos novos)
+function avisar(titulo, texto, erro) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (erro ? ' erro' : '');
+  t.innerHTML = `<b>${esc(titulo)}</b>${esc(texto)}`;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 9000);
+}
+function novosEventos(d) {
+  const evs = d.eventos || [];
+  if (vistos === null) { vistos = new Set(evs.map(e => e.n)); return; }
+  for (const e of evs) {
+    if (vistos.has(e.n)) continue;
+    vistos.add(e.n);
+    if (e.tipo === 'ao_vivo') {
+      Object.keys({...(e.setas || {}), ...(e.condicoes || {})}).forEach(k => mexidos.add(k));
+      setTimeout(() => { mexidos.clear(); }, 3000);
+      avisar('Escrito no jogo' + (e.ensaio ? ' (ensaio)' : ''), resumoVivo(e, true));
+    } else if (e.tipo === 'ao_vivo_orcamento') avisar('Orçamento' + (e.ensaio ? ' (ensaio)' : ''), `${e.valor >= 0 ? '+' : '−'}${mi(Math.abs(e.valor))}: agora ${mi(e.depois)}`);
+    else if (e.tipo === 'ao_vivo_verba') avisar('Verba de salários' + (e.ensaio ? ' (ensaio)' : ''), `${mi(e.antes)} → ${mi(e.depois)} (${e.motivo || ''})`);
+    else if (e.tipo === 'caso') avisar(e.caso_tipo === 'calendario' ? 'Calendário' : 'Disciplina', `${e.titulo}: ${e.texto_resposta}`);
+    else if (e.tipo === 'treino') avisar('Treino da semana', e.texto_resposta); else if (e.tipo === 'ao_vivo_erro') avisar('Não escrito no jogo', e.erro + ' (vale na próxima reunião)', true);
+    else if (e.tipo === 'coletiva') avisar('Coletiva', 'Resposta registrada: ' + e.texto_resposta);
+  }
+}
+
+// ------------------------------------------------------------- tempo real
+function aplicar(d) {
+  if (carreiraVista !== d.carreira_ativa) { carreiraVista = d.carreira_ativa; vistos = null; }   // trocou de save
+  dados = d; novosEventos(d); render();
+}
+let fonte = null, carreiraVista = null;
+function conectar() {
+  if (fonte) fonte.close();
+  const es = fonte = new EventSource('/api/eventos');   // sempre a carreira do save atual
+  es.addEventListener('estado', ev => { $('vivo').classList.add('on'); $('vivo').querySelector('span').textContent = 'AO VIVO'; aplicar(JSON.parse(ev.data)); });
+  es.onerror = () => { $('vivo').classList.remove('on'); $('vivo').querySelector('span').textContent = 'RECONECTANDO'; };
+}
+$('ordem').addEventListener('change', () => { store.set('ordem', $('ordem').value); render(); });
+const o = store.get('ordem'); if (o) $('ordem').value = o;
+irPara(store.get('aba') || 'resumo');
+let REDE = null;   // endereço + PIN para abrir no celular (só aparece no próprio PC)
+fetch('/api/rede').then(r => r.ok ? r.json() : null).then(x => { if (x && x.rede) { REDE = x; if (dados) render(); } }).catch(() => {});
+conectar();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "automatico": true,
+  "mercado": true,
+  "vestiario": true,
+  "mercado_intervalo_dias": 7,
+  "espera_segundos": 20,
+  "ao_vivo": true,
+  "saves_automaticos": "*"
+}

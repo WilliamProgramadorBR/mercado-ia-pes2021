@@ -23,3 +23,10 @@ pesXdecrypter/
 .vscode/
 Thumbs.db
 .DS_Store
+
+# Segredos e dados da Central (nunca publicar)
+ia.json
+central_rede.json
+*.db
+*.jsonl
+cerebro/automacao.json

@@ -152,6 +152,29 @@ class SaveML:
         for i in range(40):
             self.d[o + i] = order[i] if i < len(order) else 0xFF
 
+    # Depois dos 40 índices da lista (mesmo layout no bloco do time do USUÁRIO, ver user_block):
+    #   +40..+45 cobradores (6 índices do elenco: faltas/escanteios/pênalti), +46..+48 extras (0xFF = vazio),
+    #   +49 CAPITÃO (índice do elenco).
+    # CONFIRMADO em 09/10/2026 no time do usuário: trocar o capitão William (índice 4) -> Wallace (6) mudou só
+    # esse byte. Nos times da IA o layout é o mesmo (valores coerentes com os elencos).
+    TAKERS = 40
+    CAPTAIN = 49
+
+    def captain(self, idx):
+        return self.d[self.lineup_base() + idx * self.LINEUP_STRIDE + self.CAPTAIN]
+
+    def user_block(self, manager_name):
+        """Posição da lista de escalação do time do USUÁRIO (bloco próprio, depois da tabela de 730 listas).
+
+        O time do usuário NÃO usa a lista da tabela geral (lá fica uma cópia velha). O bloco tem as 3 formações,
+        a lista (40 bytes), cobradores, capitão em +49 e, em +0x40, o nome do técnico (UTF-8).
+        """
+        nm = manager_name.encode('utf-8') + b'\x00'
+        i = self.d.find(nm, self.lineup_base() + 730 * self.LINEUP_STRIDE)
+        if i < 0:
+            raise RuntimeError('bloco do técnico não encontrado')
+        return i - 0x40
+
     def formation(self, idx, plan=0):
         """Códigos de posição das 11 vagas (0=GK 1=CB 2=LB 3=RB 4=DMF 5=CMF 6=LMF 7=RMF 8=AMF 9=LWF 10=RWF 11=SS 12=CF)."""
         o = self.lineup_base() + idx * self.LINEUP_STRIDE - self.PLANS_BEFORE + plan * 0xA0

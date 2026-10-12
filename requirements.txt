@@ -1,2 +1,4 @@
 # O motor usa somente a biblioteca padrão do Python.
 # Python recomendado: 3.10 ou superior.
+# Opcional: fotos dos jogadores na Central do Técnico.
+Pillow
