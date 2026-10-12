@@ -169,6 +169,12 @@ def estado_projetado(slot=None):
     d['ia_adversaria'] = reg[-1] if reg else None   # como o adversário do próximo jogo foi preparado
     d['ia_adversaria_resumo'] = ia.get('resumo')    # o que a IA já aprendeu sobre o usuário
     d['familiaridade'] = _familiaridade(d)          # entrosamento do elenco com o plano (números do jogo)
+    try:   # 12/10/2026: duelo estatística x rede neural (duelo.py)
+        import duelo
+        d['duelo'] = duelo.resumo()
+    except Exception as e:  # noqa: BLE001
+        d['duelo'] = None
+        print('aviso: duelo:', e, flush=True)
     d['trabalhando'] = list(_trabalhos.values())
     d['trabalhando_n'] = list(_trabalhos.keys())   # qual resposta está sendo escrita no jogo agora
     return d
@@ -529,8 +535,9 @@ def _tecnico_ia_thread():
             import ia_adversaria
             import pulso
             log = lambda m: print(time.strftime('%H:%M:%S'), m, flush=True)
-            if sessao['pid'] != pid:
-                sessao.update(pid=pid, h=A.abrir(escrita=True), patch=False)
+            if sessao['pid'] != pid:   # jogo (re)aberto: patch e escalações de novo (a memória antiga se perdeu)
+                sessao.update(pid=pid, h=A.abrir(escrita=True), patch=False, data=None)
+                escalacao_ia.nova_sessao()
             c = escolher()
             p = _ler_json(_pulso_arq(c['slot']), None) if c else None
             if not p or not p.get('data_jogo'):

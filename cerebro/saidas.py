@@ -305,8 +305,7 @@ def historia(m, J, perfis, nos, destino_nome, rank_destino=None, classico=None, 
     return 'venda', None
 
 
-FEMININOS = {'ROMA', 'JUVENTUS', 'LAZIO', 'FIORENTINA', 'SAMPDORIA', 'ATALANTA', 'UDINESE', 'REAL SOCIEDAD', 'SALERNITANA',
-             'CREMONESE', 'SPEZIA', 'REGGIANA', 'LUSITANA', 'PORTUGUESA', 'PONTE PRETA', 'CHAPECOENSE', 'INTERNAZIONALE'}
+from clube import FEMININOS  # noqa: E402  (12/10/2026: a lista mora em clube.py)
 
 
 def art(clube):

@@ -55,6 +55,15 @@ def _gravar(e):
     os.replace(tmp, ARQ)
 
 
+def nova_sessao():
+    """O jogo foi (re)aberto: o que escrevemos na memória da sessão anterior se perdeu (a menos que o jogo tenha
+    salvado depois) — esquece os jogos já preparados para escrever tudo de novo. O histórico de titulares fica."""
+    e = _estado()
+    if e.get('feitos'):
+        e['feitos'] = {}
+        _gravar(e)
+
+
 # ---------------------------------------------------------------- patch do modo
 def patch(h, log=print):
     """Garante o modo 1 no código do jogo (memória). True se ativo."""
@@ -110,7 +119,7 @@ def _importancia(j, ti, forca, nomes, disp=None, user_ti=None):
     return 'normal'
 
 
-def escalar(team, sq_ids, jogos7, importancia, semente=0):
+def escalar(team, sq_ids, jogos7, importancia, semente=0, max_desc=MAX_DESCANSOS):
     """(lista de 40 posições no elenco, nomes dos titulares, descansados) para o time."""
     import random
     pos_id = {pid: i for i, pid in enumerate(sq_ids)}
@@ -120,15 +129,15 @@ def escalar(team, sq_ids, jogos7, importancia, semente=0):
     descansam = []
     if importancia == 'relax':                 # sem objetivo: dá minutos a quem joga pouco (2 de linha descansam)
         linha = [p for _, p, _ in xi if p.pos != 'GK']
-        descansam = random.Random(semente).sample(linha, min(2, len(linha)))
+        descansam = random.Random(semente).sample(linha, min(2, max_desc, len(linha)))
     elif importancia == 'poupar':              # vem jogo mais importante em até 4 dias: poupa quem jogou há pouco
         rodados = [p for _, p, _ in xi if jogos7.get(str(p.pid), 0) >= 1 and p.pos != 'GK']
         rodados.sort(key=lambda p: (-jogos7.get(str(p.pid), 0), -encaixe.rating(p, p.pos)))
-        descansam = rodados[:MAX_DESCANSOS]
+        descansam = rodados[:max_desc]
     elif importancia == 'menor':
         cansados = [p for _, p, _ in xi if jogos7.get(str(p.pid), 0) >= 2 and p.pos != 'GK']
         cansados.sort(key=lambda p: -jogos7.get(str(p.pid), 0))
-        descansam = cansados[:MAX_DESCANSOS]
+        descansam = cansados[:max_desc]
     if descansam:
         xi, _ = encaixe.best_xi([p for p in jogadores if p not in descansam], slots)
     ordem = [pos_id[p.pid] for _, p, _ in xi]
@@ -155,6 +164,74 @@ def _jogos_recentes(jogos, ti, data_jogo, dias=7):
     return out
 
 
+# ---------------------------------------------------------------- duelo estatística x rede (duelo.py)
+LIMITE_RODIZIO = {'poupar': 0.6, 'menor': 0.45, 'relax': 0.5}   # gols de saldo que o rodízio pode custar
+
+
+def _notas_xi(players):
+    return [(encaixe.rating(p, p.pos), p.pos == 'GK') for p in players]
+
+
+def _xi_do_time(t, e, ti, data):
+    """Os 11 que vão a campo: a escalação que escrevemos para esta data, ou o melhor XI."""
+    hist = e['titulares'].get(str(ti)) or []
+    reg = next((h for h in reversed(hist) if h['data'] == str(dt.date(*data))), None)
+    if reg:
+        por_pid = {p.pid: p for p in t.players}
+        xs = [por_pid[pid] for pid in reg['pids'] if pid in por_pid]
+        if len(xs) >= 9:
+            return xs
+    xi, _ = encaixe.best_xi(t.players, encaixe.formation_slots(t))
+    return [p for _, p, _ in xi]
+
+
+def _rodizio_pelo_lider(t, teams, j, ti, s, jogos7, imp, chave, desc, formas, log):
+    """Quantos podem descansar: o líder do duelo estima o saldo perdido com o rodízio; acima do limite, poupa menos."""
+    import duelo
+    lider = duelo.lider('simulados')
+    adv_ti = j['time2'] if j['time1'] == ti else j['time1']
+    ta = teams.get(adv_ti)
+    if not ta or len(ta.players) < 11:
+        return len(desc)
+    xa_adv = duelo.xi_info(_notas_xi([p for _, p, _ in encaixe.best_xi(ta.players, encaixe.formation_slots(ta))[0]]))
+    f_eu, f_adv = formas.antes(ti, j['data']), formas.antes(adv_ti, j['data'])
+    eu_casa = j['time1'] == ti
+    e_d = duelo.estado()
+    sq = [k[1] for k in s.squad(ti)]
+
+    def saldo_com(k):
+        _, nomes, _ = escalar(t, sq, jogos7, imp, semente=zlib.crc32(chave.encode()), max_desc=k)
+        xs = [p for p in t.players if p.name in nomes][:11]
+        xi = duelo.xi_info(_notas_xi(xs))
+        a, b, fa, fb = (xi, xa_adv, f_eu, f_adv) if eu_casa else (xa_adv, xi, f_adv, f_eu)
+        x = duelo.feat_sim(a, b, fa, fb, j['comp'])
+        sd = duelo.saldo('simulados', lider, x, duelo.est_sim(e_d, a, b))
+        return sd if eu_casa else -sd
+    cheio = saldo_com(0)
+    for k in range(len(desc), 0, -1):
+        if cheio - saldo_com(k) <= LIMITE_RODIZIO.get(imp, 0.5):
+            return k
+    return 0
+
+
+def _palpites(e, prox, teams, s, formas, user_ti):
+    import duelo
+    with duelo.TRAVA:
+        ed = duelo.estado()
+        for j in prox:
+            if user_ti in (j['time1'], j['time2']):
+                continue
+            ta, tb = teams.get(j['time1']), teams.get(j['time2'])
+            if not ta or not tb or len(ta.players) < 11 or len(tb.players) < 11:
+                continue
+            xa = duelo.xi_info(_notas_xi(_xi_do_time(ta, e, j['time1'], j['data'])))
+            xb = duelo.xi_info(_notas_xi(_xi_do_time(tb, e, j['time2'], j['data'])))
+            x = duelo.feat_sim(xa, xb, formas.antes(j['time1'], j['data']), formas.antes(j['time2'], j['data']), j['comp'])
+            duelo.prever(ed, 'simulados', duelo.chave(j['data'], j['time1'], j['time2']), j['data'], x, duelo.est_sim(ed, xa, xb),
+                         {'casa': s.name(j['time1']).strip(), 'fora': s.name(j['time2']).strip()})
+        duelo.gravar(ed)
+
+
 # ---------------------------------------------------------------- rodada
 def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
     """Escreve as escalações dos clubes da IA que jogam nos próximos `dias` dias (uma vez por jogo).
@@ -167,6 +244,12 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
     hoje = max((tuple(j['data']) for j in jogos if j['jogado']), default=None)
     if not hoje:
         return 0
+    try:   # 12/10/2026: duelo estatística x rede — pontua os palpites dos jogos que já aconteceram
+        import duelo
+        for arena, novo in duelo.ciclo(jogos, hoje, log):
+            log(f'DUELO: {"a REDE NEURAL" if novo == "rede" else "a ESTATÍSTICA"} assumiu a arena {arena}')
+    except Exception as ex:  # noqa: BLE001
+        log(f'duelo: {ex}')
     lim = (dt.date(*hoje) + dt.timedelta(days=dias)).timetuple()[:3]
     prox = [j for j in jogos if not j['jogado'] and hoje < tuple(j['data']) <= lim
             and j['time1'] < N_CLUBES and j['time2'] < N_CLUBES]
@@ -194,6 +277,8 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
     except Exception as ex:  # noqa: BLE001
         log(f'técnico da IA: disputas indisponíveis ({ex})')
         disp = {}
+    import duelo
+    formas = duelo.Formas([x for x in jogos if x['jogado']])
     feitos = 0
     for j, ti, chave in pend:
         t = teams.get(ti)
@@ -224,6 +309,13 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
                 motivo_poupar = f' | poupa para {nomes.get(adv_seg) or s.name(adv_seg).strip()} em {seguinte["data"][2]:02d}/{seguinte["data"][1]:02d}'
                 imp = 'poupar'
         lista, nomes_xi, desc = escalar(t, [k[1] for k in s.squad(ti)], jogos7, imp, semente=zlib.crc32(chave.encode()))
+        if desc:   # 12/10/2026: quem lidera o duelo diz se o rodízio custa caro demais neste jogo
+            try:
+                k = _rodizio_pelo_lider(t, teams, j, ti, s, jogos7, imp, chave, desc, formas, log)
+                if k < len(desc):
+                    lista, nomes_xi, desc = escalar(t, [q[1] for q in s.squad(ti)], jogos7, imp, semente=zlib.crc32(chave.encode()), max_desc=k)
+            except Exception as ex:  # noqa: BLE001
+                log(f'duelo (rodízio): {ex}')
         addr = b0 + (T.escalacao(d, ti) - T.BASE)
         atual = M.ler(h, addr, 40)
         if bytes(lista) != atual:
@@ -234,6 +326,10 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
         e['feitos'][chave] = (imp + (f' | {m["texto"]}' if imp == 'decisivo' else '') + motivo_poupar
                               + (f' | descansam {", ".join(desc)}' if desc else ''))
         feitos += 1
+    try:   # palpites dos dois modelos para os jogos da IA desta janela (o placar do duelo, arena "simulados")
+        _palpites(e, prox, teams, s, formas, user_ti)
+    except Exception as ex:  # noqa: BLE001
+        log(f'duelo (palpites): {ex}')
     # limpa jogos antigos do controle
     e['feitos'] = {k: v for k, v in e['feitos'].items() if dt.date.fromisoformat(k.split('|')[0]) >= dt.date(*hoje) - dt.timedelta(days=10)}
     e['ultima'] = {'quando': time.strftime('%Y-%m-%d %H:%M'), 'hoje': list(hoje), 'escritas': feitos}

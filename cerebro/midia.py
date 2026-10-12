@@ -174,6 +174,11 @@ def fatos(r, car, hoje, apelido_novo=None, ecos=()):
     co = car.get('corrida')
     if co and co.get('rivais'):   # 12/10/2026: a disputa do usuário na liga (disputa.py)
         F.append({'tipo': 'corrida', 'peso': 1.6 + 2.0 * co['pressao'], 'co': co})
+    mo = car.get('momento') or {}   # 12/10/2026: o momento acumulado (momento.py) vira capa
+    if mo and mo.get('frases') and (mo.get('clima') in ('crise', 'alerta', 'embalado') or (mo.get('liga') or {}).get('lideranca')
+                                    or mo.get('semana_decisiva')):
+        F.append({'tipo': 'momento', 'peso': {'crise': 4.0, 'alerta': 3.4, 'embalado': 2.6}.get(mo.get('clima'), 2.3)
+                  + (0.6 if (mo.get('liga') or {}).get('lideranca') else 0), 'mo': mo})
     for e in ecos:
         if e.get('tipo') == 'liga':
             F.append(e)
@@ -268,24 +273,25 @@ def _manchete(f, tom, rnd):
         if g['pro'] == g['contra']:
             return rnd.choice({
                 'sensacionalista': [('EMPATE COM GOSTO AMARGO', f'{_jogo_txt(g)}. Torcida deixa o estádio desconfiada.')],
-                'analítico': [(f'Empate expõe limites do time: {_jogo_txt(g)}', 'Pouca criação no último terço e transição lenta.')],
+                'analítico': [(f'Empate expõe limites do time: {_jogo_txt(g)}', (f'{melhor} teve a melhor nota da equipe' if melhor else 'Ninguém se destacou')
+                               + (f'; gols de {marc}.' if marc else '; o ataque passou em branco.'))],
                 'torcedor': [(f'Um ponto e muita coisa a melhorar', f'{_jogo_txt(g)}' + (f' — {marc} marcou' if marc else '') + '.')],
             }[tom])
         return rnd.choice({
             'sensacionalista': [('VEXAME!' if g['contra'] - g['pro'] >= 2 else 'TROPEÇO!',
                                  f'{_jogo_txt(g)}. Vestiário em silêncio e técnico na mira.'),
                                 (f'{g["adversario"].upper()} CASTIGA O {CL["apelido"].upper()}', f'{_jogo_txt(g)}. Quem vai pagar a conta?')],
-            'analítico': [(f'Derrota para o {g["adversario"]} acende alerta', f'{_jogo_txt(g)}. A linha defensiva cedeu espaço demais entre os setores.')],
+            'analítico': [(f'Derrota para o {g["adversario"]} acende alerta', f'{_jogo_txt(g)}. ' + (f'{marc} marcou, mas não bastou.' if marc else 'O ataque passou em branco.'))],
             'torcedor': [('Noite para esquecer', f'{_jogo_txt(g)}. A torcida apoiou até o fim, mas cobra reação.')],
         }[tom])
     if t == 'sequencia':
         n = f['n']
         if f['bom']:
             return {'sensacionalista': (f'{n} SEGUIDAS! NINGUÉM SEGURA', f'O {CL["apelido"]} embalou e os rivais já sentem.'),
-                    'analítico': (f'{n} vitórias seguidas: o que mudou', 'Compactação e intensidade sem a bola explicam a fase.'),
+                    'analítico': (f'{n} vitórias seguidas: o que mudou', 'A regularidade de resultados virou a marca do time.'),
                     'torcedor': (f'{n} vitórias em sequência!', f'{CL["estadio_txt"]} voltou a ser um caldeirão.')}[tom]
         return {'sensacionalista': (f'{n} JOGOS SEM VENCER: CRISE?', 'Bastidores fervem e a paciência acabou.'),
-                'analítico': (f'{n} jogos sem vencer: os números da queda', 'Menos finalizações e mais gols sofridos em bolas paradas.'),
+                'analítico': (f'{n} jogos sem vencer: os números da queda', 'A sequência pede respostas da comissão técnica já no próximo jogo.'),
                 'torcedor': (f'{n} jogos sem vitória. Até quando?', 'A torcida quer ver reação já no próximo jogo.')}[tom]
     if t == 'tabela':
         pos, lider, meta = f['pos'], f['lider'], f['meta']
@@ -358,6 +364,57 @@ def _manchete(f, tom, rnd):
     ZT = {'titulo': ('PELO TÍTULO', 'o título', 'pelo título'), 'vaga1': ('PELA VAGA', 'a vaga principal', 'pela vaga principal'),
           'vaga2': ('PELA VAGA CONTINENTAL', 'uma vaga continental', 'por uma vaga continental'),
           'rebaixamento': ('CONTRA A QUEDA', 'a permanência', 'pela permanência')}
+    if t == 'lesao':      # 12/10/2026: departamento médico (lesoes.py)
+        a = f['a']
+        n, g = a['nome'], (a['grandes'][0] if a['grandes'] else None)
+        alvo = (g['classico'] or g['adv']) if g else None
+        sub = a['sub']
+        return {'sensacionalista': ((f'DRAMA! {n.upper()} FORA' + (f' ÀS VÉSPERAS DE {alvo.upper()}!' if alvo else '!')),
+                                    f'{a["parte_gols"]}% dos gols do time saem dos pés dele. E agora?' if a['parte_gols'] >= 20
+                                    else 'A torcida prende a respiração: o departamento médico virou o centro das atenções.'),
+                'analítico': (f'Sem {n}: o que muda', (f'{sub["nome"]} (nota {sub["ovr"]}) é o substituto natural; ' if sub else '')
+                              + (f'sem ele, {a["sem_ele"]["v"]}V {a["sem_ele"]["e"]}E {a["sem_ele"]["d"]}D na temporada.' if a['sem_ele']['jogos']
+                                 else 'o time ainda não jogou sem ele nesta temporada.')),
+                'torcedor': (f'Força, {n}!', 'A arquibancada abraça o craque. ' + (f'Agora é com você, {sub["nome"]}!' if sub else 'Todo mundo junto!'))}[tom]
+    if t == 'volta_lesao':
+        a = f['a']
+        n = a['nome']
+        return {'sensacionalista': (f'ELE VOLTOU! {n.upper()} ESTÁ LIBERADO', f'{f["dias"]} dias de angústia chegam ao fim.'),
+                'analítico': (f'{n} recuperado após {f["dias"]} dias', 'A dúvida agora é o ritmo de jogo: volta entre os titulares ou aos poucos?'),
+                'torcedor': (f'{n} de volta!', 'O craque está liberado. Agora é para cima!')}[tom]
+    if t == 'momento':
+        import momento as _mo
+        mo = f['mo']
+        L, s = mo.get('liga') or {}, mo.get('seq') or {}
+        rv = L.get('rival') or {}
+        gs = [x for x in mo.get('proximos') or [] if x['tags'] and x['dias'] <= 10]
+        agenda = ' e '.join(_mo.descreve_jogo(x) for x in gs[:2])
+        fr = [x for x in mo['frases'] if not x.startswith(('Pela frente', 'Próximo desafio', 'Maratona'))]
+        corpo = '. '.join(fr[:2]) + ('.' if fr else '')
+        ordn = {2: 'segunda', 3: 'terceira', 4: 'quarta', 5: 'quinta'}.get(s.get('d', 0), f'{s.get("d")}ª')
+        if L.get('lideranca') == 'perdeu' and rv:
+            return {'sensacionalista': (f'{rv["nome"].upper()} TOMA A PONTA!', (f'{ordn.capitalize()} derrota seguida e a liderança escapa. ' if s.get('d', 0) >= 2 else '')
+                                        + (f'Pela frente: {agenda}.' if agenda else 'A pressão mudou de lado.')),
+                    'analítico': ('A liderança mudou de mãos', corpo + (f' A agenda não alivia: {agenda}.' if agenda else '')),
+                    'torcedor': ('Vamos buscar de volta!', f'O {rv["nome"]} passou, mas o campeonato é longo.' + (f' E já tem {agenda}.' if agenda else ''))}[tom]
+        if s.get('d', 0) >= 2:
+            return {'sensacionalista': (f'{ordn.upper()} SEGUIDA! ALERTA LIGADO', corpo + (f' E agora: {agenda}.' if agenda else '')),
+                    'analítico': (f'{ordn.capitalize()} derrota seguida: o que mudou', corpo + (f' A sequência: {agenda}.' if agenda else '')),
+                    'torcedor': ('Hora de reagir!', 'Fase ruim se vence juntos.' + (f' Pela frente: {agenda}.' if agenda else ''))}[tom]
+        if L.get('lideranca') == 'assumiu':
+            return {'sensacionalista': (f'{CL["apelido"].upper()} LÍDER!', corpo),
+                    'analítico': ('Nova liderança', corpo + (f' Próximos testes: {agenda}.' if agenda else '')),
+                    'torcedor': ('É o nosso lugar!', 'Líder, como tem que ser. Agora é segurar!')}[tom]
+        if mo.get('clima') == 'embalado':
+            return {'sensacionalista': (f'{CL["apelido"].upper()} EMBALADO!', corpo),
+                    'analítico': ('O melhor momento da temporada', corpo),
+                    'torcedor': ('Ninguém segura!', corpo)}[tom]
+        if mo.get('clima') == 'crise':
+            return {'sensacionalista': ('CRISE!', corpo), 'analítico': ('A crise em números', corpo),
+                    'torcedor': ('Acorda, time!', 'A arquibancada cobra e espera reação.')}[tom]
+        return {'sensacionalista': ('A SEMANA DA VERDADE', f'Pela frente: {agenda}.' if agenda else corpo),
+                'analítico': ('Uma semana que pode definir a temporada', f'Pela frente: {agenda}. ' + corpo),
+                'torcedor': ('Semana de decisão!', f'{agenda[0].upper() + agenda[1:]}. Todo mundo junto!' if agenda else 'Todo mundo junto!')}[tom]
     if t == 'corrida':
         co = f['co']
         r0 = co['rivais'][0]
@@ -447,6 +504,17 @@ def capas(F, hoje, rnd, r=None, car=None):
             except Exception as e:  # noqa: BLE001
                 print('aviso: corpo do jornal:', type(e).__name__, e)
         out.append(capa)
+    try:   # 12/10/2026: nomes de times como título ("Contra o FIORENTINA" -> "Contra a Fiorentina")
+        import clube
+        nomes = {CL.get('nome'), (r or {}).get('time')}
+        pj = (car or {}).get('proximo_jogo') or {}
+        nomes |= {pj.get('casa'), pj.get('fora'), pj.get('adversario')}
+        nomes |= {t.get('time') for t in ((car or {}).get('liga') or {}).get('classificacao') or []}
+        nomes |= {g.get('adversario') for g in (r or {}).get('ultimos') or []}
+        nomes |= {f.get('adv') for f in F if isinstance(f.get('adv'), str)}
+        out = clube.concordar_tudo(clube.titulo_nomes(out, {n for n in nomes if n}))
+    except Exception as e:  # noqa: BLE001
+        print('aviso: nomes nas capas:', e)
     return out
 
 

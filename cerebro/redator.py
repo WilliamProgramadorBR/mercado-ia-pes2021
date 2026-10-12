@@ -215,7 +215,7 @@ def reescrever_materias(materias, clube='', log=print):
     cfg = config()
     if not cfg or not materias:
         return False
-    orig = {'materias': [{'id': i, 'estilo': ESTILOS.get(m['frente'], ''), 'titulo': m['titulo'],
+    orig = {'materias': [{'id': i, 'estilo': m.get('estilo') or ESTILOS.get(m['frente'], ''), 'titulo': m['titulo'],   # 12/10: estilo do veículo
                           'linha_fina': m.get('linha_fina') or '', 'paragrafos': list(m['corpo'])}
                          for i, m in enumerate(materias)]}
     chave = 'mat|' + hashlib.sha1(json.dumps(orig, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()

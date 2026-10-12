@@ -395,6 +395,21 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 .post .resp { margin-top: 6px; border-left: 2px solid var(--line); padding-left: 10px; display: grid; gap: 4px; }
 .post .resp div { font-size: 13px; } .post .resp b { color: var(--text); font-weight: 600; margin-right: 4px; }
 .post .resp span { color: var(--muted); font-size: 11px; margin-left: 6px; }
+/* 12/10/2026: redes vivas — verificado, thread, citação, posts que chegam com o tempo, Em alta, curtir e votar */
+.post .ver { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #1d9bf0; color: #fff; font-size: 9px; margin-left: 3px; vertical-align: 1px; }
+.post .hd .h { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.post .av.of { border-radius: 10px; box-shadow: inset 0 0 0 2px #f5c542aa; } .post .av.jg { box-shadow: inset 0 0 0 2px #1d9bf0aa; }
+.post .thr { display: grid; gap: 6px; margin: 4px 0 6px; padding-left: 10px; border-left: 2px dashed var(--line); font-size: 14px; line-height: 1.4; }
+.post .cita { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 4px 0 6px; font-size: 13px; color: var(--muted); }
+.post .cita b { color: var(--text); font-weight: 600; margin-right: 4px; }
+.post .ac button { background: none; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 0; } .post .ac button.on { color: #f0506e; }
+.post.chegou { animation: chegou 1.6s ease-out; } @keyframes chegou { from { background: #f5c54222; } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .post.chegou { animation: none; } }
+.redes-novos { position: sticky; top: 0; z-index: 2; margin: 0 0 8px; padding: 6px 10px; border-radius: 99px; background: #1d9bf0; color: #fff; font-size: 13px; text-align: center; }
+.redes-vivo { font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
+.alta { display: grid; gap: 2px; margin-bottom: 18px; } .alta div { display: flex; justify-content: space-between; gap: 8px; padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.alta small { color: var(--muted); } .alta b { overflow-wrap: anywhere; }
+.enq .op.votavel { cursor: pointer; } .enq .op.meu { border-color: #1d9bf0; } .enq .meu-voto { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
 /* ----- mundo: seleção da temporada no gramado */
 .premio-cab { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; margin-bottom: 10px; }
@@ -614,7 +629,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
     </div>
     <div class="sub" data-sub="redes"><div class="hist-materias"><select id="selRedes" aria-label="edição das redes" class="seletor"></select></div>
       <div class="grid2"><section><h2>No feed</h2><div id="redesFeed"></div></section>
-      <section><h2>Enquetes</h2><div id="redesEnq"></div></section></div></div>
+      <section><h2>Em alta</h2><div id="redesAlta" class="alta"></div><h2>Enquetes</h2><div id="redesEnq"></div></section></div></div>
     <div class="sub" data-sub="pre"><div id="impPre"></div></div>
     <div class="sub" data-sub="x4"><div id="impX4"></div><section><h2>Os quatro de cada lado</h2><div id="duelo1"></div></section></div>
     <div class="sub" data-sub="pos"><div class="hist-materias"><select id="selPos" aria-label="jogo" class="seletor"></select></div><div id="impPos"></div></div>
@@ -637,6 +652,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
   <div class="tela" id="t-analise">
     <div class="grid2"><section><h2>Relatório da comissão técnica</h2><div id="tatica"></div></section>
       <section><h2>Jogo da rodada · 4 x 4</h2><div id="duelo2"></div></section></div>
+    <section style="margin-top:14px"><h2>Duelo: estatística x rede neural <span class="dica">bolão: placar exato 3 · saldo certo 2 · vencedor certo 1 · quem somar mais nos últimos 100 jogos decide</span></h2><div id="duelo"></div></section>
     <section style="margin-top:14px"><h2>Entrosamento com o plano de jogo <span class="dica">o quanto cada um já aprendeu o seu sistema (números do próprio jogo)</span></h2><div id="familiaridade"></div></section>
   </div>
   <div class="tela" id="t-disciplina">
@@ -732,7 +748,7 @@ function render() {
     return `<span class="res ${r}" title="${esc(g.adversario)} ${g.pro}x${g.contra}">${r}</span>`;
   }).join('') || '—';
   renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
-  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderFrentes(d);
+  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderDuelo(d); renderFrentes(d);
   $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
     (d.ao_vivo ? ` · ao vivo da memória do jogo: ${new Date(d.ao_vivo.quando * 1000).toLocaleTimeString('pt-BR')}` : '') +
     ' · o que você faz aqui vai para o jogo na hora quando possível') + (REDE ? ` · <b style="color:var(--gold)">📱 No celular (mesmo Wi-Fi): ${esc(REDE.url)} · PIN ${esc(REDE.pin)}</b>` : '');
@@ -1096,21 +1112,64 @@ function renderBnm(I) {
   bnmMostra();
 }
 function mil(n) { return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' mi' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.', ',') + ' mil' : String(n); }
+// 12/10/2026: o feed "acontece" — cada post tem um atraso (min) e aparece com o tempo desde a 1ª vez que a edição
+// mais recente é aberta neste aparelho; as curtidas crescem por ~3 h. Curtir e votar ficam guardados só neste navegador.
+const redes = {I: null, r: null, vistos: {}, timer: null};
+function redesT0(id) { const k = 'redesT0_' + id; let t = +store.get(k); if (!t) { t = Date.now(); store.set(k, String(t)); } return t; }
+function redesJSON(k) { try { return JSON.parse(store.get(k) || '{}') || {}; } catch (e) { return {}; } }
 function renderRedes(I) {
   const rs = I.redes || [], sel = $('selRedes');
   const r = rs.length ? edicaoEscolhida('selRedes', rs) : null;
   sel.innerHTML = rs.map(m => `<option value="${m.id}">${esc(m.dados.jogo || dataBR(m.data))}</option>`).join('');
   if (r) sel.value = String(r.id);
   sel.hidden = rs.length < 2;
-  if (!r) { $('redesFeed').innerHTML = $('redesEnq').innerHTML = '<div class="vazio">As redes acordam depois da próxima reunião.</div>'; return; }
+  redes.I = I; redes.r = r;
+  if (!r) { $('redesFeed').innerHTML = $('redesEnq').innerHTML = '<div class="vazio">As redes acordam depois da próxima reunião.</div>'; $('redesAlta').innerHTML = ''; return; }
+  redesFeed();
+  if (!redes.timer) redes.timer = setInterval(() => { if (redes.r) redesFeed(); }, 45000);
+}
+function redesFeed() {
+  const r = redes.r, rs = (redes.I || {}).redes || [];
+  const novo = rs.length && r.id === Math.max(...rs.map(m => m.id));
+  const el = novo ? (Date.now() - redesT0(r.id)) / 60000 : 1e9;
+  const posts = r.dados.posts.map((p, i) => ({...p, i})).filter(p => (p.min || 0) <= el)
+    .sort((a, b) => (b.min || 0) - (a.min || 0) || a.i - b.i);
+  const total = r.dados.posts.length, antes = redes.vistos[r.id] || 0;
+  redes.vistos[r.id] = posts.length;
+  const chegaram = antes && posts.length > antes ? posts.length - antes : 0;
+  const cresce = m => Math.min(1, 0.3 + 0.7 * Math.max(0, el - (m || 0)) / 180);
+  const quando = m => { if (el >= 1e8) return dataBR(r.data); const x = Math.max(0, Math.round(el - (m || 0)));
+    return x < 1 ? 'agora' : x < 60 ? `há ${x} min` : `há ${Math.floor(x / 60)} h`; };
   const cor = s => `hsl(${[...s].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % 360} 55% 38%)`;
-  $('redesFeed').innerHTML = r.dados.posts.map(p => `<div class="post"><div class="av" style="background:${cor(p.autor)}">${esc(p.autor.replace('@', '').slice(0, 2).toUpperCase())}</div>
-    <div><div class="hd"><b>${esc(p.autor)}</b> · ${dataBR(r.data)}</div><div class="tx">${esc(p.texto)}</div>
-    <div class="ac"><span>♥ ${mil(p.curtidas)}</span><span>⟲ ${mil(p.reposts)}</span>${(p.respostas || []).length ? `<span>💬 ${p.respostas.length}</span>` : ''}</div>
-    ${(p.respostas || []).length ? `<div class="resp">${p.respostas.map(x => `<div><b>${esc(x.autor)}</b>${esc(x.texto)}<span>♥ ${mil(x.curtidas)}</span></div>`).join('')}</div>` : ''}</div></div>`).join('') || '<div class="vazio">feed vazio</div>';
-  $('redesEnq').innerHTML = r.dados.enquetes.map(e => { const mx = Math.max(...e.opcoes.map(o => o.pct));
-    return `<div class="enq"><b>${esc(e.pergunta)}</b>${e.opcoes.map(o => `<div class="op ${o.pct === mx ? 'top' : ''}"><i style="width:${o.pct}%"></i><span><span>${esc(o.texto)}</span><b style="display:inline;margin:0">${o.pct}%</b></span></div>`).join('')}</div>`; }).join('')
+  const curt = redesJSON('redesCurti');
+  const sigla = p => esc((p.nome_exibicao ? p.nome_exibicao.split(/\s+/).map(w => w[0]).join('') : p.autor.replace('@', '')).slice(0, 2).toUpperCase() || '?');
+  const html = posts.map((p, n) => { const id = r.id + ':' + p.i, eu = !!curt[id], c = Math.round(p.curtidas * cresce(p.min)) + (eu ? 1 : 0);
+    const nRes = Math.min((p.respostas || []).length, Math.ceil((p.respostas || []).length * cresce(p.min) + 0.01));
+    return `<div class="post${n < chegaram ? ' chegou' : ''}"><div class="av${p.tipo === 'oficial' ? ' of' : p.tipo === 'jogador' ? ' jg' : ''}" style="background:${cor(p.autor)}">${sigla(p)}</div>
+    <div><div class="hd"><b>${esc(p.nome_exibicao || p.autor)}</b>${p.verificado ? '<span class="ver" title="conta verificada">✔</span>' : ''}${p.nome_exibicao ? `<span class="h">${esc(p.autor)}</span>` : ''} · ${quando(p.min)}</div>
+    <div class="tx">${esc(p.texto)}</div>
+    ${(p.partes || []).length ? `<div class="thr">${p.partes.map(x => `<div>${esc(x)}</div>`).join('')}</div>` : ''}
+    ${p.cita ? `<div class="cita"><b>${esc(p.cita.autor)}</b>${esc(p.cita.texto)}</div>` : ''}
+    <div class="ac"><button type="button" class="${eu ? 'on' : ''}" data-curtir="${id}" aria-pressed="${eu}" aria-label="curtir">♥ ${mil(c)}</button><span>⟲ ${mil(Math.round(p.reposts * cresce(p.min)))}</span>${nRes ? `<span>💬 ${nRes}</span>` : ''}</div>
+    ${nRes ? `<div class="resp">${p.respostas.slice(0, nRes).map(x => `<div><b>${esc(x.autor)}</b>${esc(x.texto)}<span>♥ ${mil(Math.round(x.curtidas * cresce(p.min)))}</span></div>`).join('')}</div>` : ''}</div></div>`; }).join('');
+  $('redesFeed').innerHTML = (chegaram ? `<div class="redes-novos">↑ ${chegaram} ${chegaram > 1 ? 'novos posts' : 'novo post'}</div>` : '')
+    + (novo && posts.length < total ? `<div class="redes-vivo">● ao vivo · a resenha continua: mais posts chegando</div>` : '')
+    + (html || '<div class="vazio">feed vazio</div>');
+  $('redesFeed').querySelectorAll('[data-curtir]').forEach(b => b.addEventListener('click', () => {
+    const cs = redesJSON('redesCurti'); if (cs[b.dataset.curtir]) delete cs[b.dataset.curtir]; else cs[b.dataset.curtir] = 1;
+    store.set('redesCurti', JSON.stringify(cs)); redesFeed(); }));
+  const alta = r.dados.em_alta || [];
+  $('redesAlta').innerHTML = alta.length ? alta.map((t, i) => `<div><span><small>${i + 1} · </small><b>${esc(t.tag)}</b></span><small>${mil(Math.round(t.posts * cresce(0)))} posts</small></div>`).join('')
+    : '<div class="vazio">sem assuntos em alta</div>';
+  const votos = redesJSON('redesVotos');
+  $('redesEnq').innerHTML = r.dados.enquetes.map((e, ei) => { const k = r.id + ':' + ei, meu = votos[k];
+    const mx = Math.max(...e.opcoes.map(o => o.pct));
+    return `<div class="enq"><b>${esc(e.pergunta)}</b>${e.opcoes.map((o, oi) => `<div class="op ${o.pct === mx ? 'top' : ''} ${meu === undefined ? 'votavel' : ''} ${meu === oi ? 'meu' : ''}" ${meu === undefined ? `role="button" tabindex="0" data-votar="${k}|${oi}"` : ''}><i style="width:${meu === undefined ? 0 : o.pct}%"></i><span><span>${esc(o.texto)}</span>${meu === undefined ? '' : `<b style="display:inline;margin:0">${o.pct}%</b>`}</span></div>`).join('')}
+      <div class="meu-voto">${meu === undefined ? 'Toque numa opção para votar e ver o resultado' : 'Seu voto está registrado neste aparelho'}</div></div>`; }).join('')
     || '<div class="vazio">sem enquetes</div>';
+  $('redesEnq').querySelectorAll('[data-votar]').forEach(b => { const vota = () => { const [k, oi] = b.dataset.votar.split('|');
+    const vs = redesJSON('redesVotos'); vs[k] = +oi; store.set('redesVotos', JSON.stringify(vs)); redesFeed(); };
+    b.addEventListener('click', vota); b.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); vota(); } }); });
 }
 
 function renderHall(h) {
@@ -1274,7 +1333,35 @@ function iaAdvHTML(d, p) {
     <div class="dica">${esc(a.motivo)}</div>
     <div class="dica">${sim(pl.estilo_ofensivo, 'posse de bola', 'contra-ataque')} · ${sim(pl.saida_de_bola, 'passe curto', 'passe longo')} · ${sim(pl.estilo_defensivo, 'defesa total', 'pressão na frente')} · pressão ${sim(pl.pressao, 'tradicional', 'agressiva')} · linha ${pl.linha_defensiva} · compactação ${pl.compactacao}</div>
     ${(a.instrucoes || []).length ? `<div class="dica">📋 Instruções: ${a.instrucoes.map(esc).join(' · ')}</div>` : ''}
-    ${apr}</div>`;
+    ${apr}${(() => { const pr = d.duelo && d.duelo.usuario && d.duelo.usuario.proximo; if (!pr) return '';
+      return `<div class="dica">🤖 Palpites (você primeiro): ${NOME_MOD.estatistica} ${pr.est[0]} x ${pr.est[1]} · ${NOME_MOD.rede} ${pr.rede[0]} x ${pr.rede[1]} · plano escolhido por ${NOME_MOD[pr.decidiu] || '—'}</div>`; })()}</div>`;
+}
+
+// 12/10/2026: duelo estatística x rede neural (duelo.py) — duas arenas, placar de 100 jogos, quem decide
+const NOME_MOD = {estatistica: '📊 Estatística', rede: '🧠 Rede neural'};
+function dueloPlacar(x, titulo, decide) {
+  const pl = x.placar, n = pl.jogos, mx = Math.max(pl.estatistica, pl.rede, 1);
+  const barra = (k, cor) => `<div style="display:flex;align-items:center;gap:8px;margin:3px 0"><span style="width:118px">${NOME_MOD[k]}</span>
+    <div class="bar" style="flex:1"><i style="width:${Math.round(100 * pl[k] / mx)}%;background:${cor}"></i></div><b style="width:64px;text-align:right">${pl[k]} pts</b></div>`;
+  return `<div class="item"><b>${titulo}</b> <span class="dica">· quem decide ${decide}: <b>${NOME_MOD[x.lider]}</b></span>
+    ${barra('estatistica', 'var(--gold)')}${barra('rede', '#1d9bf0')}
+    <div class="dica">${n < 100 ? `${n} de 100 jogos pontuados — a liderança só pode mudar depois de 100` : `últimos 100 jogos`} · placares exatos: ${pl.exatos.estatistica} x ${pl.exatos.rede} · vencedor certo: ${pl.vencedor.estatistica} x ${pl.vencedor.rede}${x.pendentes ? ` · ${x.pendentes} palpite(s) esperando o jogo` : ''}</div>
+    ${(x.trocas || []).length ? `<div class="dica">🔁 ${x.trocas.map(t => `${dataBR(t.data)}: ${NOME_MOD[t.lider]} assumiu (${t.placar[0]} x ${t.placar[1]})`).join(' · ')}</div>` : ''}</div>`;
+}
+function renderDuelo(d) {
+  const D = d.duelo, el = $('duelo');
+  if (!el) return;
+  if (!D) { el.innerHTML = '<div class="vazio">O duelo começa com o próximo jogo.</div>'; return; }
+  const pc = s => s ? `${s[0]} x ${s[1]}` : '—';
+  const u = D.usuario, pr = u.proximo;
+  el.innerHTML = `<div class="grid2"><div>${dueloPlacar(D.usuario, 'Seus jogos', 'o plano do adversário')}${dueloPlacar(D.simulados, 'Jogos da IA (simulados)', 'o rodízio dos clubes')}
+      ${D.pretreino ? `<div class="dica">Antes do duelo, a rede estudou o histórico do save. No teste: jogos da IA ${D.pretreino.simulados?.estatistica ?? '—'} x ${D.pretreino.simulados?.rede ?? '—'} pts; seus jogos ${D.pretreino.usuario?.estatistica ?? '—'} x ${D.pretreino.usuario?.rede ?? '—'} pts (estatística x rede).</div>` : ''}</div>
+    <div>${pr ? `<div class="item" style="border-left:3px solid #1d9bf0;padding-left:8px"><b>Palpites para o próximo jogo${pr.adv ? ' contra o ' + esc(pr.adv) : ''}</b>
+        <div>${NOME_MOD.estatistica}: <b>${pc(pr.est)}</b> · ${NOME_MOD.rede}: <b>${pc(pr.rede)}</b> <span class="dica">(você primeiro)</span></div>
+        <div class="dica">plano escolhido por ${NOME_MOD[pr.decidiu] || '—'}: ${esc(pr.plano || '')}</div></div>` : ''}
+      ${(u.ultimos || []).map(h => `<div class="item">${dataBR(h.data)} · ${esc(h.adv || '')}: deu <b>${pc(h.real)}</b>
+        <div class="dica">${NOME_MOD.estatistica} ${pc(h.est)} (+${h.p_est}) · ${NOME_MOD.rede} ${pc(h.rede)} (+${h.p_rede})${h.decidiu ? ` · plano: ${NOME_MOD[h.decidiu]}` : ''}</div></div>`).join('')
+        || '<div class="vazio">Os palpites dos seus jogos aparecem aqui assim que o próximo jogo acontecer.</div>'}</div></div>`;
 }
 
 function renderFamiliaridade(d) {

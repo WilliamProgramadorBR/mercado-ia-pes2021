@@ -428,6 +428,11 @@ def contexto(M, fase):
     if am and am['gols'] >= 8 and not am['nosso']:
         c.update(art_mundo=am['nome'], art_mundo_time=am['time'], art_mundo_gols=am['gols'])
         cats.add('art_mundo')
+    try:   # 12/10/2026: o momento, a lesão, a análise e o próximo rival (redes_vivas.py)
+        import redes_vivas
+        redes_vivas.contexto(M, fase, c, cats)
+    except Exception as e:  # noqa: BLE001
+        print(f'aviso: redes vivas (contexto): {type(e).__name__}: {e}')
     return c, cats
 
 
@@ -470,9 +475,16 @@ def posts(M, fase, rnd, n=9, ja=(), pautas=()):
     return out, c
 
 
-def respostas(tom, autor, c, rnd, curtidas):
-    """Até 3 comentários de outros perfis embaixo do post."""
-    banco = RESPOSTAS.get(tom) or RESPOSTAS['neu']
+def respostas(tom, autor, c, rnd, curtidas, cat=None):
+    """Até 3 comentários de outros perfis embaixo do post (12/10/2026: também pelo assunto do post)."""
+    banco = list(RESPOSTAS.get(tom) or RESPOSTAS['neu'])
+    try:
+        import redes_vivas
+        proprio = redes_vivas.RESP_CAT.get(cat or '', [])
+        # post do clube, de jogador ou boletim médico: só comentários do assunto ("Discordo, mas respeito" não cabe)
+        banco = list(proprio) if cat in ('oficial', 'jogador', 'lesao', 'volta') and proprio else banco + proprio * 2
+    except Exception:  # noqa: BLE001
+        pass
     k = rnd.choices([0, 1, 2, 3], weights=[2, 4, 3, 2])[0]
     out, usados, quem_ja = [], set(), {autor}
     for _ in range(k):
@@ -482,7 +494,11 @@ def respostas(tom, autor, c, rnd, curtidas):
             continue
         usados.add(t)
         quem_ja.add(quem)
-        out.append({'autor': quem, 'texto': t.format(**{k2: v for k2, v in c.items() if isinstance(v, (str, int))}),
+        try:
+            t = t.format(**{k2: v for k2, v in c.items() if isinstance(v, (str, int))})
+        except (KeyError, IndexError, ValueError):
+            continue
+        out.append({'autor': quem, 'texto': t,
                     'curtidas': max(1, int(curtidas * rnd.uniform(0.002, 0.04)))})
     return out
 
@@ -503,3 +519,11 @@ def tom_de(autor, texto):
     if any(x in texto for x in ('🔥', '🏆', '!!!', '🐐', '😍')):
         return 'pos'
     return 'neu'
+
+
+try:   # 12/10/2026: modelos do momento (redes_vivas.py)
+    import redes_vivas as _rv
+    M_ += _rv.MODELOS
+    PESO_CAT.update(_rv.PESO)
+except Exception as _e:  # noqa: BLE001
+    print('aviso: redes vivas não carregadas:', _e)

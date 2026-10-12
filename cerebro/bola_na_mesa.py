@@ -170,7 +170,8 @@ def mundo(car, r, d, snap, ctx=None):
             'clube_de': clube_de, 'forca': forca, 'rank': rank, 'n_clubes': n_clubes, 'todas': todas,
             'conflitos': r.get('conflitos') or [], 'lideres': r.get('lideres') or [], 'esc': esc, 'sigla': _slug(nos),
             'perfis': perfis, 'hall': hall, 'premio_recente': recente, 'trave': trave, 'apelido': cat_ap,
-            'selecao_de': selecao_de, 'dest': car.get('mundo') or {}, 'hist': car.get('historia') or {}, 'rd': car.get('rodada_destaque') or {}, 'fifa': car.get('data_fifa'), 'rumores': [x for x in car.get('rumores') or [] if x.get('ativo')], 'vit': car.get('vitoriosos') or {}}
+            'selecao_de': selecao_de, 'dest': car.get('mundo') or {}, 'hist': car.get('historia') or {}, 'rd': car.get('rodada_destaque') or {}, 'fifa': car.get('data_fifa'), 'rumores': [x for x in car.get('rumores') or [] if x.get('ativo')], 'vit': car.get('vitoriosos') or {}, 'lesao': car.get('lesao_ultima'), 'lesao_volta': car.get('lesao_volta'),
+            'momento': car.get('momento'), 'analise': car.get('analise_porques') or [], 'analise_data': car.get('analise_data')}
 
 
 def _media(e):
@@ -1828,6 +1829,49 @@ def joia_base(M, rnd):
             'posts': [(_torc(M), f'Coloca o {jo["nome"]} pra jogar!!! O futuro é agora! 🌱⚽')]}
 
 
+# ----- departamento médico (lesoes.py, 12/10/2026)
+@pauta
+def lesao_craque(M, rnd):
+    a = M.get('lesao')
+    if not a or _dias(M['hoje'], tuple(a['data'])) > 12:
+        return None
+    n, sub = a['nome'], a.get('sub')
+    g = a['grandes'][0] if a.get('grandes') else None
+    alvo = (g['classico'] or g['adv']) if g else None
+    sem = a['sem_ele']
+    f = [('rogerio', f'Notícia ruim no departamento médico: {n} está lesionado' + (f', e o {alvo} vem aí.' if alvo else '.')
+          + (f' Ele é o {a["rank"]}º melhor do elenco e fez {a["parte_gols"]}% dos gols do time.' if a['parte_gols'] else '')),
+         ('helena', (f'Sem ele nesta temporada: {sem["v"]} vitórias, {sem["e"]} empates, {sem["d"]} derrotas. ' if sem['jogos'] else
+                     'O time ainda não jogou sem ele: é território desconhecido. ')
+          + (f'O substituto natural é {sub["nome"]}, nota {sub["ovr"]}.' if sub else '')),
+         ('carlao', 'Time grande não pode depender de um só! É hora de o grupo mostrar que tem elenco.' if a['rank'] <= 3
+          else 'Desfalque importante, mas o elenco tem como cobrir.'),
+         ('beto', 'No CT o clima é de apreensão. Ele estava voando nos treinos.'),
+         ('toninho', f'O departamento médico vai ter que fazer milagre! Acende uma vela pro {n}!')]
+    if a.get('corrida'):
+        c = a['corrida']
+        f.insert(3, ('helena', f'E na pior hora: {c["pos"]}º lugar na disputa pelo {c["zona"].split(" ")[0]}, com o {c["rival"]["nome"]} na cola.'))
+    return {'id': 'lesao_craque', 'cat': 'jogador', 'peso': 9 if a['rank'] <= 3 else 6, 'titulo': f'Sem {n}: e agora?', 'falas': f,
+            'enquete': _enquete(f'Sem {n}, o time aguenta?', [('Aguenta, tem elenco', 1.0), ('Vai sentir muito', 1.2),
+                                                              ('Hora de contratar', 0.6)], rnd),
+            'posts': [(_torc(M), f'Força {n}!!! Volta logo, craque 🙏'), (_torc(M), f'Sem o {n} agora? Que fase...')]}
+
+
+@pauta
+def volta_craque(M, rnd):
+    a = M.get('lesao_volta')
+    if not a or _dias(M['hoje'], tuple(a['data'])) > 10:
+        return None
+    n = a['nome']
+    f = [('rogerio', f'Boa notícia: {n} está liberado depois de {a["dias_fora"]} dias.'),
+         ('carlao', 'Craque é craque: volta e já resolve! Coloca para jogar!'),
+         ('helena', 'Cuidado com o ritmo. Voltar de lesão direto em jogo grande é risco de recaída.'),
+         ('toninho', f'O {n} voltou mais rápido que o meu salário cai na conta!')]
+    return {'id': 'volta_craque', 'cat': 'jogador', 'peso': 7, 'titulo': f'{n} está de volta', 'falas': f,
+            'enquete': _enquete(f'{n} volta como titular?', [('Direto no time', 1.1), ('Aos poucos', 1.0)], rnd),
+            'posts': [(_torc(M), f'ELE VOLTOU!!! {n} liberado 🔥')]}
+
+
 # ----- rumores de mercado sobre os nossos (rumores.py)
 @pauta
 def rumor_mercado(M, rnd):
@@ -2031,6 +2075,25 @@ def episodio(M, car, rnd=None, fase=None):
         posts = mix
     except Exception as e:  # noqa: BLE001
         print(f'aviso: redes extras: {type(e).__name__}: {e}')
+    em_alta = []
+    try:   # 12/10/2026: conta oficial, jogadores, thread, citações, "Em alta" e o ritmo do feed (redes_vivas.py)
+        import redes_vivas
+        c_r, cats_r = (ctx_r, set()) if ctx_r else ({'nos': M['nos'], 'sigla': M['sigla'], 'torc': f'@{M["sigla"]}_raiz'}, set())
+        if ctx_r:
+            import redes_falas as _rf
+            c_r, cats_r = _rf.contexto(M, fase)
+        esp = redes_vivas.especiais(M, fase, rnd, c_r, cats_r)
+        for i, x in enumerate(esp):   # espalhados pelo feed, os oficiais primeiro
+            posts.insert(min(len(posts), 1 + i * 3), x)
+        for x in redes_vivas.citacoes(posts, rnd, c_r):
+            posts.insert(min(len(posts), rnd.randint(4, max(4, len(posts)))), x)
+        em_alta = redes_vivas.em_alta(M, fase, c_r, cats_r, rnd)
+        for x in posts:
+            if x['autor'] in redes_vivas.VEICULOS or x['autor'].endswith('_oficial'):
+                x['verificado'] = True
+        redes_vivas.ritmo(posts, rnd)
+    except Exception as e:  # noqa: BLE001
+        print(f'aviso: redes vivas: {type(e).__name__}: {e}')
     base = math.log10(M['socios'] or 200_000)
     famosos = [(j['nome'], M['perfis'][j['k']]['fama']) for j in M['J'] if (M.get('perfis') or {}).get(j['k']) and M['perfis'][j['k']]['fama'] >= 25]
     for x in posts:
@@ -2039,11 +2102,24 @@ def episodio(M, car, rnd=None, fase=None):
         x['reposts'] = int(x['curtidas'] * rnd.uniform(0.05, 0.3))
         try:   # comentários embaixo do post
             import redes_falas
+            cat = x['pauta'].split('|', 1)[1] if x['pauta'].startswith('redes|') else x['pauta']
             x['respostas'] = redes_falas.respostas(x.pop('tom', None) or redes_falas.tom_de(x['autor'], x['texto']),
-                                                   x['autor'], ctx_r or {'sigla': M['sigla'], 'apelido': M['nos']}, rnd, x['curtidas'])
+                                                   x['autor'], ctx_r or {'sigla': M['sigla'], 'apelido': M['nos']}, rnd, x['curtidas'], cat=cat)
         except Exception:  # noqa: BLE001
             x['respostas'] = []
-    return {'blocos': blocos, 'enquetes': enquetes[:5], 'posts': posts,
+    try:   # nomes de times como título e "a Fiorentina" nos posts
+        import clube
+        nomes = {M['nos'], (M.get('ult') or {}).get('adv'), (M.get('pj') or {}).get('casa'), (M.get('pj') or {}).get('fora')}
+        nomes |= {t.get('time') for t in M.get('tab') or []}
+        nomes |= {(M.get('pj') or {}).get('adversario')} | {x.get('time') for x in (M.get('dest') or {}).get('clubes_lista') or []}
+        nomes |= {x.get('clube') for x in M.get('rumores') or []}
+        nomes = {n for n in nomes if n}
+        posts = clube.concordar_tudo(clube.titulo_nomes(posts, nomes))
+        enquetes = clube.concordar_tudo(clube.titulo_nomes(enquetes, nomes))
+        blocos = clube.concordar_tudo(clube.titulo_nomes(blocos, nomes))
+    except Exception as e:  # noqa: BLE001
+        print(f'aviso: nomes nos posts: {e}')
+    return {'blocos': blocos, 'enquetes': enquetes[:5], 'posts': posts, 'em_alta': em_alta,
             'bancada': {q: {'nome': n, 'papel': p} for q, (n, p) in PESSOAS.items()}}
 
 
@@ -2094,7 +2170,7 @@ def materias(car, r, d, snap, ctx=None, log=print, fase=None):
              'dados': {'blocos': ep['blocos'], 'bancada': ep['bancada'], 'fase': fase, 'jogo': rotulo}},
             {'chave': chave.replace('bnm|', 'redes|', 1), 'frente': 'redes', 'data': data, 'titulo': 'Redes',
              'linha_fina': '', 'corpo': [], 'autor': 'Redes sociais', 'ia': ia,
-             'dados': {'posts': ep['posts'], 'enquetes': ep['enquetes'], 'fase': fase, 'jogo': rotulo}}]
+             'dados': {'posts': ep['posts'], 'enquetes': ep['enquetes'], 'em_alta': ep.get('em_alta') or [], 'fase': fase, 'jogo': rotulo}}]
 
 
 def vivo(dados, pulso, snap, fase, log=print):
@@ -2171,3 +2247,6 @@ def vivo(dados, pulso, snap, fase, log=print):
     if out:
         log(f'Bola na Mesa ao vivo ({fase}): ' + out[0]['linha_fina'])
     return out
+
+
+import pautas_momento  # noqa: E402,F401  12/10/2026: pautas do momento (registra em PAUTAS)

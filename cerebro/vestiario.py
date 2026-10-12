@@ -196,7 +196,7 @@ def analisar(d, snap=SNAP, extra=None):
         lt, lr = linhas(temp), linhas(rec)
         jp = dict(
             k=k, nome=f.name.strip(), pos=f.pos, idade=f.age, ovr=ovr, salario=c.get('salario', 0),
-            contrato=c.get('contrato_fim'), chegada=chegada, anos=anos, seta=c.get('seta'), condicao=c.get('condicao'),
+            contrato=c.get('contrato_fim'), chegada=chegada, anos=anos, seta=c.get('seta'), condicao=c.get('condicao'), lesao=c.get('lesao', 0),
             capitao=(k == capitao), cobrador=(k in cobradores),
             skill_cap=SKILL_CAPITAO in f.skills, skill_raca=SKILL_RACA in f.skills,
             # mérito de bola parada pelos atributos do próprio jogo (exigencias.py compara pedinte x dono do posto)

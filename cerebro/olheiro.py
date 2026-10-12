@@ -13,6 +13,46 @@ import tatica_save as T
 ATAQUE = {'CF', 'SS', 'LWF', 'RWF', 'AMF'}
 
 
+CRIADORES = {'Orchestrator', 'Creative Playmaker', 'Classic No. 10', 'Hole Player', 'Build Up'}
+
+
+def vulnerabilidades(dados, P, pos_elenco, out):
+    """12/10/2026 (pedido do usuário: 'como posso explorar as vulnerabilidades do time do player'): pontos fracos e
+    fortes do time titular do usuário, pelos atributos de quem joga (foto da memória).
+      lateral_fraco   lateral titular bem abaixo do resto do time -> atacar pelos lados
+      armador         meia que comanda o jogo (passe + estilo de criação) -> fechar o meio e marcar o armador
+      zaga_lenta      zagueiros titulares lentos -> bola nas costas, pivô de contra-ataque
+      laterais_sobem  laterais ofensivos / instrução de lateral ofensivo -> contra-ataque nas costas deles"""
+    tit = [j for j in dados.get('jogadores') or [] if (j.get('minutos_recentes') or 0) >= 0.4 and not j.get('lesao')
+           and P and (j['reg'], j['pid']) in P]
+    if len(tit) < 9:
+        return []
+    f = lambda j: P[(j['reg'], j['pid'])]
+    media = sum(j.get('nota') or 0 for j in tit) / len(tit)
+    vs = []
+    lats = [j for j in tit if j.get('pos') in ('LB', 'RB')]
+    if lats:
+        fraco = min(lats, key=lambda j: j.get('nota') or 0)
+        if (fraco.get('nota') or 0) <= media - 5:
+            lado = 'esquerdo' if fraco['pos'] == 'LB' else 'direito'
+            vs.append({'tipo': 'lateral_fraco', 'nome': fraco['nome'], 'lado': lado,
+                       'frase': f'lado {lado} vulnerável ({fraco["nome"]}, nota {fraco.get("nota")} num time de média {round(media)})'})
+    meias = [j for j in tit if j.get('pos') in ('DMF', 'CMF', 'AMF')]
+    if meias:
+        nota_passe = lambda j: f(j)['lowpass'] * 0.5 + f(j)['loftpass'] * 0.5 + (6 if f(j).style in CRIADORES else 0)
+        arm = max(meias, key=nota_passe)
+        if nota_passe(arm) >= 86 and (arm['reg'], arm['pid']) in pos_elenco:
+            vs.append({'tipo': 'armador', 'nome': arm['nome'], 'idx': pos_elenco[(arm['reg'], arm['pid'])],
+                       'frase': f'o jogo passa pelos pés de {arm["nome"]} (passe {round(nota_passe(arm))})'})
+    zags = [f(j)['speed'] for j in tit if j.get('pos') == 'CB']
+    if zags and sum(zags) / len(zags) < 74:
+        vs.append({'tipo': 'zaga_lenta', 'frase': f'zaga lenta (velocidade média {round(sum(zags) / len(zags))})'})
+    sobem = [j for j in lats if f(j).style in ('Offensive Fullback', 'Fullback Finisher')]
+    if len(sobem) >= 2 or 4 in (out.get('instrucoes') or []):
+        vs.append({'tipo': 'laterais_sobem', 'frase': 'laterais que sobem muito: espaço nas costas deles'})
+    return vs
+
+
 def perfil(d, dados, P, squad):
     """d = save descriptografado; dados = estado da Central (jogadores, últimos jogos); P = fichas; squad = SaveML.squad
     do time do usuário (para achar a posição de cada jogador no elenco)."""
@@ -22,7 +62,12 @@ def perfil(d, dados, P, squad):
         out['plano'] = T.ler_em(d, o)
         out['instrucoes'] = [c for c, _, _ in T.instrucoes(d, None, o=o)]
     pos_elenco = {tuple(k): i for i, k in enumerate(squad)}
-    J = [j for j in dados.get('jogadores') or [] if (j.get('temporada') or {}).get('jogos')]
+    # 12/10/2026: lesionado fora (a IA marcou o William machucado contra o Palace)
+    lesionados = {(j['reg'], j['pid']) for j in dados.get('jogadores') or [] if j.get('lesao')}
+    if (dados.get('lesao') or {}).get('k') and not (dados.get('lesao_volta') or {}).get('nome') == dados['lesao'].get('nome'):
+        lesionados.add(tuple(dados['lesao']['k']))
+    out['lesionados'] = len(lesionados)
+    J = [j for j in dados.get('jogadores') or [] if (j.get('temporada') or {}).get('jogos') and (j['reg'], j['pid']) not in lesionados]
     gols_time = sum(j['temporada'].get('gols', 0) for j in J) or 1
     ameacas = []
     for j in J:
@@ -38,7 +83,8 @@ def perfil(d, dados, P, squad):
                         'titular': (j.get('minutos_recentes') or 0) >= 0.5})
     ameacas.sort(key=lambda x: (-x['peso'], -x['gols']))
     out['ameacas'] = ameacas[:5]
-    atac = [j for j in dados.get('jogadores') or [] if j.get('pos') in ATAQUE and (j.get('minutos_recentes') or 0) >= 0.4]
+    atac = [j for j in dados.get('jogadores') or [] if j.get('pos') in ATAQUE and (j.get('minutos_recentes') or 0) >= 0.4
+            and (j['reg'], j['pid']) not in lesionados]
     vel = [P[(j['reg'], j['pid'])]['speed'] for j in atac if P and (j['reg'], j['pid']) in P]
     out['velocidade_ataque'] = round(sum(vel) / len(vel)) if vel else None
     cf = [P[(j['reg'], j['pid'])] for j in atac if j.get('pos') == 'CF' and P and (j['reg'], j['pid']) in P]
@@ -46,6 +92,9 @@ def perfil(d, dados, P, squad):
     # dribles do time por jogo = soma do ritmo de cada um (só partidas JOGADAS entram nos números detalhados)
     num = [j.get('numeros') or {} for j in J]
     out['dribles_por_jogo'] = round(sum((n.get('dribles') or 0) / n['jogos'] for n in num if n.get('jogos')), 1)
+    out['vulnerabilidades'] = vulnerabilidades(dados, P, pos_elenco, out)
+    for v in out['vulnerabilidades']:
+        out['frases'].append(v['frase'])
     try:   # entrosamento com o plano (familiaridade tática do próprio jogo)
         import familiaridade
         fam = familiaridade.analisar(d, dados.get('jogadores') or [])

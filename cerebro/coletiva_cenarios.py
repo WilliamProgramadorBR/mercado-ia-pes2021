@@ -79,6 +79,33 @@ def _tie(todas, ti, p):
         return None
 
 
+def _contexto_extra(X, fonte):
+    """12/10/2026: o que os cenários novos (coletiva_extra.py) usam — lesão, volta, corrida, a IA adversária (o plano
+    do adversário do último e do próximo jogo) e as capas do dia."""
+    import json
+    import os
+    X['lesao'] = fonte.get('lesao_ultima') or fonte.get('lesao')
+    X['lesao_volta'] = fonte.get('lesao_volta')
+    X['corrida'] = fonte.get('corrida')
+    X['pj_disputa'] = (fonte.get('proximo_jogo') or {}).get('disputa')
+    X['capas'] = ((fonte.get('midia') or {}).get('capas')) or []
+    X['momento'] = fonte.get('momento')
+    X['analise'] = fonte.get('analise_porques') or []
+    X['mundo'] = fonte.get('mundo') or {}
+    try:
+        arq = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'historico', 'ia_adversaria.json')
+        reg = json.load(open(arq, encoding='utf-8')).get('registro') or []
+    except (OSError, ValueError):
+        reg = []
+    up = lambda s: (s or '').strip().upper()
+    X['ia_ult'] = next((x for x in reversed(reg) if up(x.get('adversario')) == up(X.get('adv'))
+                        and abs(_dias(X['hoje'], tuple(x.get('data') or X['hoje']))) <= 3), None)
+    p = X.get('prox') or {}
+    X['ia_prox'] = next((x for x in reversed(reg) if p and up(x.get('adversario')) == up(p.get('adv'))
+                         and tuple(x.get('data') or ()) == tuple(p.get('data') or ())), None)
+    return X
+
+
 def contexto_reuniao(r, car, hoje):
     X = _contexto_reuniao(r, car, hoje)
     if X:
@@ -86,6 +113,7 @@ def contexto_reuniao(r, car, hoje):
         X['fifa'] = car.get('data_fifa')
         X['rumores'] = [x for x in car.get('rumores') or [] if x.get('ativo')]
         X['vit'] = car.get('vitoriosos') or {}
+        _contexto_extra(X, car)
     if X and r.get('jogos'):
         X['tie'] = _tie(r.get('todas_partidas') or [], r['ti'], r['jogos'][-1])
         try:
@@ -135,6 +163,7 @@ def contexto_vivo(dados, p):
     X['fifa'] = dados.get('data_fifa')
     X['rumores'] = [x for x in dados.get('rumores') or [] if x.get('ativo')]
     X['vit'] = dados.get('vitoriosos') or {}
+    _contexto_extra(X, dados)
     ida = uj.get('ida')
     if ida and uj.get('num') is not None:   # mata-mata: o pulso manda o jogo de ida junto
         atual = {k: uj[k] for k in ('time1', 'time2', 'gols1', 'gols2', 'comp', 'flag', 'num')}
@@ -1526,7 +1555,7 @@ def obrigacao_vencer(X, rnd):
     t, a = V.get('tropeco'), V.get('anterior')
     if not t or not a or _dias(X['hoje'], tuple(t['data'])) > 4:
         return None
-    return 10, 'obrigacao', f'Depois de {a["n"]} títulos, o {t["res"]} com o {t["adv"]} preocupa? O time está acomodado?', [
+    return 10, 'obrigacao', f'Depois de {a["n"]} títulos, {"a" if t["res"] == "derrota" else "o"} {t["res"]} com o {t["adv"]} preocupa? O time está acomodado?', [
         op('Ninguém aqui está acomodado. Tropeço acontece com quem joga 60 jogos por ano.', [G(1, 'o técnico negou acomodação e protegeu o grupo')],
            'Técnico nega acomodação', 'Discurso de proteção ao elenco.'),
         op('A cobrança é justa. Quem ganhou tudo tem que querer mais, e eu vou cobrar.', [G(-1, 'o técnico cobrou o elenco em público depois do tropeço')],
@@ -1567,8 +1596,10 @@ def joia_base_col(X, rnd):
            '"Idade não é critério"', 'Resposta seca.')]
 
 
-TABELA = {'lideranca', 'briga_titulo', 'zona_rebaixamento', 'vaga_continental', 'proximo_lanterna'}
-SO_OFICIAL = TABELA | {'jejum_vitorias', 'derrota_casa', 'derrota_fora', 'goleada_sofrida', 'torcida_protesto',
+TABELA = {'lideranca', 'briga_titulo', 'zona_rebaixamento', 'vaga_continental', 'proximo_lanterna',
+          'jogo_de_seis_pontos', 'rival_na_cola', 'perseguidor', 'reta_final'}
+SO_OFICIAL = TABELA | {'zero_a_zero_em_casa', 'rodizio_custou_caro', 'anulado_pela_marcacao', 'furar_ferrolho',
+                       'adversario_estudou', 'adversario_dando_a_vida', 'jejum_vitorias', 'derrota_casa', 'derrota_fora', 'goleada_sofrida', 'torcida_protesto',
                        'pressao_diretoria', 'sequencia_vitorias', 'fim_invencibilidade', 'recuperacao', 'vitoria_fora_grande',
                        'adversario_elogio', 'defesa_vazada', 'sem_sofrer', 'aproveitamento_fora', 'ataque_seca'}
 HIST = __import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), 'historico', 'coletiva_hist.json')
@@ -1597,10 +1628,22 @@ def _hist(ck, novo=None, hoje=None):
     return h.get(ck or '-', {})
 
 
+def _nomes_times(X):
+    ns = {X.get('nos'), X.get('adv'), (X.get('prox') or {}).get('adv')}
+    ns |= {t.get('time') for t in X.get('tab') or []}
+    ns |= {g.get('adversario') for g in X.get('ultimos') or []}
+    ns |= {r.get('nome') for r in ((X.get('corrida') or {}).get('rivais') or [])}
+    ns |= {r.get('clube') for r in X.get('rumores') or []}
+    ns |= {m.get('clube') for m in X.get('movimentos') or []} | {m.get('destino') for m in X.get('movimentos') or []}
+    return {(n or '').strip() for n in ns if n and len((n or '').strip()) >= 3}
+
+
 def gerar(X, n=3, seed=''):
     """Até `n` perguntas no formato da coletiva (midia.coletiva): as de maior peso com variedade de assunto."""
     if not X:
         return []
+    if n == 3 and (X.get('momento') or {}).get('clima') in ('crise', 'alerta'):
+        n = 4   # 12/10/2026: momento quente, coletiva mais longa
     rnd = random.Random(f'cen|{X.get("ck")}|{X["hoje"]}|{seed}')
     saiu = {tuple(m['k']) for m in X.get('movimentos') or [] if m['tipo'] == 'saida'}
     if saiu:   # quem já saiu não é assunto de vestiário
@@ -1634,8 +1677,17 @@ def gerar(X, n=3, seed=''):
             continue
         alvos.add(alvo)
         out.append({'texto': texto, 'alvo': alvo, 'cenario': nome, 'opcoes': opcoes})
+    try:   # 12/10/2026: nomes de times como título ("LIVERPOOL" -> "Liverpool") e "a Fiorentina", "da Juventus"
+        import clube
+        out = clube.concordar_tudo(clube.titulo_nomes(out, _nomes_times(X)))
+    except Exception:  # noqa: BLE001
+        pass
     try:
         _hist(X.get('ck'), [o['cenario'] for o in out], X['hoje'])
     except OSError:
         pass
     return out
+
+
+import coletiva_extra  # noqa: E402,F401  12/10/2026: lote 2 de cenários (registra em CENARIOS)
+import coletiva_momento  # noqa: E402,F401  12/10/2026: lote 3 — o momento acumulado (momento.py)

@@ -38,4 +38,67 @@ def definir(nome_time_):
     return C
 
 
+# 12/10/2026: clubes de nome feminino ("a Fiorentina", "da Juventus", "pela Roma") — corrige qualquer texto pronto
+FEMININOS = {'ROMA', 'JUVENTUS', 'LAZIO', 'FIORENTINA', 'SAMPDORIA', 'ATALANTA', 'UDINESE', 'REAL SOCIEDAD', 'SALERNITANA',
+             'CREMONESE', 'SPEZIA', 'REGGIANA', 'LUSITANA', 'PORTUGUESA', 'PONTE PRETA', 'CHAPECOENSE', 'INTERNAZIONALE',
+             'ROMA FC', 'SS LAZIO', 'ACF FIORENTINA', 'JUVENTUS FC', 'AS ROMA'}
+_TROCA = {'o': 'a', 'O': 'A', 'do': 'da', 'Do': 'Da', 'DO': 'DA', 'no': 'na', 'No': 'Na', 'NO': 'NA', 'ao': 'à', 'Ao': 'À',
+          'AO': 'À', 'pelo': 'pela', 'Pelo': 'Pela', 'PELO': 'PELA', 'contra o': 'contra a', 'Contra o': 'Contra a'}
+_RE = None
+
+
+def art(nome):
+    """'a' para 'Fiorentina', 'o' para 'Chelsea'."""
+    return 'a' if (nome or '').strip().upper() in FEMININOS else 'o'
+
+
+def concordar(txt):
+    """Troca 'o Fiorentina' -> 'a Fiorentina', 'do Juventus' -> 'da Juventus', 'O ROMA' -> 'A ROMA' num texto pronto."""
+    global _RE
+    if not txt or not isinstance(txt, str):
+        return txt
+    if _RE is None:
+        import re
+        nomes = sorted({n for f in FEMININOS for n in (f, nome_time(f))}, key=len, reverse=True)
+        _RE = re.compile(r'(?<![\w])(o|O|do|Do|DO|no|No|NO|ao|Ao|AO|pelo|Pelo|PELO)(\s+)(' + '|'.join(map(re.escape, nomes)) + r')(?![\w])')
+    return _RE.sub(lambda m: _TROCA[m.group(1)] + m.group(2) + m.group(3), txt)
+
+
+def titulo_nomes(x, nomes):
+    """Troca os nomes de time em MAIÚSCULAS ('LIVERPOOL') pela forma de título ('Liverpool') em toda a estrutura."""
+    import re
+    ns = sorted({n.strip().upper() for n in nomes if n and n.strip()}, key=len, reverse=True)
+    if not ns:
+        return x
+    rx = re.compile(r'(?<![\w])(' + '|'.join(map(re.escape, ns)) + r')(?![\w])')
+
+    def f(v):
+        if isinstance(v, str):
+            resto = [ch for ch in rx.sub('', v) if ch.isalpha()]
+            if resto and sum(ch.isupper() for ch in resto) / len(resto) > 0.6:
+                return v   # texto todo em maiúsculas é grito de torcedor: fica como está
+            return rx.sub(lambda m: nome_time(m.group(1)), v)
+        if isinstance(v, list):
+            return [f(y) for y in v]
+        if isinstance(v, tuple):
+            return tuple(f(y) for y in v)
+        if isinstance(v, dict):
+            return {k: f(y) for k, y in v.items()}
+        return v
+    return f(x)
+
+
+def concordar_tudo(x):
+    """concordar() em todas as strings de uma estrutura (dict/list), devolvendo uma cópia."""
+    if isinstance(x, str):
+        return concordar(x)
+    if isinstance(x, list):
+        return [concordar_tudo(v) for v in x]
+    if isinstance(x, tuple):
+        return tuple(concordar_tudo(v) for v in x)
+    if isinstance(x, dict):
+        return {k: concordar_tudo(v) for k, v in x.items()}
+    return x
+
+
 definir('MANCHESTER UNITED')

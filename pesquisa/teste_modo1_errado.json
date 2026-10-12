@@ -1,0 +1,765 @@
+{
+ "dia": [
+  2035,
+  10,
+  14
+ ],
+ "clubes": {
+  "42": {
+   "nome": "BARCELONA",
+   "xi": [
+    [
+     1163,
+     141038
+    ],
+    [
+     1147,
+     165696
+    ],
+    [
+     346,
+     9000
+    ],
+    [
+     4782,
+     159320
+    ],
+    [
+     1152,
+     142867
+    ],
+    [
+     1150,
+     120070
+    ],
+    [
+     1159,
+     133157
+    ],
+    [
+     4783,
+     139919
+    ],
+    [
+     1165,
+     134454
+    ],
+    [
+     7190,
+     112991
+    ],
+    [
+     4605,
+     38627
+    ]
+   ],
+   "antes": "09031a0d010e210015132210141b191e04020b0c0f121c0a161d1f1806071120081705ffffffffff",
+   "nomes": [
+    "Joan Garcia",
+    "Pau Cubarsí",
+    "Leny Yoro",
+    "João Neves",
+    "Álex Balde",
+    "Lamine Yamal",
+    "Pedri González",
+    "Warren Zaïre-emery",
+    "Toni Fernández",
+    "Salvi Sánchez",
+    "Olivier Giroud"
+   ]
+  },
+  "54": {
+   "nome": "REAL MADRID",
+   "xi": [
+    [
+     1449,
+     123124
+    ],
+    [
+     1457,
+     37274
+    ],
+    [
+     1461,
+     41531
+    ],
+    [
+     3665711435,
+     106448
+    ],
+    [
+     1452,
+     41124
+    ],
+    [
+     1458,
+     119782
+    ],
+    [
+     1469,
+     322621
+    ],
+    [
+     1465,
+     111472
+    ],
+    [
+     459,
+     31486
+    ],
+    [
+     1471,
+     118728
+    ],
+    [
+     1467,
+     117047
+    ]
+   ],
+   "antes": "1a1e020f0e150607160b1021001312140819050a1b0411181c0c0d031f1701091d20ffffffffffff",
+   "nomes": [
+    "Andriy Lunin",
+    "Dean Huijsen",
+    "Raúl Asencio",
+    "Mickaël Alphonse",
+    "David Alaba",
+    "Aurélien Tchouaméni",
+    "Arda Güler",
+    "Franco Mastantuono",
+    "Mathys Tel",
+    "Gonzalo García",
+    "Vinícius Júnior"
+   ]
+  },
+  "29": {
+   "nome": "JUVENTUS",
+   "xi": [
+    [
+     2875,
+     127038
+    ],
+    [
+     3624,
+     65134
+    ],
+    [
+     1304,
+     9060
+    ],
+    [
+     801,
+     41074
+    ],
+    [
+     3478,
+     2147483651
+    ],
+    [
+     2063,
+     40871
+    ],
+    [
+     1536,
+     36718
+    ],
+    [
+     533,
+     141492
+    ],
+    [
+     907,
+     100620
+    ],
+    [
+     798,
+     107646
+    ],
+    [
+     790,
+     58653
+    ]
+   ],
+   "antes": "10151214130f070e18040a000316170d05091b1f190b1d111a0208061e0c201c01ffffffffffffff",
+   "nomes": [
+    "Diogo Costa",
+    "Robert Arboleda",
+    "Vitor Reis",
+    "Kenan Yildiz",
+    "KAIO",
+    "Christian Eriksen",
+    "Alexis Sánchez",
+    "Giorgio Scalvini",
+    "Matteo Politano",
+    "Jérémie Boga",
+    "Arkadiusz Milik"
+   ]
+  },
+  "122": {
+   "nome": "FLAMENGO",
+   "xi": [
+    [
+     3317,
+     34868
+    ],
+    [
+     4615,
+     107558
+    ],
+    [
+     3325,
+     130455
+    ],
+    [
+     3321,
+     47920
+    ],
+    [
+     2897,
+     135610
+    ],
+    [
+     4732,
+     40323
+    ],
+    [
+     3665712035,
+     116314
+    ],
+    [
+     3214,
+     1073781591
+    ],
+    [
+     3665709694,
+     37505
+    ],
+    [
+     3322,
+     106609
+    ],
+    [
+     3665709820,
+     41086
+    ]
+   ],
+   "antes": "1807000c0a060b11030f08171215051619130210040e091a140d01ffffffffffffffffffffffffff",
+   "nomes": [
+    "Dyogo Alves",
+    "Christian Mawissa",
+    "João Victor",
+    "Guillermo Varela",
+    "João Moreira",
+    "Pierre-emerick Aubameyang ",
+    "Justin Omoregie ",
+    "Gui Amorim",
+    "Nico Gaitán",
+    "Bruno Henrique",
+    "Jael"
+   ]
+  },
+  "41": {
+   "nome": "ATLÉTICO DE MADRID",
+   "xi": [
+    [
+     1424,
+     47250
+    ],
+    [
+     3665710715,
+     58668
+    ],
+    [
+     1120,
+     58839
+    ],
+    [
+     3626,
+     42535
+    ],
+    [
+     1124,
+     140703
+    ],
+    [
+     12888,
+     123112
+    ],
+    [
+     882,
+     34098
+    ],
+    [
+     1178,
+     46666
+    ],
+    [
+     1138,
+     42316
+    ],
+    [
+     1128,
+     110838
+    ],
+    [
+     1123,
+     134758
+    ]
+   ],
+   "antes": "2007010c0903080d1b000b0f191f0210171e04051806161c0a15111d0e1a121314ffffffffffffff",
+   "nomes": [
+    "Adrián San Miguel",
+    "Manoel",
+    "José Maria Giménez",
+    "Cédric Soares",
+    "Matteo Ruggeri",
+    "Richardson",
+    "Luka Modrić",
+    "Iago Aspas",
+    "Antoine Griezmann",
+    "Alexander Sørloth",
+    "Álex Baena"
+   ]
+  },
+  "127": {
+   "nome": "PALMEIRAS",
+   "xi": [
+    [
+     1135,
+     3272
+    ],
+    [
+     3491,
+     5603
+    ],
+    [
+     3485,
+     45756
+    ],
+    [
+     1643,
+     103408
+    ],
+    [
+     3497,
+     135086
+    ],
+    [
+     3483,
+     120448
+    ],
+    [
+     3665710952,
+     63322
+    ],
+    [
+     3503,
+     105105
+    ],
+    [
+     3481,
+     120246
+    ],
+    [
+     3504,
+     35457
+    ],
+    [
+     3482,
+     44620
+    ]
+   ],
+   "antes": "0c020e03071209150a05041e0b1019080f1416111317061a1f0d1c1b1d000118ffffffffffffffff",
+   "nomes": [
+    "Antonio Gomis",
+    "Benedetti",
+    "Gustavo Gómez",
+    "Lucas Vázquez",
+    "Agustín Giay",
+    "Luis Pacheco",
+    "Iago Falqué",
+    "Larson",
+    "Vitor Roque ",
+    "Allan",
+    "Felipe Anderson"
+   ]
+  },
+  "58": {
+   "nome": "VALENCIA",
+   "xi": [
+    [
+     1307,
+     61672
+    ],
+    [
+     1428,
+     42868
+    ],
+    [
+     1546,
+     123235
+    ],
+    [
+     1723,
+     113324
+    ],
+    [
+     1386,
+     47671
+    ],
+    [
+     1097,
+     100224
+    ],
+    [
+     1732,
+     113976
+    ],
+    [
+     4832,
+     308273
+    ],
+    [
+     1552,
+     45113
+    ],
+    [
+     17807,
+     45439
+    ],
+    [
+     17534,
+     37191
+    ]
+   ],
+   "antes": "0f1d01150a04050c0d11120e0014031b1c1e1817081907200b10161a1f06090213ffffffffffffff",
+   "nomes": [
+    "Marc-André Ter Stegen",
+    "Marc Bartra",
+    "César Tárrega",
+    "Nnamdi Collins",
+    "Rubén Peña",
+    "Yuri Berchiche",
+    "Oscar Højlund",
+    "Rudy Matondo",
+    "Dimitri Foulquier",
+    "Enda Stevens",
+    "Anthony Modeste"
+   ]
+  },
+  "138": {
+   "nome": "BELGRANO",
+   "xi": [
+    [
+     3848,
+     112803
+    ],
+    [
+     3853,
+     45582
+    ],
+    [
+     13544,
+     130406
+    ],
+    [
+     12882,
+     132092
+    ],
+    [
+     5915,
+     39700
+    ],
+    [
+     3854,
+     60699
+    ],
+    [
+     3665709625,
+     34611
+    ],
+    [
+     16892,
+     40204
+    ],
+    [
+     15973,
+     58164
+    ],
+    [
+     4456,
+     123630
+    ],
+    [
+     10921,
+     44636
+    ]
+   ],
+   "antes": "010d08091a030a0512070618001304160b0e170f021019110c1415ffffffffffffffffffffffffff",
+   "nomes": [
+    "Matías Daniele ",
+    "Lisandro López",
+    "Taras Mykhavko",
+    "Alex Silva",
+    "Roberto Cerceda",
+    "Facundo Quignon",
+    "Dimitri Payet",
+    "Darko Lazović",
+    "William Mendieta",
+    "Lucas Gamba",
+    "Luis Muriel"
+   ]
+  },
+  "59": {
+   "nome": "VILLARREAL",
+   "xi": [
+    [
+     1568,
+     140655
+    ],
+    [
+     1572,
+     130449
+    ],
+    [
+     1587,
+     141722
+    ],
+    [
+     1198,
+     118076
+    ],
+    [
+     5007,
+     55527
+    ],
+    [
+     1153,
+     55862
+    ],
+    [
+     5236,
+     102884
+    ],
+    [
+     1577,
+     117836
+    ],
+    [
+     1583,
+     38779
+    ],
+    [
+     1581,
+     57349
+    ],
+    [
+     3665710628,
+     58153
+    ]
+   ],
+   "antes": "0d000c05120819091116060414200a0b15181a130e1b021d17101e070f1f012122031cffffffffff",
+   "nomes": [
+    "Luiz Júnior",
+    "Willy Kambwala",
+    "Renato Veiga",
+    "Nahuel Tenaglia",
+    "Damián González",
+    "Marc Bernal",
+    "Javier Cabrera",
+    "Tajon Buchanan",
+    "Dani Parejo",
+    "Gerard Moreno",
+    "Roque Santa Cruz"
+   ]
+  },
+  "46": {
+   "nome": "ESPANYOL",
+   "xi": [
+    [
+     1369,
+     147067
+    ],
+    [
+     1250,
+     103310
+    ],
+    [
+     1251,
+     42872
+    ],
+    [
+     1109,
+     134737
+    ],
+    [
+     3665711060,
+     100446
+    ],
+    [
+     13051,
+     59281
+    ],
+    [
+     11202,
+     123203
+    ],
+    [
+     3665713048,
+     131351
+    ],
+    [
+     7453,
+     133168
+    ],
+    [
+     242,
+     319867
+    ],
+    [
+     1265,
+     299448
+    ]
+   ],
+   "antes": "06150207080910171905000b01121803140416130a0d0f0c0e11ffffffffffffffffffffffffffff",
+   "nomes": [
+    "Lucas Bergström",
+    "Leandro Cabrera",
+    "Sergi Gómez",
+    "Jesús Areso",
+    "L. Baal",
+    "Ryan Gustavo",
+    "Dia Saba",
+    "Jaime Romero",
+    "Peio Canales",
+    "Josh King",
+    "Omar Sadik"
+   ]
+  },
+  "121": {
+   "nome": "CRUZEIRO",
+   "xi": [
+    [
+     15882,
+     60680
+    ],
+    [
+     3283,
+     385218
+    ],
+    [
+     17995,
+     129140
+    ],
+    [
+     3305,
+     36945
+    ],
+    [
+     3665710343,
+     54742
+    ],
+    [
+     3665710810,
+     60325
+    ],
+    [
+     3280,
+     100832
+    ],
+    [
+     3298,
+     34431
+    ],
+    [
+     17347,
+     116167
+    ],
+    [
+     5747,
+     63122
+    ],
+    [
+     3301,
+     55803
+    ]
+   ],
+   "antes": "020d0b08051904091c0c0011031707140a1016010f12061b15181a0e13ffffffffffffffffffffff",
+   "nomes": [
+    "Alexis Martín Arias",
+    "Jonathan Jesus",
+    "Slobodan Rubezic",
+    "Fágner",
+    "Harvey Broad",
+    "Damián Musto",
+    "Kaique Kenji",
+    "Murilo Rhikman",
+    "Luis Quiñones",
+    "Masanobu Yoshida",
+    "Ruan Índio"
+   ]
+  },
+  "475": {
+   "nome": "SÃO BERNARDO",
+   "xi": [
+    [
+     3665711585,
+     108893
+    ],
+    [
+     3665709891,
+     42647
+    ],
+    [
+     18871,
+     55344
+    ],
+    [
+     240,
+     108931
+    ],
+    [
+     14322,
+     111007
+    ],
+    [
+     8617,
+     60465
+    ],
+    [
+     3665713333,
+     134492
+    ],
+    [
+     13279,
+     109089
+    ],
+    [
+     3398,
+     38297
+    ],
+    [
+     18150,
+     117532
+    ],
+    [
+     16187,
+     118015
+    ]
+   ],
+   "antes": "170e070d0511041306100c1c010a0b161a0f03141800021b1e08121519222109231d1f20ffffffff",
+   "nomes": [
+    "Andrés Romero",
+    "Kamil Glik",
+    "Igão",
+    "Antonee Robinson",
+    "Renan Castro",
+    "Daniele Baselli",
+    "O. Otasowie",
+    "Felipe Rodrigues",
+    "Willian",
+    "Hassim Traoré",
+    "Juan Manuel Tévez"
+   ]
+  }
+ }
+}

@@ -56,7 +56,7 @@ def exportar(r, car=None, noticias_rodada=None, setas=None):
             'torcida': j['torcida'], 'lider': j['lider'], 'capitao': j['capitao'],
             'seta': setas.get(j['nome'], (j.get('seta'), j.get('seta')))[1],
             'seta_jogo': setas.get(j['nome'], (j.get('seta'), j.get('seta')))[0],
-            'condicao': j.get('condicao'),
+            'condicao': j.get('condicao'), 'lesao': j.get('lesao') or 0,
             'perfil': j.get('perfil'),   # condição física do jogo (0-100; barra do Plano de jogo)
             'temporada': {'jogos': j['t_jogos'], 'gols': j['t_gols'], 'assist': j['t_assist'],
                           'nota': round(j['t_nota'], 1)},
@@ -91,6 +91,8 @@ def exportar(r, car=None, noticias_rodada=None, setas=None):
         'proximo_jogo': car.get('proximo_jogo'),
         'proximos': car.get('proximos') or [],
         'corrida': car.get('corrida'),   # 12/10/2026: disputa do usuário na liga (disputa.py)
+        'lesao': car.get('lesao_ultima'), 'lesao_volta': car.get('lesao_volta'),   # departamento médico (lesoes.py)
+        'momento': car.get('momento'), 'analise_porques': car.get('analise_porques'), 'analise_data': car.get('analise_data'),
         'movimentos': [{k: v for k, v in m.items() if k != 'pos'} for m in r.get('movimentos') or []],   # saídas/chegadas   # prévias dos próximos 3 jogos (a Central troca pelo pulso)
         'patrocinio': {k: v for k, v in (car.get('patrocinio') or {}).items() if k in ('contrato', 'atratividade', 'historico', 'imagem', 'imagem_hist')},
         'dificuldade': car.get('dificuldade'),

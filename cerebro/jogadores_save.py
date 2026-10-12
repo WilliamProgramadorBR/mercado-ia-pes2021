@@ -96,6 +96,7 @@ def campos(r):
         'u112': struct.unpack_from('<H', r, 112)[0],
         'u114': struct.unpack_from('<H', r, 114)[0],
         'b118': r[118],
+        'lesao': r[116],   # 12/10/2026: contador de recuperação de lesão (0 = apto; só William 7->6 entre 24 mil)
         'condicao': u120 & 0x7F,
         'seta': (u120 >> 7) & 7,
         'flags120': u120 >> 10,

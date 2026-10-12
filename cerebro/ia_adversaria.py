@@ -66,85 +66,136 @@ def faixa(ctx):
     return 'mais_fraco' if dif <= -3 else 'equilibrado' if dif < 3 else 'mais_forte'
 
 
+def _faixa(v, lo, hi):
+    return max(lo, min(hi, v))
+
+
 def postura(base, ctx):
-    """1. Contexto: postura base a partir da identidade do clube. Devolve (plano, motivo)."""
+    """1. Contexto, RESPEITANDO A IDENTIDADE do clube (12/10/2026: antes quase todo mundo virava contra-ataque com
+    compactação 8). O plano original é a base; o contexto mexe só na INTENSIDADE numa faixa em torno do original:
+    linha -3..+2, compactação -1..+3, pressão. O estilo (posse/contra-ataque) só muda em caso extremo (muito mais
+    fraco e fora de casa). Devolve (plano, motivo)."""
     p = dict(base)
+    lin0, cmp0 = base['linha_defensiva'], base['compactacao']
+    faixa_lin, faixa_cmp = (max(1, lin0 - 3), min(10, lin0 + 2)), (max(1, cmp0 - 1), min(10, cmp0 + 3))
+    lin = lambda v: _faixa(v, *faixa_lin)
+    cmp_ = lambda v: _faixa(v, *faixa_cmp)
     dif = (ctx.get('forca_adv') or 75) - (ctx.get('forca_nos') or 75)
     casa = ctx.get('adv_em_casa')
+    estilo = 'jogo de posse' if base['estilo_ofensivo'] else 'contra-ataque'
     if dif <= -8 and not casa:
-        p.update(estilo_ofensivo=0, estilo_defensivo=1, contencao=0, pressao=1,
-                 linha_defensiva=min(base['linha_defensiva'], 3), compactacao=max(base['compactacao'], 8))
-        motivo = 'muito mais fraco e fora de casa: bloco baixo, compacto, saída em contra-ataque'
-    elif dif <= -8:
-        p.update(estilo_ofensivo=0, pressao=0, contencao=0,
-                 linha_defensiva=min(base['linha_defensiva'], 5), compactacao=max(base['compactacao'], 7))
-        motivo = 'muito mais fraco, mas em casa: bloco médio, pressão agressiva, contra-ataque'
+        p.update(estilo_ofensivo=0, linha_defensiva=lin(lin0 - 3), compactacao=cmp_(cmp0 + 3))
+        motivo = 'muito mais fraco e fora de casa: recua as linhas e sai no contra-ataque (sobrevivência)'
     elif dif <= -3:
-        p.update(estilo_ofensivo=0, estilo_defensivo=0, pressao=0, contencao=0,
-                 linha_defensiva=max(4, min(base['linha_defensiva'], 6)), compactacao=max(base['compactacao'], 8))
-        motivo = 'um pouco mais fraco: bloco médio compacto, pressão agressiva, contra-ataque rápido'
+        p.update(linha_defensiva=lin(lin0 - 2), compactacao=cmp_(cmp0 + 2))
+        motivo = f'mais fraco: mantém o {estilo}, mas mais compacto e com a linha mais baixa'
     elif dif < 3:
-        p.update(estilo_defensivo=0, pressao=0,
-                 linha_defensiva=max(base['linha_defensiva'], 6), compactacao=max(base['compactacao'], 6))
-        motivo = 'jogo equilibrado: pressão na frente, agressiva, linha média-alta'
+        p.update(pressao=0, linha_defensiva=lin(lin0), compactacao=cmp_(cmp0 + 1))
+        motivo = f'jogo equilibrado: o {estilo} de sempre, com pressão agressiva'
     else:
-        p.update(estilo_defensivo=0, pressao=0,
-                 linha_defensiva=max(base['linha_defensiva'], 8), compactacao=max(base['compactacao'], 6))
-        motivo = 'mais forte: pressão alta e linha adiantada, impondo o jogo'
+        p.update(pressao=0, estilo_defensivo=0, linha_defensiva=lin(lin0 + 2), compactacao=cmp_(cmp0))
+        motivo = f'mais forte: impõe o {estilo}, linha adiantada e pressão na frente'
     if ctx.get('grande'):
         p['pressao'] = 0
-        p['compactacao'] = min(10, p['compactacao'] + 1)
+        p['compactacao'] = cmp_(p['compactacao'] + 1)
         motivo += ' | jogo grande: mais concentrado e agressivo'
+    p['_lin'], p['_cmp'] = faixa_lin, faixa_cmp
     return p, motivo
 
 
-def contra_olheiro(p, olho):
-    """2. Ajustes pelo relatório do olheiro. Devolve (plano, [motivos])."""
+def personalidade(base, base_instr, rec, semente):
+    """Cada técnico explora as fraquezas do usuário do SEU jeito (estável por clube): quem já usa marcação individual
+    (ou é defensivo) gosta dela; quem ataca pelo centro prefere sufocar o armador; quem ataca pelos lados ou tem pontas
+    rápidos prefere o lateral fraco."""
+    import random
+    rnd = random.Random(f'tecnico|{semente}')
+    usa_marcacao = any(c == 14 for c, _, _ in base_instr)
+    gosta_marcacao = usa_marcacao or (base['estilo_defensivo'] == 1 and rnd.random() < 0.5) or rnd.random() < 0.2
+    tem_lados = (rec or {}).get('pontas', 0) >= 1 or (rec or {}).get('laterais_of', 0) >= 1
+    chance_lados = (0.6 if base['area_ataque'] == 0 else 0.25) if tem_lados else 0.0
+    foco = 'lados' if rnd.random() < chance_lados else 'meio'
+    return {'gosta_marcacao': gosta_marcacao, 'foco': foco}
+
+
+def contra_olheiro(p, olho, rec=None, pers=None):
+    """2. Explora as vulnerabilidades do usuário com o que o clube TEM (rec = recursos do elenco titular do clube).
+    Devolve (plano, [motivos])."""
     p, mot = dict(p), []
     if not olho:
         return p, mot
+    lin = lambda v: _faixa(v, *p.get('_lin', (1, 10)))
+    rec = rec or {}
     vel = olho.get('velocidade_ataque') or 0
     if vel >= 88 and p['linha_defensiva'] > 5:
-        p['linha_defensiva'] = 5
-        mot.append(f'ataque muito rápido (velocidade {vel}): linha não passa de 5')
-    pl = olho.get('plano') or {}
-    if pl.get('estilo_ofensivo') == 0 and p['compactacao'] < 8:   # usuário de contra-ataque: fechar os espaços
-        p['compactacao'] = 8
-        mot.append('o adversário joga no contra-ataque: time compacto, sem espaço entre as linhas')
-    if pl.get('area_ataque') == 0 and p['contencao'] == 0:          # usuário ataca pelos lados
-        p['contencao'] = 1
-        mot.append('o adversário ataca pelos lados: contenção ampla')
+        p['linha_defensiva'] = lin(5)
+        mot.append(f'ataque muito rápido (velocidade {vel}): sem espaço nas costas, linha até 5')
+    vul = {v['tipo']: v for v in olho.get('vulnerabilidades') or []}
+    foco = (pers or {}).get('foco', 'lados')
+    if foco != 'lados':
+        vul.pop('lateral_fraco', None)
+    if foco != 'meio':
+        vul.pop('armador', None)
+    if 'lateral_fraco' in vul and (rec.get('pontas') or rec.get('laterais_of')):
+        p['area_ataque'] = 0
+        v = vul['lateral_fraco']
+        mot.append(f'ataca pelos lados: o lado {v["lado"]} do adversário é o ponto fraco ({v["nome"]})')
+    if 'armador' in vul:
+        p['contencao'] = 0
+        p['estilo_defensivo'] = 0
+        mot.append(f'fecha o meio e pressiona quem cria: {vul["armador"]["nome"]} não pode pensar o jogo')
+    if 'laterais_sobem' in vul and p['estilo_ofensivo'] == 0:
+        p['area_ataque'] = 0
+        mot.append('contra-ataque nas costas dos laterais que sobem')
     ent = olho.get('entrosamento')
-    if ent is not None and ent < 85:                                # time do usuário ainda aprendendo o plano
+    if ent is not None and ent < 85:
         p.update(estilo_defensivo=0, pressao=0)
         mot.append(f'o adversário ainda não se acostumou ao plano novo (entrosamento {ent}): pressão para forçar o erro')
     return p, mot
 
 
-def instrucoes_para(p, base_instr, olho, atacante_rapido):
-    """Até 2 instruções de ataque e 2 de defesa: [(código, alvo)], na ordem das vagas, e os motivos."""
-    mot = []
-    # ataque: as instruções do próprio clube (identidade), menos tiki-taka quando o plano é de contra-ataque
+def instrucoes_para(p, base_instr, olho, atacante_rapido, rec=None, alvo_marcacao='auto', pers=None):
+    """Até 2 instruções de ataque e 2 de defesa: [(código, alvo)], na ordem das vagas, e os motivos.
+    Ataque: as do próprio clube (identidade) + exploração de flanco se o adversário tem lateral fraco.
+    Defesa: por prioridade, com a marcação individual no alvo CERTO (o armador que comanda, ou o artilheiro)."""
+    mot, rec, olho = [], rec or {}, olho or {}
+    vul = {v['tipo']: v for v in olho.get('vulnerabilidades') or []}
+    pers = pers or {'gosta_marcacao': True, 'foco': 'lados'}
+    if pers['foco'] != 'lados':
+        vul.pop('lateral_fraco', None)
+    if not pers['gosta_marcacao']:
+        alvo_marcacao = None
     ofs = [(c, a) for c, _, a in base_instr if c in T.OFENSIVAS and not (c == 6 and p['estilo_ofensivo'] == 0)]
-    defs = []   # defesa: por prioridade (o pivô de contra-ataque é instrução de defesa no jogo)
-    amea = (olho or {}).get('ameacas') or []
+    if 'lateral_fraco' in vul and len(ofs) < 2:
+        if rec.get('laterais_of') and all(c != 4 for c, _ in ofs):
+            ofs.append((4, 0))
+            mot.append('lateral ofensivo: os laterais do clube atacam o lado fraco')
+        elif rec.get('pontas') and all(c != 1 for c, _ in ofs):
+            ofs.append((1, 0))
+            mot.append(f'preso às laterais: pontas abertos para explorar o lado {vul["lateral_fraco"]["lado"]}')
+    defs = []
+    amea = olho.get('ameacas') or []
     a0 = amea[0] if amea else None
-    if a0 and a0['titular'] and (a0['parte_gols'] >= 0.3 or a0['peso'] >= 0.9):
-        defs.append((14, a0['idx']))
-        mot.append(f'marcação individual no {a0["nome"]} ({a0["gols"]} gols, {a0["assist"]} assistências)')
-    pl = (olho or {}).get('plano') or {}
+    if alvo_marcacao == 'auto':
+        if 'armador' in vul:
+            defs.append((14, vul['armador']['idx']))
+            mot.append(f'marcação individual no armador {vul["armador"]["nome"]}')
+        elif a0 and a0['titular'] and (a0['parte_gols'] >= 0.3 or a0['peso'] >= 0.9):
+            defs.append((14, a0['idx']))
+            mot.append(f'marcação individual no {a0["nome"]} ({a0["gols"]} gols, {a0["assist"]} assistências)')
+    pl = olho.get('plano') or {}
     if p['estilo_defensivo'] == 0 and p['pressao'] == 0 and p['linha_defensiva'] >= 6 and pl.get('saida_de_bola', 1):
         defs.append((13, 0))
         mot.append('pressão ofensiva: o adversário sai jogando curto')
-    if p['linha_defensiva'] <= 4 or ((olho or {}).get('velocidade_ataque') or 0) >= 88:
+    if p['linha_defensiva'] <= 4 or (olho.get('velocidade_ataque') or 0) >= 88:
         defs.append((12, 0))
         mot.append('defesa recuada: sem espaço nas costas')
-    if p['linha_defensiva'] <= 4 and ((olho or {}).get('aereo') or 0) >= 85:
+    if p['linha_defensiva'] <= 4 and (olho.get('aereo') or 0) >= 85:
         defs.append((11, 0))
         mot.append('invadir a área: centroavante forte no alto')
-    if p['estilo_ofensivo'] == 0 and atacante_rapido is not None:
+    if atacante_rapido is not None and (p['estilo_ofensivo'] == 0 or 'zaga_lenta' in vul):
         defs.append((15, atacante_rapido[0]))
-        mot.append(f'pivô de contra-ataque: {atacante_rapido[1]} fica na frente')
+        mot.append(f'pivô de contra-ataque: {atacante_rapido[1]} fica na frente'
+                   + (' contra a zaga lenta do adversário' if 'zaga_lenta' in vul else ''))
     defs += [(c, a) for c, _, a in base_instr if c in T.DEFENSIVAS]
     vistos, d2 = set(), []
     for c, a in defs:
@@ -161,31 +212,54 @@ def tags(p, instr):
         t.append('pressao_na_frente')
     if p['compactacao'] >= 8:
         t.append('compacto')
+    if p['area_ataque'] == 0:
+        t.append('ataque_pelos_lados')
+    if p['contencao'] == 0:
+        t.append('fecha_o_meio')
     t += [f'inst_{c}' for c, _ in instr if c]
     return t
 
 
-def candidatos(base, base_instr, ctx, olho, atacante_rapido):
-    """3. O plano do especialista e variações para o aprendizado escolher."""
+def _limpo(p):
+    return {k: v for k, v in p.items() if not k.startswith('_')}
+
+
+def candidatos(base, base_instr, ctx, olho, atacante_rapido, rec=None, semente=0):
+    """3. O plano do técnico (identidade + contexto + vulnerabilidades, do jeito DELE) e variações dentro da identidade."""
+    pers = personalidade(base, base_instr, rec, semente)
     p0, motivo = postura(base, ctx)
-    p0, m_olho = contra_olheiro(p0, olho)
-    i0, m_inst = instrucoes_para(p0, base_instr, olho, atacante_rapido)
+    p0, m_olho = contra_olheiro(p0, olho, rec, pers)
+    i0, m_inst = instrucoes_para(p0, base_instr, olho, atacante_rapido, rec, pers=pers)
+    lin = lambda v: _faixa(v, *p0['_lin'])
+    cmp_ = lambda v: _faixa(v, *p0['_cmp'])
     cands = [{'plano': p0, 'instr': i0, 'nome': 'plano do técnico', 'especialista': True,
               'motivos': [motivo] + m_olho + m_inst}]
-    pr = dict(p0, estilo_defensivo=0, pressao=0, linha_defensiva=max(p0['linha_defensiva'], 7))
-    cands.append({'plano': pr, 'nome': 'variação: pressão alta', 'especialista': False,
-                  'instr': instrucoes_para(pr, base_instr, olho, atacante_rapido)[0], 'motivos': ['variação testada: pressão alta']})
-    bl = dict(p0, estilo_defensivo=1, estilo_ofensivo=0, linha_defensiva=min(p0['linha_defensiva'], 3),
-              compactacao=max(p0['compactacao'], 9))
-    cands.append({'plano': bl, 'nome': 'variação: bloco baixo', 'especialista': False,
-                  'instr': instrucoes_para(bl, base_instr, olho, atacante_rapido)[0], 'motivos': ['variação testada: bloco baixo']})
+    pr = dict(p0, estilo_defensivo=0, pressao=0, linha_defensiva=lin(p0['linha_defensiva'] + 2))
+    cands.append({'plano': pr, 'nome': 'variação: mais pressão', 'especialista': False,
+                  'instr': instrucoes_para(pr, base_instr, olho, atacante_rapido, rec, pers=pers)[0], 'motivos': ['variação testada: mais pressão']})
+    bl = dict(p0, linha_defensiva=lin(p0['linha_defensiva'] - 2), compactacao=cmp_(p0['compactacao'] + 2))
+    cands.append({'plano': bl, 'nome': 'variação: mais fechado', 'especialista': False,
+                  'instr': instrucoes_para(bl, base_instr, olho, atacante_rapido, rec, pers=pers)[0], 'motivos': ['variação testada: mais fechado']})
     if any(c == 14 for c, _ in i0):   # sem a marcação individual (a marcação pode desmontar o time)
-        defs = [x for x in i0[2:] if x[0] != 14] + [(0, 0)] * 2
         cands.append({'plano': p0, 'nome': 'variação: sem marcação individual', 'especialista': False,
-                      'instr': i0[:2] + defs[:2], 'motivos': ['variação testada: sem marcação individual']})
+                      'instr': instrucoes_para(p0, base_instr, olho, atacante_rapido, rec, alvo_marcacao=None, pers=pers)[0],
+                      'motivos': ['variação testada: sem marcação individual']})
     for c in cands:
+        c['plano'] = _limpo(c['plano'])
         c['tags'] = tags(c['plano'], c['instr'])
     return cands
+
+
+def recursos(d, s, ti, P):
+    """O que o clube TEM no time titular para executar um plano: pontas abertos, laterais ofensivos."""
+    if not P:
+        return {}
+    sq = s.squad(ti)
+    tit = [P.get(tuple(sq[i])) for i in T.titulares(d, ti) if i < len(sq)]
+    tit = [f for f in tit if f]
+    pontas = [f for f in tit if f.pos in ('LWF', 'RWF', 'LMF', 'RMF') and (f['speed'] >= 80 or f.style in ('Prolific Winger', 'Roaming Flank', 'Crossing Specialist'))]
+    lats = [f for f in tit if f.pos in ('LB', 'RB') and f.style in ('Offensive Fullback', 'Fullback Finisher')]
+    return {'pontas': len(pontas), 'laterais_of': len(lats)}
 
 
 def _media(apr, tag, fx):
@@ -349,8 +423,18 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
                   (struct.unpack_from('<II', cru, T.VAGAS[0] - LO + 8 * i) for i in range(4)) if c]
     s = SaveML.__new__(SaveML)
     s.path, s.d, s.base = None, bytearray(d), d.index(b'ARSENAL\x00')
-    cands = candidatos(e['originais'][k], base_instr, ctx, olho, _atacante_rapido(d, s, ti_adv, P))
-    esc = escolher(cands, e, ctx, rnd)
+    cands = candidatos(e['originais'][k], base_instr, ctx, olho, _atacante_rapido(d, s, ti_adv, P), recursos(d, s, ti_adv, P),
+                       semente=ti_adv)
+    decidiu = 'estatistica'
+    try:   # 12/10/2026: duelo estatística x rede — quem lidera a arena "usuario" escolhe o plano
+        import duelo
+        if duelo.lider('usuario') == 'rede':
+            esc, decidiu = _escolher_pela_rede(cands, ctx, rnd), 'rede'
+        else:
+            esc = escolher(cands, e, ctx, rnd)
+    except Exception as ex:  # noqa: BLE001
+        log(f'duelo: {ex}')
+        esc = escolher(cands, e, ctx, rnd)
     antes = _escrever_plano(h, addr(ti_adv), esc['plano'], escrever_de_verdade, instr=esc['instr'])
     mud = {c: (antes[c], esc['plano'][c]) for c in esc['plano'] if antes[c] != esc['plano'][c]}
     nomes_alvo = {}
@@ -361,16 +445,66 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
     log(f'IA adversária: {nome_adv} ({T.tecnico(d, ti_adv)}) — {esc["nome"]}: {" | ".join(esc["motivos"])}; '
         f'instruções {instr_txt}; mudanças {mud or "nenhuma"}' + ('' if escrever_de_verdade else ' [ensaio]'))
     if escrever_de_verdade:
+        try:   # palpites dos dois modelos para este jogo (placar do duelo, arena "usuario")
+            _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu)
+        except Exception as ex:  # noqa: BLE001
+            log(f'duelo (palpite): {ex}')
         e['ativo'] = {'ti': ti_adv, 'nome': nome_adv, 'data': ctx.get('data')}
         e['registro'] = (e.get('registro') or [])[-120:] + [{
             'quando': time.strftime('%Y-%m-%d %H:%M'), 'data': ctx.get('data'), 'adversario': nome_adv,
             'tecnico': T.tecnico(d, ti_adv), 'competicao': ctx.get('competicao'), 'faixa': faixa(ctx),
             'esperado': ctx.get('esperado'), 'escolha': esc['nome'], 'motivo': ' | '.join(esc['motivos']),
-            'olheiro': (olho or {}).get('frases') or [], 'instrucoes': instr_txt, 'tags': esc['tags'],
+            'olheiro': (olho or {}).get('frases') or [], 'instrucoes': instr_txt, 'tags': esc['tags'], 'decidiu': decidiu,
             'candidatos': [(c['nome'], c['nota']) for c in cands], 'original': e['originais'][k], 'plano': esc['plano']}]
         e['resumo'] = resumo_aprendizado(e)
     _gravar_estado(e)
     return esc
+
+
+def _x_usuario(ctx, tags_):
+    import duelo
+    return duelo.feat_usr(ctx.get('forca_nos') or 75, ctx.get('forca_adv') or 75, not ctx.get('adv_em_casa'),
+                          duelo.forma_str(ctx.get('forma_nos')), duelo.forma_str(ctx.get('forma_adv')), ctx.get('grande'), tags_)
+
+
+def _escolher_pela_rede(cands, ctx, rnd=None):
+    """A rede prevê os gols de cada lado com cada plano candidato e fica com o melhor saldo para o adversário."""
+    import duelo
+    rnd = rnd or random.Random()
+    r = duelo.rede('usuario')
+    melhor = None
+    for c in cands:
+        lu, la = r.prever(_x_usuario(ctx, c['tags']))
+        c['nota'] = round(la - lu, 2)
+        if melhor is None or c['nota'] > melhor['nota']:
+            melhor = c
+    outros = [c for c in cands if c is not melhor]
+    if outros and rnd.random() < CURIOSIDADE:
+        return rnd.choice(outros)
+    return melhor
+
+
+def _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu):
+    import carreira
+    import duelo
+    if not ctx.get('data'):
+        return
+    user_ti, _ = carreira.time_do_usuario(d)
+    casa = ti_adv if ctx.get('adv_em_casa') else user_ti
+    fora = user_ti if ctx.get('adv_em_casa') else ti_adv
+    apr, fx = e.get('aprendizado') or {}, faixa(ctx)
+    extra = sum(_media(apr, t, fx)[0] for t in esc['tags']) / max(1, len(esc['tags']))   # o que a IA aprendeu do plano
+    with duelo.TRAVA:
+        ed = duelo.estado()
+        duelo.prever(ed, 'usuario', duelo.chave(ctx['data'], casa, fora), ctx['data'], _x_usuario(ctx, esc['tags']),
+                     duelo.est_usr(ed, ctx.get('esperado'), extra),
+                     {'adv': clube_nome(nome_adv), 'inverter': bool(ctx.get('adv_em_casa')), 'decidiu': decidiu, 'plano': esc['nome']})
+        duelo.gravar(ed)
+
+
+def clube_nome(n):
+    import clube
+    return clube.nome_time(n)
 
 
 def contexto(dados, pr):
@@ -383,6 +517,8 @@ def contexto(dados, pr):
     pb = px.get('prob') or {}
     p_adv, p_nos = (pb.get('fora'), pb.get('casa')) if eu_casa else (pb.get('casa'), pb.get('fora'))
     esperado = round(((p_adv or 0) - (p_nos or 0)) / 100 * 1.6, 2) if pb else 0.0   # saldo esperado do adversário
+    fm = px.get('forma') or {}
     return {'data': pr.get('data'), 'competicao': comp, 'adv_em_casa': not eu_casa, 'esperado': esperado,
+            'forma_nos': fm.get('casa') if eu_casa else fm.get('fora'), 'forma_adv': fm.get('fora') if eu_casa else fm.get('casa'),
             'forca_adv': f.get('fora') if eu_casa else f.get('casa'), 'forca_nos': f.get('casa') if eu_casa else f.get('fora'),
             'grande': comp in GRANDES or bool(px.get('final')) or bool(px.get('classico'))}

@@ -1,0 +1,702 @@
+{
+ "dia": [
+  2035,
+  10,
+  20
+ ],
+ "clubes": {
+  "62": {
+   "nome": "BAYERN MÜNCHEN",
+   "xi": [
+    [
+     4398,
+     793
+    ],
+    [
+     809,
+     102481
+    ],
+    [
+     1659,
+     377077
+    ],
+    [
+     6529,
+     34641
+    ],
+    [
+     1652,
+     129961
+    ],
+    [
+     1663,
+     138000
+    ],
+    [
+     1658,
+     116360
+    ],
+    [
+     12246,
+     8944
+    ],
+    [
+     156,
+     114927
+    ],
+    [
+     1645,
+     129369
+    ],
+    [
+     4275,
+     32135
+    ]
+   ],
+   "antes": "1b0e1721031910140b000a1f04131c061d09070d1216150c1a010208201e0f2311182205ffffffff",
+   "nomes": [
+    "Felipe Zenobio",
+    "Samuel Gigot",
+    "Noël Aséko Nkili",
+    "Ashley Young",
+    "Alphonso Davies",
+    "Jamal Musiala",
+    "Aleksandar Pavlović",
+    "Karim Benzema",
+    "Estêvão",
+    "Michael Olise",
+    "Álex Woiski"
+   ]
+  },
+  "42": {
+   "nome": "BARCELONA",
+   "xi": [
+    [
+     1163,
+     141038
+    ],
+    [
+     1147,
+     165696
+    ],
+    [
+     346,
+     9000
+    ],
+    [
+     4782,
+     159320
+    ],
+    [
+     1152,
+     142867
+    ],
+    [
+     1150,
+     120070
+    ],
+    [
+     1159,
+     133157
+    ],
+    [
+     4783,
+     139919
+    ],
+    [
+     1165,
+     134454
+    ],
+    [
+     7190,
+     112991
+    ],
+    [
+     4605,
+     38627
+    ]
+   ],
+   "antes": "11080a1401030f15000e0d051302071a180412090b171c191f1b161d060c101effffffffffffffff",
+   "nomes": [
+    "Joan Garcia",
+    "Pau Cubarsí",
+    "Leny Yoro",
+    "João Neves",
+    "Álex Balde",
+    "Lamine Yamal",
+    "Pedri González",
+    "Warren Zaïre-emery",
+    "Toni Fernández",
+    "Salvi Sánchez",
+    "Olivier Giroud"
+   ]
+  },
+  "171": {
+   "nome": "PARIS SAINT-GERMAIN",
+   "xi": [
+    [
+     1667,
+     54843
+    ],
+    [
+     4770,
+     136098
+    ],
+    [
+     16789,
+     125069
+    ],
+    [
+     4778,
+     132756
+    ],
+    [
+     3665711962,
+     114993
+    ],
+    [
+     4790,
+     142434
+    ],
+    [
+     4603,
+     58229
+    ],
+    [
+     454,
+     42424
+    ],
+    [
+     4789,
+     142751
+    ],
+    [
+     4776,
+     128720
+    ],
+    [
+     4791,
+     110626
+    ]
+   ],
+   "antes": "1802000b041e05110807091d010d1f16190e0a0f0306101214151b1c20171a130cffffffffffffff",
+   "nomes": [
+    "Gregor Kobel",
+    "Illya Zabarnyi",
+    "Gregore",
+    "Nuno Mendes",
+    "Raul Prata",
+    "Désiré Doué",
+    "Ethan Mbappé",
+    "Granit Xhaka",
+    "Bradley Barcola",
+    "Khvicha Kvaratskhelia",
+    "Ousmane Dembélé"
+   ]
+  },
+  "11": {
+   "nome": "LIVERPOOL",
+   "xi": [
+    [
+     1644,
+     33185
+    ],
+    [
+     950,
+     107146
+    ],
+    [
+     3665709763,
+     40125
+    ],
+    [
+     301,
+     146461
+    ],
+    [
+     547,
+     100428
+    ],
+    [
+     293,
+     137924
+    ],
+    [
+     1309,
+     325370
+    ],
+    [
+     159,
+     53400
+    ],
+    [
+     1651,
+     37951
+    ],
+    [
+     4755,
+     133333
+    ],
+    [
+     307,
+     139679
+    ]
+   ],
+   "antes": "181317050e11150d160c09141e210f04101a01030b190700121c021b1d060a20081fffffffffffff",
+   "nomes": [
+    "Manuel Neuer",
+    "Alessandro Circati",
+    "Cheikhou Kouyaté",
+    "Conor Bradley",
+    "Davide Zappacosta",
+    "Florian Wirtz",
+    "Claudio Echeverri",
+    "Jamie Bynoe-Gittens",
+    "Lennart Karl",
+    "Endrick",
+    "Hugo Ekitike"
+   ]
+  },
+  "6": {
+   "nome": "CHELSEA",
+   "xi": [
+    [
+     4772,
+     139898
+    ],
+    [
+     2905,
+     39173
+    ],
+    [
+     166,
+     129162
+    ],
+    [
+     171,
+     140940
+    ],
+    [
+     2452,
+     42660
+    ],
+    [
+     161,
+     138156
+    ],
+    [
+     157,
+     119475
+    ],
+    [
+     178,
+     119536
+    ],
+    [
+     169,
+     117087
+    ],
+    [
+     2883,
+     134984
+    ],
+    [
+     175,
+     163048
+    ]
+   ],
+   "antes": "1a1706081f0503092310012013141e1b160a190007180b152202040c1d1c0e0d120f1121ffffffff",
+   "nomes": [
+    "Lucas Chevalier",
+    "Thiago Silva",
+    "Jorrel Hato",
+    "Malo Gusto",
+    "P. Van Aanholt",
+    "Cole Palmer",
+    "Alejandro Garnacho",
+    "Dário Essugo",
+    "Pedro Neto",
+    "William Gomes",
+    "Marc Guiu"
+   ]
+  },
+  "12": {
+   "nome": "MANCHESTER CITY",
+   "xi": [
+    [
+     328,
+     108279
+    ],
+    [
+     321,
+     119227
+    ],
+    [
+     324,
+     131286
+    ],
+    [
+     323,
+     46856
+    ],
+    [
+     4618,
+     117845
+    ],
+    [
+     8099,
+     54748
+    ],
+    [
+     337,
+     46873
+    ],
+    [
+     333,
+     141147
+    ],
+    [
+     3665713805,
+     140236
+    ],
+    [
+     327,
+     133543
+    ],
+    [
+     334,
+     127516
+    ]
+   ],
+   "antes": "060c010b1b191e091005080f200314171f220d161c15121a040007130a0e1d21110218ffffffffff",
+   "nomes": [
+    "Gianluigi Donnarumma",
+    "Josko Gvardiol",
+    "Marc Guéhi",
+    "Rico Lewis",
+    "Kassoum Ouattara",
+    "Mauro Zalazar",
+    "Savinho",
+    "Nico O'Reilly",
+    "Luiz Henrique",
+    "Erling Haaland",
+    "Jérémy Doku"
+   ]
+  },
+  "54": {
+   "nome": "REAL MADRID",
+   "xi": [
+    [
+     1449,
+     123124
+    ],
+    [
+     1457,
+     37274
+    ],
+    [
+     1461,
+     41531
+    ],
+    [
+     3665711435,
+     106448
+    ],
+    [
+     1452,
+     41124
+    ],
+    [
+     1458,
+     119782
+    ],
+    [
+     1469,
+     322621
+    ],
+    [
+     1465,
+     111472
+    ],
+    [
+     459,
+     31486
+    ],
+    [
+     1471,
+     118728
+    ],
+    [
+     1467,
+     117047
+    ]
+   ],
+   "antes": "0e0306130504140b091c0f011116181f240720190a150c0010230212171d250d1e2221081b1affff",
+   "nomes": [
+    "Andriy Lunin",
+    "Dean Huijsen",
+    "Raúl Asencio",
+    "Mickaël Alphonse",
+    "David Alaba",
+    "Aurélien Tchouaméni",
+    "Arda Güler",
+    "Franco Mastantuono",
+    "Mathys Tel",
+    "Gonzalo García",
+    "Vinícius Júnior"
+   ]
+  },
+  "29": {
+   "nome": "JUVENTUS",
+   "xi": [
+    [
+     2875,
+     127038
+    ],
+    [
+     3624,
+     65134
+    ],
+    [
+     1304,
+     9060
+    ],
+    [
+     801,
+     41074
+    ],
+    [
+     3478,
+     2147483651
+    ],
+    [
+     2063,
+     40871
+    ],
+    [
+     1536,
+     36718
+    ],
+    [
+     533,
+     141492
+    ],
+    [
+     907,
+     100620
+    ],
+    [
+     798,
+     107646
+    ],
+    [
+     790,
+     58653
+    ]
+   ],
+   "antes": "041c0d11080c000607031a160515171418010e090b10191b130f02120affffffffffffffffffffff",
+   "nomes": [
+    "Diogo Costa",
+    "Robert Arboleda",
+    "Vitor Reis",
+    "Kenan Yildiz",
+    "KAIO",
+    "Christian Eriksen",
+    "Alexis Sánchez",
+    "Giorgio Scalvini",
+    "Matteo Politano",
+    "Jérémie Boga",
+    "Arkadiusz Milik"
+   ]
+  },
+  "41": {
+   "nome": "ATLÉTICO DE MADRID",
+   "xi": [
+    [
+     1424,
+     47250
+    ],
+    [
+     3665710715,
+     58668
+    ],
+    [
+     1120,
+     58839
+    ],
+    [
+     3626,
+     42535
+    ],
+    [
+     1124,
+     140703
+    ],
+    [
+     12888,
+     123112
+    ],
+    [
+     882,
+     34098
+    ],
+    [
+     1178,
+     46666
+    ],
+    [
+     1138,
+     42316
+    ],
+    [
+     1128,
+     110838
+    ],
+    [
+     1123,
+     134758
+    ]
+   ],
+   "antes": "050a0814010003150b170d091c111a04180c0e0210130f1912061f1e071d1b16222120ffffffffff",
+   "nomes": [
+    "Adrián San Miguel",
+    "Manoel",
+    "José Maria Giménez",
+    "Cédric Soares",
+    "Matteo Ruggeri",
+    "Richardson",
+    "Luka Modrić",
+    "Iago Aspas",
+    "Antoine Griezmann",
+    "Alexander Sørloth",
+    "Álex Baena"
+   ]
+  },
+  "63": {
+   "nome": "BORUSSIA DORTMUND",
+   "xi": [
+    [
+     13464,
+     101870
+    ],
+    [
+     1670,
+     54696
+    ],
+    [
+     1619,
+     111251
+    ],
+    [
+     1675,
+     135017
+    ],
+    [
+     794,
+     46864
+    ],
+    [
+     3665709661,
+     36774
+    ],
+    [
+     1681,
+     126598
+    ],
+    [
+     16561,
+     100682
+    ],
+    [
+     1684,
+     54124
+    ],
+    [
+     1686,
+     2387
+    ],
+    [
+     1688,
+     132974
+    ]
+   ],
+   "antes": "16151001120c0800020603181d1e041c0e070d0f110b05141913171a0a091bffffffffffffffffff",
+   "nomes": [
+    "Robin Olsen",
+    "Nico Schlotterbeck",
+    "Axel Tape",
+    "Yan Couto",
+    "Filip Kostić",
+    "Fernando",
+    "Jobe Bellingham",
+    "Jean-Charles Castelletto",
+    "Karim Adeyemi",
+    "Maximilian Beier",
+    "Fábio Silva"
+   ]
+  },
+  "99": {
+   "nome": "BENFICA",
+   "xi": [
+    [
+     1143,
+     38353
+    ],
+    [
+     2632,
+     140736
+    ],
+    [
+     2633,
+     151855
+    ],
+    [
+     16090,
+     43387
+    ],
+    [
+     4443,
+     60234
+    ],
+    [
+     3752,
+     41163
+    ],
+    [
+     17522,
+     52332
+    ],
+    [
+     4721,
+     55167
+    ],
+    [
+     2655,
+     60391
+    ],
+    [
+     2647,
+     34680
+    ],
+    [
+     4280,
+     2405
+    ]
+   ],
+   "antes": "1b01000c040b09160a1708130f100d1912021805030614111a15070effffffffffffffffffffffff",
+   "nomes": [
+    "Wojciech Szczesny",
+    "Antônio Silva",
+    "Tomás Araújo",
+    "Luis Advíncula",
+    "Claudio Corvalán",
+    "Enzo Pérez",
+    "Amr El Solia",
+    "Arthur Vermeeren",
+    "Rafa Silva",
+    "Andreas Schjelderup",
+    "Ian Subiabre"
+   ]
+  }
+ }
+}

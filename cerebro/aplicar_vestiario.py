@@ -589,6 +589,11 @@ def main():
             car['corrida'] = disputa.corrida(mp, r['ti'], lambda t: clube.nome_time(sv.name(t).strip()), jogos_dsp, hoje)
         except Exception as e:  # noqa: BLE001
             print('aviso: corrida da liga não calculada:', e)
+        try:   # 12/10/2026: o momento acumulado (sequência, rival que encostou, semana decisiva) — momento.py
+            import momento
+            car['momento'] = momento.calcular(r, car, hoje)
+        except Exception as e:  # noqa: BLE001
+            print('aviso: momento do time não calculado:', e)
         for j in r['J']:   # traços (vaidoso, líder, jovem impaciente...) já para o jornal, os rumores e o celular
             j.setdefault('perfil', exigencias.perfil(j, r['J']))
         try:   # o mundo: artilharia, revelações, Bola de Ouro, seleção da temporada (destaques.py)
@@ -626,6 +631,20 @@ def main():
                 noticias.append(f'DATA FIFA: {len(f["convocados"])} jogadores do elenco defenderam as seleções.')
         except Exception as e:  # noqa: BLE001
             print('aviso: Data FIFA não gerada:', e)
+        try:   # 12/10/2026: departamento médico na imprensa (lesoes.py): lesão nova avaliada no cenário, e a volta
+            import lesoes
+            ms_l, fs_l = lesoes.atualizar(car, r, hoje)
+            car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + ms_l
+            extras_midia += fs_l
+            for m in ms_l:
+                noticias.append(('DEPARTAMENTO MÉDICO: ' if 'volta' not in m['chave'][:5] else 'DE VOLTA: ') + m['titulo'])
+        except Exception as e:  # noqa: BLE001
+            print('aviso: lesões não acompanhadas:', e)
+        try:   # 12/10/2026: análise pós-jogo com o porquê, em três vozes (analise_jogo.py)
+            import analise_jogo
+            car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + analise_jogo.da_reuniao(car, r, snap, hoje)
+        except Exception as e:  # noqa: BLE001
+            print('aviso: análise do jogo não gerada:', e)
         try:   # rumores de mercado sobre os nossos (rumores.py) e o celular do técnico (celular.py)
             import celular
             import rumores
