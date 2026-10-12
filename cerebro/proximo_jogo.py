@@ -17,11 +17,15 @@ NOMES_COMP = {3: 'UEFA Champions League', 4: 'UEFA Champions League', 23: 'FA Cu
               105: 'Torneio de pré-temporada',
               # 12/10/2026 (simulação em 5 carreiras): conferidos pelos clubes que disputam cada competição
               2: 'Eliminatórias europeias', 5: 'UEFA Europa League', 6: 'UEFA Europa League', 8: 'Copa Libertadores', 9: 'Copa Libertadores',
-              15: 'AFC Champions League', 16: 'AFC Champions League', 18: 'Serie A', 19: 'LaLiga', 20: 'Ligue 1', 21: 'Eredivisie',
-              22: 'Liga Portugal', 30: 'Liga Profesional Argentina', 50: 'Bundesliga', 52: 'J1 League', 54: 'Copa do Uruguai',
+              15: 'AFC Champions League', 16: 'AFC Champions League', 18: 'Serie A', 19: 'LaLiga', 20: 'Bundesliga', 21: 'Eredivisie',
+              22: 'Liga Portugal', 30: 'Liga Profesional Argentina', 50: 'Ligue 1', 52: 'J1 League', 54: 'Copa do Uruguai',
               55: 'Copa do Imperador', 59: 'Copa Argentina', 67: 'Campeonato Chileno', 68: 'Copa Chile', 79: 'EFL Championship',
-              80: 'LaLiga 2', 81: 'Ligue 2', 82: 'Serie B italiana', 87: 'Supercopa da Espanha', 88: 'Trophée des Champions',
-              89: 'Supercoppa Italiana', 90: 'Supercopa da Holanda', 92: 'Supercopa Argentina', 97: 'Supercopa do Japão',
+              80: 'LaLiga 2', 81: '2. Bundesliga', 82: 'Serie B italiana', 87: 'Supercopa da Espanha',
+              # 12/10/2026, conferido pelos clubes de cada jogo: 20 = Bundesliga, 50 = Ligue 1, 81 = 2. Bundesliga,
+              # 91 = Portugal (Benfica x Porto), 95 = França (Monaco x PSG); sem jogo para conferir: nome genérico
+              88: 'Supercopa nacional', 89: 'Supercopa nacional', 93: 'Supercopa nacional', 94: 'Supercopa nacional',
+              96: 'Supercopa nacional', 90: 'Supercopa da Holanda', 91: 'Supertaça de Portugal', 92: 'Supercopa Argentina',
+              95: 'Trophée des Champions', 97: 'Supercopa do Japão',
               34: 'Copa do Mundo', 35: 'Copa do Mundo', 36: 'Eliminatórias da Eurocopa', 38: 'Eliminatórias sul-americanas',
               41: 'Eurocopa', 42: 'Eurocopa', 43: 'Copa América', 44: 'Copa da Ásia', 46: 'Copa Africana de Nações'}   # 86 = Community Shield (confirmado pelo usuário em 11/10/2026: 16/08, campeão da liga x da FA Cup)
 

@@ -114,6 +114,10 @@ def contra_olheiro(p, olho):
     if pl.get('area_ataque') == 0 and p['contencao'] == 0:          # usuário ataca pelos lados
         p['contencao'] = 1
         mot.append('o adversário ataca pelos lados: contenção ampla')
+    ent = olho.get('entrosamento')
+    if ent is not None and ent < 85:                                # time do usuário ainda aprendendo o plano
+        p.update(estilo_defensivo=0, pressao=0)
+        mot.append(f'o adversário ainda não se acostumou ao plano novo (entrosamento {ent}): pressão para forçar o erro')
     return p, mot
 
 

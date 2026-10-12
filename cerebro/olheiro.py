@@ -46,6 +46,15 @@ def perfil(d, dados, P, squad):
     # dribles do time por jogo = soma do ritmo de cada um (só partidas JOGADAS entram nos números detalhados)
     num = [j.get('numeros') or {} for j in J]
     out['dribles_por_jogo'] = round(sum((n.get('dribles') or 0) / n['jogos'] for n in num if n.get('jogos')), 1)
+    try:   # entrosamento com o plano (familiaridade tática do próprio jogo)
+        import familiaridade
+        fam = familiaridade.analisar(d, dados.get('jogadores') or [])
+    except Exception:  # noqa: BLE001
+        fam = None
+    if fam:
+        out['entrosamento'] = fam['time']
+        if fam['time'] < 85:
+            out['frases'].append(f'time ainda se acostumando ao plano (entrosamento {fam["time"]})')
     uj = (dados.get('ultimos_jogos') or [])[-5:]
     if uj:
         out['gols_feitos'] = round(sum(x['pro'] for x in uj) / len(uj), 1)

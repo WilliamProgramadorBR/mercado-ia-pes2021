@@ -6,5 +6,6 @@
   "semente": null,
   "limite_janela_verao": 40,
   "limite_janela_inverno": 20,
-  "bloquear_fora_da_janela": true
+  "bloquear_fora_da_janela": true,
+  "encaixe_plano": true
 }

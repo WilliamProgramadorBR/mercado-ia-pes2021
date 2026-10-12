@@ -48,9 +48,18 @@ def ler_em(d, o, plano=0):
     return {k: d[p + off] for k, off in CAMPOS.items()}
 
 
-def titulares(d, ti):
-    """Posições no elenco (SaveML.squad) dos 11 primeiros da escalação gravada no bloco (+0)."""
+def escalacao(d, ti):
+    """Posição (no save) da ESCALAÇÃO do time: 40 bytes = posição no elenco de cada vaga (11 primeiros = titulares).
+    12/10/2026 (x64dbg): o registro de verdade de cada clube começa em +56 deste bloco (u16 índice do time) e tem 600 B;
+    a escalação fica no FIM dele (+544 do registro) = +0 do bloco SEGUINTE; cobradores em +40..+45 e capitão em +49
+    desse mesmo trecho. Na memória o técnico da IA lê/escreve objeto+0x220 = esse endereço."""
     o = bloco(d, ti)
+    return o + TAM if o is not None else None
+
+
+def titulares(d, ti):
+    """Posições no elenco (SaveML.squad) dos 11 primeiros da escalação gravada do time."""
+    o = escalacao(d, ti)
     return [x for x in d[o:o + 11] if x != 0xFF] if o is not None else []
 import struct
 

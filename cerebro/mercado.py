@@ -14,9 +14,16 @@ import statistics as st
 from dataclasses import dataclass, field
 
 import encaixe
+import encaixe_plano
 import memoria_clubes
 
-MIN_SQUAD, MAX_SQUAD = 22, 32
+# 12/10/2026: elencos de tamanho real. O simulador do jogo escolhe o XI dos clubes da IA quase ao acaso; com elenco
+# inchado (o Real chegou a 38) os melhores jogam menos (melhor do setor começa 62% com até 24, 53% com 33+).
+MIN_SQUAD, MAX_SQUAD = 22, 28
+SQUAD_TRIM_TO = 27       # acima de MAX_SQUAD o clube vende excedentes até ficar com 27
+TRIM_MAX_SALES = 5       # no máximo 5 vendas de excedente por clube por janela (aos poucos, como na vida real)
+TRIM_CLUBES = 60         # só os 60 clubes mais fortes (os que decidem ligas e Champions); 312 clubes passavam de 28
+TRIM_MAX_TOTAL = 15      # por rodada do mercado, para sobrar espaço para as contratações normais
 MAX_BUYS = 2          # contratações por clube por janela (preserva entrosamento)
 MAX_SALES = 2         # vendas por clube por janela
 MIN_GAIN = 1.5        # ganho mínimo no índice para valer a contratação
@@ -28,7 +35,7 @@ RIVAL_MAX_BUYS = 3
 RIVAL_ACT_CHANCE = 0.85
 RIVAL_STAR_ROOM = 8      # rivais podem contratar até 8 pontos acima do próprio nível
 RIVAL_BUDGET_MULT = 1.6
-RIVAL_MAX_SQUAD = 38     # clubes grandes costumam ter elencos maiores (limite do jogo: 40)
+RIVAL_MAX_SQUAD = 28     # era 38: elenco inchado piora a escalação do simulador (ver MAX_SQUAD)
 POACH_PREMIUM = 1.3      # pagar mais para tirar jogador de clube do mesmo nível
 SPECIAL_TEAMS = {'WORLD SELECTION', 'THE OLD BOYS'}
 
@@ -191,8 +198,11 @@ def profile_fit(club, p, rating, price):
 
 def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=2033, national=frozenset(),
                buyers=None, max_total=None, protected=frozenset(), prior_buys=None, prior_sales=None,
-               club_memory=None, year=2033, insatisfeitos=None):
-    """buyers: nomes dos clubes que podem comprar (None = todos); max_total: limite de negócios na janela;
+               club_memory=None, year=2033, insatisfeitos=None, planos=None):
+    """national: nomes das seleções (nunca compram nem recebem; aplicar inclui todo time a partir da ALBÂNIA);
+    buyers: nomes dos clubes que podem comprar (None = todos); max_total: limite de negócios na janela;
+    planos: {índice do time: plano de jogo} (encaixe_plano.planos) — o jogador que combina com o plano do comprador
+      ganha até +2 na ORDEM dos candidatos (só entre os que já passaram em todas as regras; None = desligado).
     protected: (reg, pid) que não podem ser vendidos (capitão/cobradores etc.).
     insatisfeitos: {(reg, pid): {'u': 0..1, 'motivo': ...}} do vestiário dos clubes da IA (vestiario_ia):
       jogador insatisfeito fica até 25% mais barato, o clube aceita vendê-lo mais fácil, ele topa ir para um
@@ -231,6 +241,8 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
     pool = [p for c in clubs.values() for p in c.team.players] + list(free_agents)
     ratings = {id(p): best_rating(p) for p in pool}
     moved, moves = set(), []
+    # 0) elenco inchado: vende os excedentes antes de comprar (quem está acima do limite não compra)
+    moves += trim_squads(clubs, ratings, owner, moved, rng, max_total, protected, buyers)
 
     for rnd in range(1, ROUNDS + 1):
         order = sorted(clubs.values(), key=lambda c: (not c.rival, -c.tier))
@@ -279,10 +291,12 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
                 # idade inteligente: trintões só compensam como solução imediata
                 age_pen = max(0, p.age - 29) * (2.0 if club.rival else 1.2)
                 identity = profile_fit(club, p, r, price)
-                cands.append((r + natural - age_pen - price * 0.03 + identity + 3 * u, p, r, price, seller))
+                plano_b, plano_txt = encaixe_plano.fit((planos or {}).get(club.team.idx), p, pos) if planos else (0.0, '')
+                cands.append((r + natural - age_pen - price * 0.03 + identity + 3 * u + plano_b, p, r, price, seller,
+                              plano_b, plano_txt))
             cands.sort(key=lambda x: -x[0])
             best = None
-            for _, p, r, price, seller in cands[:15]:
+            for _, p, r, price, seller, plano_b, plano_txt in cands[:15]:
                 relaxed = club.rival and seller is not None and not seller.rival and seller.tier < club.tier - 1.5
                 insat = insatisfeitos.get((p.reg, p.pid), {}).get('u', 0) >= 0.5
                 if seller and not seller_ok(seller, p, relaxed or insat):
@@ -290,12 +304,14 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
                 if relaxed:
                     price = round(price * POACH_PREMIUM, 1)  # tirar o titular de um clube menor custa caro
                 g = gain(club, p, pos) + (1.0 if p.pos == pos else 0)
-                decision = g + profile_fit(club, p, r, price) * 0.25
-                if g > MIN_GAIN and (best is None or decision > best[0]):
-                    best = (decision, p, r, price, seller)
+                decision = g + profile_fit(club, p, r, price) * 0.25 + plano_b * 0.5
+                if g > MIN_GAIN and (best is None or decision > best[0]):   # o encaixe nunca substitui o ganho mínimo
+                    best = (decision, p, r, price, seller, plano_txt)
             if not best:
                 continue
-            decision, p, r, price, seller = best
+            decision, p, r, price, seller, plano_txt = best
+            if plano_txt:
+                why = f'{why}; encaixa no plano ({plano_txt})'
             if seller:
                 seller.team.players.remove(p)
                 seller.budget += price
@@ -315,6 +331,56 @@ def run_window(players, teams, user_team, free_agents=(), seed_budget=1.0, seed=
     left = None if max_total is None else max(0, max_total - len(moves))
     moves += place_bets(clubs, pool, ratings, owner, moved, rng, buyers, left, protected)
     return moves, clubs
+
+
+GRUPO_POS = {'GK': 'GK', 'CB': 'CB', 'LB': 'LAT', 'RB': 'LAT', 'DMF': 'MEIO', 'CMF': 'MEIO', 'AMF': 'MEIO',
+             'LMF': 'PONTA', 'RMF': 'PONTA', 'LWF': 'PONTA', 'RWF': 'PONTA', 'SS': 'ATA', 'CF': 'ATA'}
+
+
+def trim_squads(clubs, ratings, owner, moved, rng, limit=None, protected=frozenset(), buyers=None):
+    """12/10/2026: clubes acima de MAX_SQUAD vendem excedentes até SQUAD_TRIM_TO (no máximo TRIM_MAX_SALES).
+    Excedente = fora do melhor XI e dos 7 primeiros reservas, maior de 21 anos, não protegido; do mais fraco para o
+    mais forte. Destino: clube com vaga (abaixo de MAX_SQUAD - 1) onde ele seja útil (nota a até 2 pontos abaixo do
+    nível do clube ou acima), que pague 70% do valor; prefere o clube mais carente naquele setor."""
+    out = []
+    limit = TRIM_MAX_TOTAL if limit is None else min(limit, TRIM_MAX_TOTAL)
+    for club in sorted(clubs.values(), key=lambda c: -c.tier)[:TRIM_CLUBES]:
+        if len(club.team.players) <= MAX_SQUAD:
+            continue
+        xi, bench = encaixe.best_xi(club.team.players, encaixe.formation_slots(club.team))
+        fica = {id(p) for _, p, _ in xi} | {id(p) for p in sorted(bench, key=lambda q: -ratings.get(id(q), 0))[:7]}
+        sobra = [p for p in club.team.players if id(p) not in fica and p.age > 21 and (p.reg, p.pid) not in protected
+                 and id(p) not in moved and id(p) in ratings]
+        sobra.sort(key=lambda p: (ratings[id(p)], -p.age))
+        vendas = 0
+        for p in sobra:
+            if (len(club.team.players) <= SQUAD_TRIM_TO or vendas >= TRIM_MAX_SALES
+                    or (limit is not None and len(out) >= limit)):
+                break
+            r = ratings[id(p)]
+            price = round(value(p, r) * 0.7, 1)
+            grupo = GRUPO_POS.get(p.pos)
+            dest = [c for c in clubs.values() if c is not club and len(c.team.players) < MAX_SQUAD - 1
+                    and r >= c.tier - 2 and r <= c.tier + 4 and c.budget >= price
+                    and (buyers is None or c.team.name in buyers)]
+            if not dest:
+                continue
+            carencia = lambda c: sum(GRUPO_POS.get(q.pos) == grupo for q in c.team.players)
+            dest.sort(key=lambda c: (carencia(c), abs(r - c.tier), rng.random()))
+            novo = dest[0]
+            club.team.players.remove(p)
+            club.budget += price
+            club.sales += 1
+            novo.team.players.append(p)
+            novo.budget -= price
+            novo.buys += 1
+            owner[id(p)] = novo
+            moved.add(id(p))
+            vendas += 1
+            out.append(Move(0, p.name, p.age, p.pos, p.style, round(r, 1), club.team.name, novo.team.name, price,
+                            f'excedente: {club.team.name.title()} enxugou o elenco ({len(club.team.players) + 1} jogadores)',
+                            p.reg, p.pid, club.team.idx, novo.team.idx, novo.profile.get('tipo', 'equilibrado')))
+    return out
 
 
 BET_CHANCE = 0.25     # fração de clubes que faz uma aposta na janela

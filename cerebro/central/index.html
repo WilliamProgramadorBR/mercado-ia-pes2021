@@ -637,6 +637,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
   <div class="tela" id="t-analise">
     <div class="grid2"><section><h2>Relatório da comissão técnica</h2><div id="tatica"></div></section>
       <section><h2>Jogo da rodada · 4 x 4</h2><div id="duelo2"></div></section></div>
+    <section style="margin-top:14px"><h2>Entrosamento com o plano de jogo <span class="dica">o quanto cada um já aprendeu o seu sistema (números do próprio jogo)</span></h2><div id="familiaridade"></div></section>
   </div>
   <div class="tela" id="t-disciplina">
     <div class="grid2">
@@ -731,7 +732,7 @@ function render() {
     return `<span class="res ${r}" title="${esc(g.adversario)} ${g.pro}x${g.contra}">${r}</span>`;
   }).join('') || '—';
   renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
-  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFrentes(d);
+  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderFrentes(d);
   $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
     (d.ao_vivo ? ` · ao vivo da memória do jogo: ${new Date(d.ao_vivo.quando * 1000).toLocaleTimeString('pt-BR')}` : '') +
     ' · o que você faz aqui vai para o jogo na hora quando possível') + (REDE ? ` · <b style="color:var(--gold)">📱 No celular (mesmo Wi-Fi): ${esc(REDE.url)} · PIN ${esc(REDE.pin)}</b>` : '');
@@ -1259,6 +1260,21 @@ function iaAdvHTML(d, p) {
     <div class="dica">${sim(pl.estilo_ofensivo, 'posse de bola', 'contra-ataque')} · ${sim(pl.saida_de_bola, 'passe curto', 'passe longo')} · ${sim(pl.estilo_defensivo, 'defesa total', 'pressão na frente')} · pressão ${sim(pl.pressao, 'tradicional', 'agressiva')} · linha ${pl.linha_defensiva} · compactação ${pl.compactacao}</div>
     ${(a.instrucoes || []).length ? `<div class="dica">📋 Instruções: ${a.instrucoes.map(esc).join(' · ')}</div>` : ''}
     ${apr}</div>`;
+}
+
+function renderFamiliaridade(d) {
+  const F = d.familiaridade, el = $('familiaridade');
+  if (!el) return;
+  if (!F) { el.innerHTML = '<div class="vazio">Sai na próxima reunião (depois do próximo save).</div>'; return; }
+  const cor = v => v >= 90 ? 'var(--good)' : v >= 75 ? 'var(--mid)' : 'var(--worse)';
+  const barra = v => `<div class="bar" style="margin-top:3px"><i style="width:${v}%;background:${cor(v)}"></i></div>`;
+  const melhora = F.mudancas.filter(m => m.custo < 0);
+  el.innerHTML = `<div class="item"><b>Time titular: ${F.time}/100</b> · plano atual: ${Object.values(F.plano).map(esc).join(' · ')}${barra(F.time)}</div>
+    ${melhora.length ? `<div class="item" style="border-left:3px solid var(--good);padding-left:8px"><b>💡 O elenco joga melhor de outro jeito:</b> ${melhora.map(m => `${esc(m.alternativa)} (${m.se_trocar} contra ${m.hoje} hoje em ${esc(m.atual)})`).join(' · ')}</div>` : ''}
+    <h3 style="margin:10px 0 4px;font:700 12px var(--f-score);letter-spacing:1.2px;text-transform:uppercase;color:var(--gold)">Custo de mudar cada ajuste</h3>
+    ${F.mudancas.filter(m => m.custo >= 0).map(m => `<div class="item">${esc(m.atual)} → ${esc(m.alternativa)}: <b style="color:${cor(m.se_trocar)}">${m.hoje} → ${m.se_trocar}</b> <span class="dica">(${m.custo > 0 ? '−' + m.custo : 'sem perda'})</span></div>`).join('')}
+    <h3 style="margin:10px 0 4px;font:700 12px var(--f-score);letter-spacing:1.2px;text-transform:uppercase;color:var(--gold)">Jogadores</h3>
+    ${F.jogadores.map(j => `<div class="item">${esc(j.nome)} <span class="dica">${esc(j.pos || '')}${j.titular ? '' : ' · reserva'}</span> <b style="float:right;color:${cor(j.entrosamento)}">${j.entrosamento}</b>${j.fracos.length ? `<div class="dica">ainda aprendendo: ${j.fracos.map(esc).join(', ')}</div>` : ''}</div>`).join('')}`;
 }
 
 function renderProximo(d) {

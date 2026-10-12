@@ -31,6 +31,9 @@ Uma página local (`cerebro/central.py`, http://127.0.0.1:8765) que transforma a
 - temporada e mundo: prévia do próximo jogo, seleção da rodada, time do mês, Data FIFA, rumores, prêmios, livro dos recordes e gráficos;
 - celular do técnico, arquibancada e painel de pendências antes do próximo jogo;
 - IA adversária que estuda o usuário: um olheiro lê o plano de jogo, os artilheiros e a velocidade do ataque do usuário; o técnico do computador monta o plano do adversário (estilo, pressão, linha, compactação e instruções avançadas como marcação individual e pressão ofensiva) e aprende com cada resultado qual tática funciona contra aquele jogador — sem tocar em atributos;
+- técnico da IA nos jogos simulados: corrige o rodízio quase aleatório do jogo (os clubes passam a escalar os melhores, com descanso realista em jogos menores) — detalhes em [pesquisa/simulador_escalacao.md](pesquisa/simulador_escalacao.md);
+- mercado com elencos de tamanho real (até 28) e contratações que respeitam o plano de jogo de cada clube;
+- entrosamento do elenco com o plano de jogo, pelos números do próprio jogo;
 - funciona em qualquer carreira (liga e calendário detectados sozinhos: temporada europeia "2026/27" ou anual "2027");
 - pode ser aberta no celular pela rede local, protegida por PIN.
 

@@ -51,6 +51,8 @@ DEFAULT_CONFIG = {
     'bloquear_fora_da_janela': True,
     'contratar_livres': False,        # jogadores sem clube ainda não foram testados no save
     'semente': None,                  # None = cada janela é diferente
+    'encaixe_plano': False,           # 12/10/2026: bônus de encaixe no plano de jogo do comprador (encaixe_plano.py);
+                                      # liga depois do usuário aprovar o comparativo (comparar_mercado.py)
 }
 
 
@@ -188,11 +190,19 @@ def main():
         say(f'aviso: vestiário dos clubes da IA indisponível ({e})')
         insat = {}
     say(f'vestiário da IA: {len(insat)} jogador(es) insatisfeito(s) em outros clubes')
+    planos = None
+    if cfg.get('encaixe_plano'):
+        import encaixe_plano
+        planos = encaixe_plano.planos(bytes(save.d), teams)
+        say(f'encaixe no plano de jogo: ligado ({len(planos)} clubes com plano)')
+    # 12/10/2026: Gibraltar (seleção) escapava da lista e recebia jogadores: todo time a partir da ALBÂNIA é seleção
+    primeira_selecao = save.find_team('ALBÂNIA') or 10 ** 6
+    selecoes = set(potencial.national_team_names()) | {t.name for t in teams if t.idx >= primeira_selecao}
     moves, clubs = mercado.run_window(players, teams, cfg['time_do_usuario'], free_agents=free, seed=seed,
-                                      national=potencial.national_team_names(), buyers=buyers,
+                                      national=selecoes, buyers=buyers,
                                       max_total=min(cfg['max_transferencias'], remaining), protected=protected,
                                       prior_buys=entry['chegadas'], prior_sales=entry['saidas'],
-                                      club_memory=club_memory, year=year, insatisfeitos=insat)
+                                      club_memory=club_memory, year=year, insatisfeitos=insat, planos=planos)
     say(f'cérebro decidiu {len(moves)} transferências (semente {seed})')
     profiles = {}
     for m in moves:

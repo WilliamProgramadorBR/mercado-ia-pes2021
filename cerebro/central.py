@@ -168,9 +168,33 @@ def estado_projetado(slot=None):
     reg = ia.get('registro') or []
     d['ia_adversaria'] = reg[-1] if reg else None   # como o adversário do próximo jogo foi preparado
     d['ia_adversaria_resumo'] = ia.get('resumo')    # o que a IA já aprendeu sobre o usuário
+    d['familiaridade'] = _familiaridade(d)          # entrosamento do elenco com o plano (números do jogo)
     d['trabalhando'] = list(_trabalhos.values())
     d['trabalhando_n'] = list(_trabalhos.keys())   # qual resposta está sendo escrita no jogo agora
     return d
+
+
+_FAMIL = {}
+
+
+def _familiaridade(d):
+    """12/10/2026: familiaridade tática do elenco (familiaridade.py), do save da última reunião; refeita só quando
+    sai um save novo."""
+    try:
+        import glob
+        decs = glob.glob(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'))
+        if not decs or not d.get('jogadores'):
+            return None
+        f = max(decs, key=os.path.getmtime)
+        chave = (f, os.path.getmtime(f), d.get('carreira'))
+        if _FAMIL.get('chave') != chave:
+            import familiaridade
+            with open(f, 'rb') as fh:
+                _FAMIL.update(chave=chave, valor=familiaridade.analisar(fh.read(), d['jogadores']))
+        return _FAMIL['valor']
+    except Exception as e:  # noqa: BLE001
+        print('aviso: familiaridade:', e, flush=True)
+        return None
 
 
 def _pulso_arq(slot):
@@ -482,6 +506,63 @@ def _preparar_adversario(slot, pr):
         print('aviso: IA adversária:', e, flush=True)
 
 
+def _tecnico_ia_thread():
+    """12/10/2026: técnico da IA (escalacao_ia.py). Com o jogo aberto numa carreira: aplica o patch do modo 1 na
+    memória (uma vez por sessão do jogo) e, a cada 30 s, escreve as escalações dos clubes da IA que jogam nos próximos
+    2 dias. Desliga com "tecnico_ia": false no automacao.json."""
+    import glob
+    import memoria as M
+    sessao = {'pid': None, 'h': None, 'patch': False, 'data': None, 'quando': 0}
+    while True:
+        time.sleep(30)
+        try:
+            if _ler_json(os.path.join(HERE, 'automacao.json'), {}).get('tecnico_ia', True) is False:
+                continue
+            pid = M.pid_do_jogo()
+            if not pid:
+                sessao.update(pid=None, h=None, patch=False)
+                continue
+            import ao_vivo as A
+            import carreira
+            import dados as _dados
+            import escalacao_ia
+            import ia_adversaria
+            import pulso
+            log = lambda m: print(time.strftime('%H:%M:%S'), m, flush=True)
+            if sessao['pid'] != pid:
+                sessao.update(pid=pid, h=A.abrir(escrita=True), patch=False)
+            c = escolher()
+            p = _ler_json(_pulso_arq(c['slot']), None) if c else None
+            if not p or not p.get('data_jogo'):
+                continue                                   # menu inicial / carreira não carregada
+            if not sessao['patch']:
+                sessao['patch'] = escalacao_ia.patch(sessao['h'], log)
+                if not sessao['patch']:
+                    continue
+            # ler os ~12 mil jogos da memória custa ~7 s: só quando a data do jogo muda (ou a cada 10 min)
+            if sessao['data'] == p['data_jogo'] and time.time() - sessao['quando'] < 600:
+                continue
+            sessao.update(data=p['data_jogo'], quando=time.time())
+            decs = glob.glob(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'))
+            if not decs or not pulso._cache.get('jogos'):
+                continue
+            with open(max(decs, key=os.path.getmtime), 'rb') as f:
+                d = f.read()
+            user_ti, nome = carreira.time_do_usuario(d)
+            if nome != (_ler_json(c['arquivo'], {}).get('time') or '').upper():
+                continue                                   # o save da última reunião é de outra carreira
+            jogos = []
+            for b, s_ in pulso._cache['jogos']:
+                jogos += pulso._jogos_da_regiao(M.ler(sessao['h'], b, s_) or b'')
+            e = ia_adversaria._ler_estado()
+            b0 = ia_adversaria._base_memoria(sessao['h'], d, e, log)
+            ia_adversaria._gravar_estado(e)
+            P = _dados.load_players(os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'mercado_snap.bin'))
+            escalacao_ia.preparar(sessao['h'], d, P, jogos, user_ti, b0, log=log)
+        except Exception as ex:  # noqa: BLE001 - nunca derruba a Central
+            print('aviso: técnico da IA:', ex, flush=True)
+
+
 def _imprensa_viva_thread():
     """Pós-jogo ao vivo: quando o pulso mostra um jogo novo nosso, escreve a matéria sem esperar o save/reunião."""
     import imprensa
@@ -572,6 +653,7 @@ def main():
         threading.Thread(target=_pulso_thread, daemon=True).start()
         threading.Thread(target=_imprensa_viva_thread, daemon=True).start()
         threading.Thread(target=_guarda_vigia_thread, daemon=True).start()
+        threading.Thread(target=_tecnico_ia_thread, daemon=True).start()
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     socketserver.ThreadingTCPServer.daemon_threads = True   # conexões de eventos não seguram o fechamento
     import central_rede
