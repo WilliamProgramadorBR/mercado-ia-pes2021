@@ -169,8 +169,11 @@ def fatos(r, car, hoje, apelido_novo=None, ecos=()):
         continental = pj['competicao'] in ('UEFA Champions League', 'Libertadores')
         adv_tab = (pj.get('tabela') or {}).get('fora' if pj['eu_casa'] else 'casa')
         grande = continental or (adv_tab and adv_tab['pos'] <= 4)
-        F.append({'tipo': 'proximo', 'peso': 2.6 if grande else 1.1, 'pj': pj, 'grande': bool(grande),
-                  'continental': continental})
+        F.append({'tipo': 'proximo', 'peso': 3.2 if pj.get('disputa') else 2.6 if grande else 1.1, 'pj': pj,
+                  'grande': bool(grande) or bool(pj.get('disputa')), 'continental': continental})
+    co = car.get('corrida')
+    if co and co.get('rivais'):   # 12/10/2026: a disputa do usuário na liga (disputa.py)
+        F.append({'tipo': 'corrida', 'peso': 1.6 + 2.0 * co['pressao'], 'co': co})
     for e in ecos:
         if e.get('tipo') == 'liga':
             F.append(e)
@@ -352,10 +355,39 @@ def _manchete(f, tom, rnd):
                 'torcedor': (f'{f["nome"]} agora é "{f["texto"]}"!', 'Batizado pela torcida. Merecido!')}[tom]
     if t == 'liga':
         return f['txt'][tom]
+    ZT = {'titulo': ('PELO TÍTULO', 'o título', 'pelo título'), 'vaga1': ('PELA VAGA', 'a vaga principal', 'pela vaga principal'),
+          'vaga2': ('PELA VAGA CONTINENTAL', 'uma vaga continental', 'por uma vaga continental'),
+          'rebaixamento': ('CONTRA A QUEDA', 'a permanência', 'pela permanência')}
+    if t == 'corrida':
+        co = f['co']
+        r0 = co['rivais'][0]
+        z = co['nome_zona']
+        frente = r0['dif'] < 0
+        dist = abs(r0['dif'])
+        pts_txt = f'{dist} ponto{"s" if dist != 1 else ""}'
+        situ = (f'{r0["nome"]} {pts_txt} atrás' if frente else f'{r0["nome"]} {pts_txt} à frente' if dist else f'{r0["nome"]} empatado em pontos')
+        return {'sensacionalista': (f'GUERRA {ZT[co["zona"]][0]}!' if co['zona'] != 'rebaixamento' else 'SUFOCO NO FIM DA TABELA!',
+                                    f'{situ}, {co["restantes"]} rodadas para o fim. Cada ponto vale ouro.'),
+                'analítico': (f'A corrida: {z}', f'{CL["curto"]} em {co["pos"]}º com {co["pts"]} pts; {situ}. '
+                              + ', '.join(f'{x["nome"]} {x["pts"]}' for x in co['rivais'][1:]) + '.'),
+                'torcedor': ('Não dá mais para tropeçar!', f'{situ}. São {co["restantes"]} finais pela frente.')}[tom]
     if t == 'proximo':
         pj = f['pj']
         adv, comp = pj['adversario'], pj['competicao']
         p_v = pj['prob']['casa'] if pj['eu_casa'] else pj['prob']['fora']
+        dsp = pj.get('disputa')
+        if dsp and not f['continental']:
+            if dsp.get('mesma_zona'):
+                return {'sensacionalista': (f'JOGO DE SEIS PONTOS CONTRA O {adv.upper()}!', f'Os dois brigam pelo mesmo objetivo: quem perder, sente.'),
+                        'analítico': (f'Confronto direto com o {adv}', f'Os dois disputam {ZT.get((dsp["nos"] or dsp["adv"]).get("zona"), ("", "a mesma vaga"))[1]}. {p_v}% de chance de vitória.'),
+                        'torcedor': ('É FINAL!', f'Contra o {adv}, rival direto. Não tem amanhã.')}[tom]
+            if dsp.get('adv'):
+                return {'sensacionalista': (f'O {adv.upper()} VEM DANDO A VIDA!', f'Brigando {ZT.get(dsp["adv"].get("zona"), ("", "", "por algo grande"))[2]}, o adversário não poupa ninguém.'),
+                        'analítico': (f'{adv}: adversário em disputa', f'{dsp["adv"]["texto"]}. Força máxima do outro lado; {p_v}% de chance de vitória.'),
+                        'torcedor': (f'{adv} desesperado por pontos', 'Vai ser jogo pegado. Precisamos estar ligados.')}[tom]
+            return {'sensacionalista': ('NÃO PODE TROPEÇAR!', f'{pj["casa"]} x {pj["fora"]}: cada ponto vale {ZT.get(dsp["nos"].get("zona"), ("", "muito"))[1]}.'),
+                    'analítico': (f'Jogo-chave contra o {adv}', f'{dsp["nos"]["texto"]}. {p_v}% de chance de vitória.'),
+                    'torcedor': ('Rodada decisiva!', f'Contra o {adv}, é vencer ou vencer.')}[tom]
         if f['continental']:
             return {'sensacionalista': (f'NOITE DE {comp.upper()}: {adv.upper()} PELA FRENTE!', f'{pj["casa"]} x {pj["fora"]}, {pj["data"][2]:02d}/{pj["data"][1]:02d}. A cidade já respira o jogo.'),
                     'analítico': (f'{comp}: o duelo com o {adv}', f'Pelos números, {p_v}% de chance de vitória do {CL["curto"]}. Placar provável: {pj["placar_provavel"]}.'),

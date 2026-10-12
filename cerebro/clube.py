@@ -13,12 +13,19 @@ CONHECIDOS = {
 C = {}
 
 
-def definir(nome_time):
-    nome = (nome_time or '').strip()
+MINUSC = {'DE', 'DA', 'DO', 'DOS', 'DAS', 'E', 'Y', 'DEL', 'LA', 'EL'}   # 12/10/2026: "Atlético de Madrid"
+
+
+def nome_time(nome):
+    """'ATLÉTICO DE MADRID' -> 'Atlético de Madrid' (siglas curtas como 'PSV' ficam em maiúsculas)."""
+    return ' '.join(p.lower() if i and p.upper() in MINUSC else p.capitalize() if len(p) > 3 else p.upper() if p.isupper() and len(p) <= 3 else p.capitalize()
+                    for i, p in enumerate((nome or '').strip().split()))
+
+
+def definir(nome_time_):
+    nome = (nome_time_ or '').strip()
     base = CONHECIDOS.get(nome.upper())
-    MINUSC = {'DE', 'DA', 'DO', 'DOS', 'DAS', 'E', 'Y', 'DEL', 'LA', 'EL'}   # 12/10/2026: "Atlético de Madrid"
-    titulo = ' '.join(p.lower() if i and p.upper() in MINUSC else p.capitalize() if len(p) > 3 else p.upper() if p.isupper() and len(p) <= 3 else p.capitalize()
-                      for i, p in enumerate(nome.split()))
+    titulo = nome_time(nome)
     C.clear()
     C.update(base or dict(curto=titulo, apelido=titulo, estadio=None, ct=None, em_ct='no CT', cidade=None))
     C['nome'] = titulo

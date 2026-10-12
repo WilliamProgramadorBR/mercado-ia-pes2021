@@ -578,6 +578,17 @@ def main():
             car['proximo_jogo'] = car['proximos'][0] if car['proximos'] else None
         except Exception as e:  # noqa: BLE001
             print('aviso: próximo jogo não calculado:', e)
+        try:   # 12/10/2026: a corrida do usuário na liga (título, vagas, rebaixamento) para o jornal e a Central
+            import disputa
+            todas = r.get('todas_partidas') or []
+            jogos_dsp = ([dict(p, jogado=True) for p in todas]
+                         + [dict(p, jogado=False, gols1=0, gols2=0) for p in r.get('agenda') or []])
+            mp = proximo_jogo._disputas(d, todas, hoje)
+            sv = SaveML.__new__(SaveML)
+            sv.path, sv.d, sv.base = None, bytearray(d), d.index(b'ARSENAL\x00')
+            car['corrida'] = disputa.corrida(mp, r['ti'], lambda t: clube.nome_time(sv.name(t).strip()), jogos_dsp, hoje)
+        except Exception as e:  # noqa: BLE001
+            print('aviso: corrida da liga não calculada:', e)
         for j in r['J']:   # traços (vaidoso, líder, jovem impaciente...) já para o jornal, os rumores e o celular
             j.setdefault('perfil', exigencias.perfil(j, r['J']))
         try:   # o mundo: artilharia, revelações, Bola de Ouro, seleção da temporada (destaques.py)

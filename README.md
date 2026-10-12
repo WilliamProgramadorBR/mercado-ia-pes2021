@@ -32,6 +32,7 @@ Uma página local (`cerebro/central.py`, http://127.0.0.1:8765) que transforma a
 - celular do técnico, arquibancada e painel de pendências antes do próximo jogo;
 - IA adversária que estuda o usuário: um olheiro lê o plano de jogo, os artilheiros e a velocidade do ataque do usuário; o técnico do computador monta o plano do adversário (estilo, pressão, linha, compactação e instruções avançadas como marcação individual e pressão ofensiva) e aprende com cada resultado qual tática funciona contra aquele jogador — sem tocar em atributos;
 - técnico da IA nos jogos simulados: corrige o rodízio quase aleatório do jogo (os clubes passam a escalar os melhores, com descanso realista em jogos menores) — detalhes em [pesquisa/simulador_escalacao.md](pesquisa/simulador_escalacao.md);
+- diretor de campeonato: times em disputa de título, vaga ou rebaixamento jogam com força máxima conforme a liga aperta (pressão dinâmica pelo momento da temporada e pela distância de pontos), times sem objetivo rodam o elenco, e o técnico da IA poupa titulares antes de jogos mais importantes; a imprensa acompanha a corrida;
 - mercado com elencos de tamanho real (até 28) e contratações que respeitam o plano de jogo de cada clube;
 - entrosamento do elenco com o plano de jogo, pelos números do próprio jogo;
 - funciona em qualquer carreira (liga e calendário detectados sozinhos: temporada europeia "2026/27" ou anual "2027");

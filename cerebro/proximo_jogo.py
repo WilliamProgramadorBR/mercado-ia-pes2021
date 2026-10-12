@@ -71,6 +71,18 @@ def _forma(todas, t, ate):
     return rs
 
 
+_DISP = {}
+
+
+def _disputas(d, todas, hoje):
+    """disputa.mapa do save (memo pelo mesmo `d`: as 3 prévias da reunião usam o mesmo)."""
+    import disputa
+    import partidas_save as ps
+    if _DISP.get('id') != id(d):
+        _DISP.update(id=id(d), mapa=disputa.do_save(todas, ps.agenda(d), hoje))
+    return _DISP['mapa']
+
+
 def proximos(d, r, car, hoje, snap, n=3):
     """Prévias dos próximos `n` jogos do calendário (11/10/2026): quem simula rápido já encontra a prévia do jogo
     seguinte pronta na Central (o pulso diz qual é o próximo; a reunião só chega depois do save)."""
@@ -163,7 +175,23 @@ def gerar(d, r, car, hoje, snap, prox=None, P=None):
         final = marcos.eh_final(dict(prox, flag=prox.get('flag')), todas + ps.agenda(d), liga=liga_c)
     except Exception:  # noqa: BLE001
         final = False
+    disputa_jogo = None
+    try:   # 12/10/2026: o jogo vale alguma disputa da liga (título, vagas, rebaixamento) para nós ou para eles?
+        import disputa
+        mp = _disputas(d, todas, hoje)
+        adv_ti = fora if casa == ti else casa
+        liga_jogo = prox['comp'] == (mp.get(ti) or mp.get(adv_ti) or {}).get('comp')
+        if liga_jogo:
+            nos, eles = mp.get(ti) or {}, mp.get(adv_ti) or {}
+            disputa_jogo = {'nos': nos if nos.get('pressao', 0) >= 0.45 else None,
+                            'adv': eles if eles.get('pressao', 0) >= 0.45 else None,
+                            'mesma_zona': bool(nos.get('zona')) and nos.get('zona') == eles.get('zona')}
+            if not (disputa_jogo['nos'] or disputa_jogo['adv']):
+                disputa_jogo = None
+    except Exception as e:  # noqa: BLE001
+        print('aviso: disputa não calculada:', e)
     return {
+        'disputa': disputa_jogo,
         'duelo': duelo, 'tatica': tatica, 'classico': classicos.nome(na, nb), 'final': bool(final),
         'data': list(prox['data']), 'competicao': nome_comp(prox['comp']), 'rodada': prox['rodada'],
         'casa': na, 'fora': nb, 'eu_casa': eu_casa, 'adversario': adv,

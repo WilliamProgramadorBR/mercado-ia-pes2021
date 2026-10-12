@@ -90,6 +90,7 @@ def exportar(r, car=None, noticias_rodada=None, setas=None):
         'data_fifa': car.get('data_fifa'), 'rumores': car.get('rumores') or [], 'celular': car.get('celular_hist') or [], 'vitoriosos': car.get('vitoriosos'), 'serie': car.get('serie') or [], 'torcida': car.get('torcida'),
         'proximo_jogo': car.get('proximo_jogo'),
         'proximos': car.get('proximos') or [],
+        'corrida': car.get('corrida'),   # 12/10/2026: disputa do usuário na liga (disputa.py)
         'movimentos': [{k: v for k, v in m.items() if k != 'pos'} for m in r.get('movimentos') or []],   # saídas/chegadas   # prévias dos próximos 3 jogos (a Central troca pelo pulso)
         'patrocinio': {k: v for k, v in (car.get('patrocinio') or {}).items() if k in ('contrato', 'atratividade', 'historico', 'imagem', 'imagem_hist')},
         'dificuldade': car.get('dificuldade'),

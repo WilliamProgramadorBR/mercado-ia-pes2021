@@ -78,6 +78,9 @@ def bloco(d, ti):
     for b in (ti - 1, ti) + tuple(range(N)):
         if 0 <= b < N and struct.unpack_from('<H', d, BASE + b * TAM + 56)[0] == ti:
             return BASE + b * TAM
+    # 12/10/2026: o time 0 (Arsenal) tem o registro ANTES do bloco 0 (o registro começa em +56 do bloco anterior)
+    if ti == 0 and struct.unpack_from('<H', d, BASE - TAM + 56)[0] == 0 and d[BASE - TAM + 64:BASE - TAM + 66] != b'\0\0':
+        return BASE - TAM
     return None
 
 

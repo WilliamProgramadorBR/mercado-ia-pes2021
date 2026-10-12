@@ -1246,6 +1246,21 @@ function renderFrentes(d) {
 function jogoLinha(g) {
   return `<div class="jogo" ${g.meu ? 'style="color:var(--gold)"' : ''}><span>${crest(g.casa, 18)} ${esc(g.casa)}</span><span class="pl">${g.g1} x ${g.g2}</span><span>${esc(g.fora)} ${crest(g.fora, 18)}</span></div>`;
 }
+function disputaHTML(d, p) {
+  // 12/10/2026: o jogo vale uma disputa da liga (título, vagas, rebaixamento) + a corrida do usuário
+  const ds = p && p.disputa, co = d.corrida;
+  let h = '';
+  if (ds) {
+    const t = x => esc((x?.texto || '').replace(/ \(\d+ pts\)/, ''));
+    h += `<div class="faixa-classico">🔥 ${ds.mesma_zona ? 'Confronto direto: os dois brigam pelo mesmo objetivo' : ds.adv ? `O ${esc(p.adversario)} está dando a vida (${t(ds.adv)})` : `Jogo-chave para você (${t(ds.nos)})`}</div>`;
+  }
+  if (co && co.rivais?.length) {
+    const r = co.rivais.map(x => `${esc(x.nome)} ${x.dif > 0 ? '+' : ''}${x.dif}`).join(' · ');
+    h += `<div class="dica" style="margin:4px 0">📊 A corrida (${esc(co.nome_zona)}): você em ${co.pos}º com ${co.pts} pts · ${r} · ${co.restantes} rodadas</div>`;
+  }
+  return h;
+}
+
 function iaAdvHTML(d, p) {
   const a = d.ia_adversaria;
   if (!a || !p || String(a.data) !== String(p.data) || ![p.casa, p.fora].includes(a.adversario)) return '';
@@ -1296,6 +1311,7 @@ function renderProximo(d) {
   $('proxJogo').innerHTML = `<h2>Próximo jogo <span class="dica">${esc(p.competicao)}${p.rodada ? ' · rodada ' + p.rodada : ''} · ${dataBR(p.data)}</span></h2>
     ${p.final ? `<div class="faixa-classico faixa-final">🏆 Final · ${esc(p.competicao)}</div>` : ''}
     ${p.classico ? `<div class="faixa-classico">⚔ Clássico · ${esc(p.classico)}</div>` : ''}
+    ${disputaHTML(d, p)}
     <div class="pj"><div>${crest(p.casa, 46)}<div class="t">${esc(p.casa)}</div><div class="dica">${tb(p.tabela.casa)}</div><div class="forma-mini">${fr(p.forma.casa)}</div></div>
       <div class="vs">x</div>
       <div>${crest(p.fora, 46)}<div class="t">${esc(p.fora)}</div><div class="dica">${tb(p.tabela.fora)}</div><div class="forma-mini">${fr(p.forma.fora)}</div></div></div>

@@ -12,6 +12,9 @@ Este módulo:
        - jogo grande (Champions/Libertadores, final, clássico, briga do topo): sempre os melhores;
        - jogo menor (copa nacional, adversário bem mais fraco) e jogador de linha com 2+ jogos nos últimos 7 dias:
          descansa (no máximo 3 por jogo);
+     DIRETOR DE CAMPEONATO (disputa.py): time em disputa na liga (título, vagas, rebaixamento; pressão pelo momento
+     da temporada e pela distância de pontos) = 'decisivo' (força máxima; na copa, poupa para a liga); time sem
+     objetivo no fim da temporada = 'relax' (2 de linha descansam; nunca contra o usuário);
   3. guarda o que escreveu (historico/escalacao_ia.json) — a súmula do jogo simulado só mostra quem TERMINOU em
      campo (3 substituições), então o cansaço é contado pelas nossas próprias escalações.
 Teste (20/10/2035, 11 clubes): os 11 escritos entraram em campo; as 3 diferenças por clube foram substituições.
@@ -22,6 +25,7 @@ import datetime as dt
 import json
 import os
 import time
+import zlib
 
 import encaixe
 import tatica_save as T
@@ -78,12 +82,26 @@ def patch(h, log=print):
 
 
 # ---------------------------------------------------------------- escolha
-def _importancia(j, ti, forca, nomes):
-    """'grande', 'normal' ou 'menor' para o time `ti` neste jogo."""
+PRESSAO_DECISIVA = 0.45   # disputa na liga (disputa.py) a partir disso: força máxima, nada de poupar
+
+
+def _importancia(j, ti, forca, nomes, disp=None, user_ti=None):
+    """'decisivo', 'grande', 'normal', 'menor' ou 'relax' para o time `ti` neste jogo.
+    disp = disputa.mapa: pressão de cada time na liga (título, vagas, rebaixamento)."""
     import classicos
     adv = j['time2'] if j['time1'] == ti else j['time1']
+    m = (disp or {}).get(ti) or {}
+    liga = j['comp'] == m.get('comp')
+    if adv == user_ti:
+        return 'grande'                        # contra o time do usuário: sempre força máxima
+    if liga and m.get('pressao', 0) >= PRESSAO_DECISIVA:
+        return 'decisivo'                      # está dando a vida: cada ponto conta
     if j['comp'] in GRANDES or classicos.nome(nomes.get(j['time1'], ''), nomes.get(j['time2'], '')):
         return 'grande'
+    if j['comp'] in COPAS and m.get('pressao', 0) >= 0.6:
+        return 'menor'                         # a liga está pegando fogo: copa vira prioridade 2
+    if liga and m.get('sem_objetivo') and adv != user_ti:
+        return 'relax'                         # fim de temporada sem nada em jogo (nunca contra o usuário)
     dif = (forca.get(ti) or 75) - (forca.get(adv) or 75)
     if j['comp'] in COPAS or dif >= 6:
         return 'menor'
@@ -92,24 +110,49 @@ def _importancia(j, ti, forca, nomes):
     return 'normal'
 
 
-def escalar(team, sq_ids, jogos7, importancia):
+def escalar(team, sq_ids, jogos7, importancia, semente=0):
     """(lista de 40 posições no elenco, nomes dos titulares, descansados) para o time."""
+    import random
     pos_id = {pid: i for i, pid in enumerate(sq_ids)}
     jogadores = [p for p in team.players if p.pid in pos_id]
     slots = encaixe.formation_slots(team)
     xi, _ = encaixe.best_xi(jogadores, slots)
     descansam = []
-    if importancia == 'menor':
+    if importancia == 'relax':                 # sem objetivo: dá minutos a quem joga pouco (2 de linha descansam)
+        linha = [p for _, p, _ in xi if p.pos != 'GK']
+        descansam = random.Random(semente).sample(linha, min(2, len(linha)))
+    elif importancia == 'poupar':              # vem jogo mais importante em até 4 dias: poupa quem jogou há pouco
+        rodados = [p for _, p, _ in xi if jogos7.get(str(p.pid), 0) >= 1 and p.pos != 'GK']
+        rodados.sort(key=lambda p: (-jogos7.get(str(p.pid), 0), -encaixe.rating(p, p.pos)))
+        descansam = rodados[:MAX_DESCANSOS]
+    elif importancia == 'menor':
         cansados = [p for _, p, _ in xi if jogos7.get(str(p.pid), 0) >= 2 and p.pos != 'GK']
         cansados.sort(key=lambda p: -jogos7.get(str(p.pid), 0))
         descansam = cansados[:MAX_DESCANSOS]
-        if descansam:
-            xi, _ = encaixe.best_xi([p for p in jogadores if p not in descansam], slots)
+    if descansam:
+        xi, _ = encaixe.best_xi([p for p in jogadores if p not in descansam], slots)
     ordem = [pos_id[p.pid] for _, p, _ in xi]
     resto = sorted((pos_id[p.pid] for p in jogadores if pos_id[p.pid] not in ordem),
                    key=lambda i: -max((encaixe.rating(p, p.pos) for p in jogadores if pos_id[p.pid] == i), default=0))
     lista = (ordem + resto + [0xFF] * 40)[:40]
     return lista, [p.name for _, p, _ in xi], [p.name for p in descansam]
+
+
+def _jogos_recentes(jogos, ti, data_jogo, dias=7):
+    """{pid: nº de jogos nos últimos `dias` dias} pelas súmulas da memória (registros do pulso com _x/_o)."""
+    import struct
+    out = {}
+    for x in jogos:
+        if not x['jogado'] or ti not in (x['time1'], x['time2']) or '_x' not in x:
+            continue
+        if not 0 < (data_jogo - dt.date(*x['data'])).days <= dias:
+            continue
+        lado = 0 if x['time1'] == ti else 1
+        for i in range(17):
+            reg, pid, _, pk = struct.unpack_from('<IIII', x['_x'], x['_o'] + 36 + lado * 272 + 16 * i)
+            if reg != 0xFFFF and pk & 0x7F:
+                out[str(pid)] = out.get(str(pid), 0) + 1
+    return out
 
 
 # ---------------------------------------------------------------- rodada
@@ -145,6 +188,12 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
         if t and len(t.players) >= 14:
             xi, _ = encaixe.best_xi(t.players, encaixe.formation_slots(t))
             forca[ti] = sum(r for _, _, r in xi) / len(xi)
+    try:   # quem está dando a vida em cada liga (título, vagas, rebaixamento)
+        import disputa
+        disp = disputa.mapa(jogos, hoje)
+    except Exception as ex:  # noqa: BLE001
+        log(f'técnico da IA: disputas indisponíveis ({ex})')
+        disp = {}
     feitos = 0
     for j, ti, chave in pend:
         t = teams.get(ti)
@@ -161,15 +210,29 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
             if 0 < (data_jogo - dt.date.fromisoformat(reg['data'])).days <= 7:
                 for pid in reg['pids']:
                     jogos7[str(pid)] = jogos7.get(str(pid), 0) + 1
-        imp = _importancia(j, ti, forca, nomes)
-        lista, nomes_xi, desc = escalar(t, [k[1] for k in s.squad(ti)], jogos7, imp)
+        for pid, n in _jogos_recentes(jogos, ti, data_jogo).items():   # quem jogou de fato (súmulas)
+            jogos7[pid] = max(jogos7.get(pid, 0), n)
+        imp = _importancia(j, ti, forca, nomes, disp, user_ti)
+        # GESTÃO DE ELENCO: se o próximo compromisso (até 4 dias) é mais importante, poupa para ele
+        seguinte = min((x for x in jogos if not x['jogado'] and ti in (x['time1'], x['time2'])
+                        and 0 < (dt.date(*x['data']) - data_jogo).days <= 4), key=lambda x: tuple(x['data']), default=None)
+        motivo_poupar = ''
+        if seguinte and imp in ('normal', 'menor', 'relax'):
+            imp_seg = _importancia(seguinte, ti, forca, nomes, disp, user_ti)
+            if imp_seg in ('grande', 'decisivo'):
+                adv_seg = seguinte['time2'] if seguinte['time1'] == ti else seguinte['time1']
+                motivo_poupar = f' | poupa para {nomes.get(adv_seg) or s.name(adv_seg).strip()} em {seguinte["data"][2]:02d}/{seguinte["data"][1]:02d}'
+                imp = 'poupar'
+        lista, nomes_xi, desc = escalar(t, [k[1] for k in s.squad(ti)], jogos7, imp, semente=zlib.crc32(chave.encode()))
         addr = b0 + (T.escalacao(d, ti) - T.BASE)
         atual = M.ler(h, addr, 40)
         if bytes(lista) != atual:
             A.escrever(h, addr, bytes(lista), atual)
         sq = [k[1] for k in s.squad(ti)]
         e['titulares'][str(ti)] = (hist + [{'data': str(data_jogo), 'pids': [sq[i] for i in lista[:11]]}])[-6:]
-        e['feitos'][chave] = imp + (f' | descansam {", ".join(desc)}' if desc else '')
+        m = disp.get(ti) or {}
+        e['feitos'][chave] = (imp + (f' | {m["texto"]}' if imp == 'decisivo' else '') + motivo_poupar
+                              + (f' | descansam {", ".join(desc)}' if desc else ''))
         feitos += 1
     # limpa jogos antigos do controle
     e['feitos'] = {k: v for k, v in e['feitos'].items() if dt.date.fromisoformat(k.split('|')[0]) >= dt.date(*hoje) - dt.timedelta(days=10)}
