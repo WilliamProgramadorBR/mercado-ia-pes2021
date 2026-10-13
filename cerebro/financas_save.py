@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Finanças do clube do usuário no save da Master League (data.dat descriptografado).
 
 Descoberto em 09/10/2026 comparando 4 saves com os prints do jogo (valores x 430 = R$ na tela):

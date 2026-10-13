@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Central do Técnico — servidor local (só no seu PC) para abrir no segundo monitor.
 
 Uso:  python central.py            -> http://127.0.0.1:8765
@@ -30,17 +31,18 @@ import time
 import urllib.parse
 
 import acoes
+import caminhos
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, 'central')
 HIST = os.path.join(HERE, 'historico')
 DADOS_FIXO = os.environ.get('CENTRAL_DADOS')   # sandbox de testes: um arquivo só
-SAVES = os.path.expandvars(r'%USERPROFILE%\OneDrive\Documentos\KONAMI\eFootball PES 2021 SEASON UPDATE')
+SAVES = caminhos.raiz_saves()               # 12/10/2026: caminhos.py (config.json do Painel)
 ESTADO = os.environ.get('VESTIARIO_ESTADO') or os.path.join(HERE, 'historico', 'vestiario_estado.json')
-STATUS_VIGIA = os.path.join(os.path.normpath(os.path.join(HERE, '..', '..', 'eFootball PES 2021')), 'mercado_status.txt')
+STATUS_VIGIA = caminhos.STATUS_VIGIA
 _trabalhos = {}   # n do evento -> 'escrevendo no jogo' (mostrado na página enquanto a thread trabalha)
 CACHE_FOTOS = os.path.join(HERE, 'historico', 'fotos')
-GAME_DIR = os.path.normpath(os.path.join(HERE, '..', '..', 'eFootball PES 2021'))
+GAME_DIR = caminhos.GAME_DIR
 FACES = os.path.join(GAME_DIR, 'GOGOSZ', 'Minifaces', 'common', 'render', 'symbol', 'player')
 RESPOSTA = os.path.join(GAME_DIR, 'vestiario_resposta.txt')   # mesmo arquivo das teclas 1/2/3 do overlay
 DECISAO = os.path.join(GAME_DIR, 'vestiario_decisao.txt')     # existe enquanto há pedido pendente
@@ -501,7 +503,7 @@ def _preparar_adversario(slot, pr):
         import dados as _dados
         import olheiro
         try:
-            P = _dados.load_players(os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'mercado_snap.bin'))
+            P = _dados.load_players(caminhos.SNAP)
         except Exception:  # noqa: BLE001
             P = {}
         olho = olheiro.perfil(d, dados, P, s.squad(s.find_team(nome)))
@@ -564,7 +566,7 @@ def _tecnico_ia_thread():
             e = ia_adversaria._ler_estado()
             b0 = ia_adversaria._base_memoria(sessao['h'], d, e, log)
             ia_adversaria._gravar_estado(e)
-            P = _dados.load_players(os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'mercado_snap.bin'))
+            P = _dados.load_players(caminhos.SNAP)
             escalacao_ia.preparar(sessao['h'], d, P, jogos, user_ti, b0, log=log)
         except Exception as ex:  # noqa: BLE001 - nunca derruba a Central
             print('aviso: técnico da IA:', ex, flush=True)
@@ -583,7 +585,7 @@ def _imprensa_viva_thread():
                 marca = (c['slot'], uj.get('num'), tuple(uj.get('data') or ()))
                 pr = (p or {}).get('proximo') or {}
                 marca_pre = (c['slot'], tuple(pr.get('data') or ()), pr.get('casa'), pr.get('fora'))
-                snap = os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'mercado_snap.bin')
+                snap = caminhos.SNAP
                 log = lambda m: print(m, flush=True)
                 if uj.get('linhas') and marca != feito:
                     aux = _ler_json(os.path.join(HIST, f'pulso_aux_{c["slot"]}.json'), None)
@@ -621,6 +623,8 @@ def _reiniciar_vigia():
     subprocess.run(['powershell', '-NoProfile', '-Command',
                     "Get-CimInstance Win32_Process -Filter \"Name like 'python%'\" | Where-Object { $_.CommandLine -like '*vigia.py*' }"
                     " | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"], capture_output=True, timeout=60, creationflags=0x08000000)
+    if caminhos.PAINEL:
+        return   # 12/10/2026: dentro do Painel, ele mesmo religa o vigia (com o registro na aba Registros)
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = 7   # minimizada, sem roubar o foco do jogo

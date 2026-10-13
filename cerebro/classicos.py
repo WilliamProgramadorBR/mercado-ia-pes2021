@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """CLÁSSICOS (11/10/2026): rivalidades reais, com o nome que a imprensa usa. O PES tem cenas próprias de clássico na
 Liga Master; a Central passa a tratar esses jogos como especiais (coletiva, imprensa, Bola na Mesa, redes).
 Os nomes dos times vêm do save (MAIÚSCULAS, às vezes abreviados); a comparação é por nome normalizado.

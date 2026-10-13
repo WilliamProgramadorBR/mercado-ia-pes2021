@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Pesquisa do simulador (fase A): acha na MEMÓRIA a súmula de um jogo IA x IA que ainda vai ser simulado e mostra o
 endereço da 1ª linha de jogador do mandante — onde colocar o ponto de parada de ESCRITA no x64dbg.
 Só leitura. Uso: python alvo_sumula.py   (com o jogo aberto na carreira)

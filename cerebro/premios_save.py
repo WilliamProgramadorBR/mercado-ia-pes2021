@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """PRÊMIOS INDIVIDUAIS do PES (Base de dados > Títulos individuais), lidos do save (11/10/2026, SOMENTE LEITURA).
 
 Achado pelos votos da tela "Prêmio de melhor jogador do mundo 2034" (William 945, KAIO 588, Benzema 388):

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """OLHEIRO DA IA (12/10/2026): o técnico do computador estuda o time do usuário antes do jogo.
 
 Lê só o que o jogo mostra de verdade:

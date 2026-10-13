@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """TÉCNICO DA IA — escalações realistas nos jogos simulados (12/10/2026).
 
 O erro da Konami (achado com x64dbg): antes de cada jogo SIMULADO, o jogo chama o técnico da IA com o modo 3

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Apelidos dados pela torcida (Vestiário IA) — usa o sistema NATIVO de apelidos do PES.
 
 Formato (confirmado no jogo em 09/10/2026: Justin Omoregie virou "El Diablo" na ficha e na mensagem):

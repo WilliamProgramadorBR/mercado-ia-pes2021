@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Leitor do EDIT00000000 descriptografado (data.dat) do PES 2021.
 
 Adaptação em Python das rotinas de leitura do 4ccEditor, modificada para uso

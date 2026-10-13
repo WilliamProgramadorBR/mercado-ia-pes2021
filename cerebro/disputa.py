@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DIRETOR DE CAMPEONATO (12/10/2026): quem está "dando a vida" em cada liga.
 
 Pedido do usuário: rivais em disputa (título, vagas, rebaixamento) devem jogar como quem decide cada ponto — sem

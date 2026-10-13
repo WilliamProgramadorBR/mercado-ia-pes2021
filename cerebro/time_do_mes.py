@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """TIME DO MÊS OFICIAL do jogo x a seleção da imprensa (12/10/2026).
 
 O save guarda o Time do mês da liga do usuário (premios_save.time_do_mes): 11 jogadores com a nota média do mês, mas

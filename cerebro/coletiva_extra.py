@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """COLETIVAS — LOTE 2 (12/10/2026): perguntas que só existem porque a Central agora sabe mais do jogo.
 
 Pedido do usuário: "pense no futebol, analise e crie mais coletivas, mais interativo e menos repetitivo". Cada cenário

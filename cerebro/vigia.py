@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Vigia do Mercado IA / Vestiário IA: roda em segundo plano junto com o jogo. Encerra sozinho quando o jogo fecha.
 
 MODO AUTOMÁTICO (padrão; liga/desliga em cerebro/automacao.json):
@@ -26,12 +27,12 @@ import sys
 import time
 import traceback
 
+import caminhos
 import janela
 import memoria
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-GAME_DIR = os.path.normpath(os.environ.get(
-    'PES2021_GAME_DIR', os.path.join(HERE, '..', '..', 'eFootball PES 2021')))
+GAME_DIR = caminhos.GAME_DIR                # 12/10/2026: caminhos.py (config.json do Painel)
 REQUEST = os.path.join(GAME_DIR, 'mercado_pedido.txt')
 REQUEST_VEST = os.path.join(GAME_DIR, 'vestiario_pedido.txt')   # tecla 9: vestiário (moral -> setas + notícias)
 SNAP = os.path.join(GAME_DIR, 'mercado_snap.bin')
@@ -42,11 +43,7 @@ ERROS = os.path.join(HERE, 'historico', 'vigia_erros.txt')
 PADRAO = {'automatico': True, 'mercado': True, 'vestiario': True, 'mercado_intervalo_dias': 7,
           'espera_segundos': 20, 'ao_vivo': True, 'saves_automaticos': '*'}
 LAB = os.path.join(HERE, 'historico', 'laboratorio')   # cópias dos saves das carreiras de TESTE (sem processar)
-SAVE_GLOBS = [
-    os.path.expandvars(r'%USERPROFILE%\OneDrive\Documentos\KONAMI\eFootball PES 2021 SEASON UPDATE\*\save'),
-    os.path.expandvars(r'%USERPROFILE%\OneDrive\Documents\KONAMI\eFootball PES 2021 SEASON UPDATE\*\save'),
-    os.path.expandvars(r'%USERPROFILE%\Documents\KONAMI\eFootball PES 2021 SEASON UPDATE\*\save'),
-]
+SAVE_GLOBS = caminhos.globs_save()
 
 
 VIVO = os.path.join(HERE, 'historico', 'vigia_vivo.txt')   # batimento: a Central avisa se o vigia parar
@@ -98,13 +95,7 @@ def config():
 
 
 def save_dirs():
-    configured = os.environ.get('PES2021_SAVE_DIR')
-    if configured:
-        return [os.path.normpath(configured)] if os.path.isdir(configured) else []
-    out = []
-    for g in SAVE_GLOBS:
-        out += glob.glob(g)
-    return out
+    return caminhos.pastas_save()
 
 
 def ml_files():

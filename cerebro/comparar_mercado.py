@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """ENSAIO do mercado COM e SEM encaixe no plano de jogo (12/10/2026) — nada é gravado no jogo.
 
 Mesma foto, mesmo save e mesma semente nas duas rodadas; o relatório mostra os negócios que mudam.

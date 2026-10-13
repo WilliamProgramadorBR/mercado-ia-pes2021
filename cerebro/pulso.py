@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """PULSO AO VIVO da Central (10/10/2026): lê a MEMÓRIA do jogo a cada poucos segundos (SOMENTE LEITURA).
 
 O save só chega depois do salvamento automático, e a reunião completa leva 1-2 min. Mas a memória do jogo tem as

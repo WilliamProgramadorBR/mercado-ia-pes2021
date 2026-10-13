@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """PLANO DE JOGO dos clubes no save da ML (12/10/2026, mapeado com o usuário: um ajuste por save + prints).
 
 Blocos de 600 B a partir de 0x133C50 (731 blocos). O u16 em +56 do bloco é o ÍNDICE DO TIME (o bloco costuma ser

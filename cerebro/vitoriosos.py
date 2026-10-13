@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """ELENCOS VITORIOSOS (12/10/2026): a vida de quem já ganhou tudo.
 
   obrigação   depois de uma temporada vencedora (liga ou Champions, ou 4+ títulos oficiais), ganhar vira OBRIGAÇÃO:

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Diário de ações da Central do Técnico (event sourcing simples) + efeitos ao vivo.
 
   - Toda ação feita na Central vira UMA linha em historico/central_acoes.jsonl (só acrescenta; trava 'diario').

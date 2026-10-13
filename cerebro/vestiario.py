@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Vestiário IA v1 — SOMENTE LEITURA: lê o save da Master League e gera um relatório do elenco do usuário.
 
 Para cada jogador calcula:
@@ -26,11 +27,13 @@ import jogadores_save as js
 import partidas_save as ps
 from save_ml import SaveML
 
+import caminhos
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOLS = os.path.normpath(os.path.join(HERE, '..'))
-DECRYPT = os.path.join(TOOLS, 'pesXdecrypter', 'decrypter21.exe')
-GAME_DIR = os.path.normpath(os.path.join(TOOLS, '..', 'eFootball PES 2021'))
-SNAP = os.path.join(GAME_DIR, 'mercado_snap.bin')
+TOOLS = caminhos.TOOLS                      # 12/10/2026: caminhos.py (config.json do Painel)
+DECRYPT = caminhos.DECRYPT
+GAME_DIR = caminhos.GAME_DIR
+SNAP = caminhos.SNAP
 HIST = os.path.join(HERE, 'historico')
 
 TIME_DO_USUARIO = 'MANCHESTER UNITED'

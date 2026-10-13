@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Relatório da COMISSÃO TÉCNICA para o próximo jogo (11/10/2026): foco tático, com dados do próprio jogo.
 
 Adversário: formação real do clube no save (SaveML.formation), melhor escalação nela (encaixe.best_xi), estilos de jogo

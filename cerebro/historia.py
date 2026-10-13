@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """HISTÓRIA DO CLUBE (11/10/2026): o livro dos recordes da sua era.
 
 O jogo APAGA as súmulas e as estatísticas na virada da temporada. Por isso, a cada reunião, a temporada em andamento é

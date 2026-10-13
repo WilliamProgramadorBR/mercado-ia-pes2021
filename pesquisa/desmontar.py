@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Desmonta trechos do PES2021.exe direto do arquivo (sem o jogo). Só leitura.
 Uso: python desmontar.py <endereço hex> [antes] [depois]   ex.: python desmontar.py 141332E19 120 40
      python desmontar.py funcao <endereço hex>   -> acha o início da função (padding CC antes) e desmonta até o ret"""

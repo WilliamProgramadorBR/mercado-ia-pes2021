@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DEPARTAMENTO MÉDICO NA IMPRENSA (12/10/2026).
 
 Pedido do usuário: o craque (William) se machucou antes de jogos importantes; a imprensa deve perceber e AVALIAR o

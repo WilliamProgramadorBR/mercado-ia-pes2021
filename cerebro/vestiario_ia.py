@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Vestiário dos clubes da IA (para o Mercado IA): quem está insatisfeito por falta de minutos em outro clube.
 
 Fonte: súmulas da temporada (partidas_save) — minutos de cada jogador nos últimos jogos do PRÓPRIO clube —

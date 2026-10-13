@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Aplica uma janela de transferências da nossa IA num save de Master League.
 
 Uso:  python aplicar.py <arquivo ML0000000X> <foto_memoria.bin> [--ensaio]
@@ -29,17 +30,16 @@ import troca_save
 import vestiario_ia
 from save_ml import SaveML
 
+import caminhos
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOLS = os.path.normpath(os.environ.get('MERCADO_IA_TOOLS_DIR', os.path.join(HERE, '..')))
-DECRYPT = os.path.normpath(os.environ.get(
-    'PES2021_DECRYPTER', os.path.join(TOOLS, 'pesXdecrypter', 'decrypter21.exe')))
-ENCRYPT = os.path.normpath(os.environ.get(
-    'PES2021_ENCRYPTER', os.path.join(TOOLS, 'pesXdecrypter', 'encrypter21.exe')))
+TOOLS = caminhos.TOOLS                      # 12/10/2026: pastas vêm do caminhos.py (config.json do Painel)
+DECRYPT = caminhos.DECRYPT
+ENCRYPT = caminhos.ENCRYPT
 BACKUPS = os.path.join(TOOLS, 'Backups', 'mercado_ia')
 WORK = os.path.join(TOOLS, 'save_work', 'auto')
 HIST = os.path.join(HERE, 'historico')
-GAME_DIR = os.path.normpath(os.environ.get(
-    'PES2021_GAME_DIR', os.path.join(TOOLS, '..', 'eFootball PES 2021')))
+GAME_DIR = caminhos.GAME_DIR
 NEWS_FILE = os.path.join(GAME_DIR, 'mercado_noticias.txt')
 
 DEFAULT_CONFIG = {

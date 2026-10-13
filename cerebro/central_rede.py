@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """CENTRAL NO CELULAR (12/10/2026): a Central aceita conexões da rede de casa (Wi-Fi), protegida por PIN.
 
   - No próprio PC (127.0.0.1) nada muda: abre direto.

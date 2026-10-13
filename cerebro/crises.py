@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Banco de CRISES do vestiário + IMAGEM do clube + ameaça do PATROCINADOR (11/10/2026).
 
 Cada cenário tem uma CONDIÇÃO (momento real do clube: resultados, moral, status, tempo do técnico, súmula do último

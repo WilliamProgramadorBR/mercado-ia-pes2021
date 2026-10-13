@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Leitura (SOMENTE LEITURA, por enquanto) da tabela de jogadores da carreira guardada no save da Master League.
 
 Engenharia reversa de 09/10/2026 (save de 2033, Man Utd):

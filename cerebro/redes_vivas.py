@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """REDES VIVAS (12/10/2026): o feed acompanha o MOMENTO e ganha formatos novos.
 
 Pedido do usuário: "na rede social dá um up também, crie mais textos, formas de interagir, deixa algo bem dinâmico...

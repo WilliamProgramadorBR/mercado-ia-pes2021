@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """RUMORES DE MERCADO sobre os NOSSOS jogadores (11/10/2026).
 
 Clube grande "de olho" em quem está jogando muito (ou em quem anda insatisfeito). O rumor vive algumas semanas:

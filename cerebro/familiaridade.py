@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """FAMILIARIDADE TÁTICA do elenco do usuário (12/10/2026) — os números das telas "Tática ofensiva/defensiva".
 
 O jogo guarda, só para os jogadores do time do usuário, 14 notas (0-99) aprendidas com o tempo: quanto cada um está

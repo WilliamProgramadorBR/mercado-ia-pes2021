@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Redator com IA (opcional) para a mídia da Central (10/10/2026).
 
 Pega a edição da rodada (capas dos 3 jornais, programa "Bola na Mesa", perguntas da coletiva) e pede ao modelo para

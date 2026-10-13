@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """JOGO DA RODADA: 4 x 4 (11/10/2026). Os 4 destaques de cada time frente a frente, como no pré-jogo da TV.
 
 Dados do próprio jogo: atributos da foto da memória (dados.load_players), elencos do save, números da temporada nas

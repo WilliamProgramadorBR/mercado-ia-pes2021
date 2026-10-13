@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Identidade do clube do usuário para os textos (jornais, programa, notícias). Muda com a carreira (10/10/2026).
 
 clube.definir('FLAMENGO') no começo da reunião; os textos usam clube.C['curto'], ['apelido'], ['em_estadio']...

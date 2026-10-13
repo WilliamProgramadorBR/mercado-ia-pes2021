@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Técnico IA: monta a escalação preferida dos times da IA dentro da formação que o time já usa.
 
 - titulares: melhor jogador para cada vaga da formação (nota estimada na posição da vaga);

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """50 CENÁRIOS DE COLETIVA (11/10/2026), ligados ao jogo e ao momento. Substituem as perguntas genéricas.
 
 Cada cenário só aparece quando o contexto sustenta (resultado, placar, CLÁSSICO, súmula do jogo, tabela, sequência,

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Dificuldade dinâmica do vestiário (11/10/2026).
 
 Técnico NOVO no clube + espírito de equipe BAIXO (valor do próprio jogo, save 0xB629BC) = vestiário instável: mais

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """IA ADVERSÁRIA (12/10/2026): o técnico do computador estuda o usuário, prepara o jogo e aprende com o resultado.
 
 O usuário joga no Lenda e quer a IA mais agressiva e inteligente, sem "roubo": nenhum atributo é tocado (o bônus
@@ -317,6 +318,34 @@ def aprender(e, resultados):
     return feitos
 
 
+def limpar_registro(e):
+    """Remove preparações repetidas do mesmo jogo (fica a última) e refaz o aprendizado do zero, em ordem."""
+    vistos, limpo = set(), []
+    for x in reversed(e.get('registro') or []):
+        k = (tuple(x.get('data') or ()), (x.get('adversario') or '').upper())
+        if k in vistos:
+            continue
+        vistos.add(k)
+        limpo.append(x)
+    limpo.reverse()
+    e['registro'] = limpo
+    apr = {}
+    for r in limpo:
+        if 'recompensa' not in r or not r.get('tags'):
+            continue
+        for a in apr.values():
+            a['n'] = round(a['n'] * ESQUECIMENTO, 3)
+            a['s'] = round(a['s'] * ESQUECIMENTO, 3)
+        for t in r['tags']:
+            for chave in (t, f'{t}|{r.get("faixa")}'):
+                a = apr.setdefault(chave, {'n': 0, 's': 0.0})
+                a['n'] += 1
+                a['s'] = round(a['s'] + r['recompensa'], 3)
+    e['aprendizado'] = apr
+    e['resumo'] = resumo_aprendizado(e)
+    return e
+
+
 def resumo_aprendizado(e, n=4):
     """O que mais funcionou e o que menos funcionou contra o usuário (só características com 2+ jogos)."""
     apr = e.get('aprendizado') or {}
@@ -450,7 +479,12 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
         except Exception as ex:  # noqa: BLE001
             log(f'duelo (palpite): {ex}')
         e['ativo'] = {'ti': ti_adv, 'nome': nome_adv, 'data': ctx.get('data')}
-        e['registro'] = (e.get('registro') or [])[-120:] + [{
+        # 12/10/2026: o mesmo jogo preparado de novo (Central reiniciada) substitui o registro em vez de duplicar —
+        # duplicado, o resultado contava várias vezes no aprendizado (o Ipswich entrou 8 vezes)
+        e['registro'] = [x for x in (e.get('registro') or [])[-120:]
+                         if not (list(x.get('data') or []) == list(ctx.get('data') or []) and (x.get('adversario') or '').upper() == nome_adv.upper()
+                                 and 'recompensa' not in x)]
+        e['registro'] = e['registro'] + [{
             'quando': time.strftime('%Y-%m-%d %H:%M'), 'data': ctx.get('data'), 'adversario': nome_adv,
             'tecnico': T.tecnico(d, ti_adv), 'competicao': ctx.get('competicao'), 'faixa': faixa(ctx),
             'esperado': ctx.get('esperado'), 'escolha': esc['nome'], 'motivo': ' | '.join(esc['motivos']),

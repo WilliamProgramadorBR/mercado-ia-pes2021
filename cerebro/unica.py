@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Instância única (11/10/2026): o JOGAR_COM_MERCADO_IA.bat aberto duas vezes subia DOIS vigias e DUAS Centrais.
 Dois vigias processam o mesmo save ao mesmo tempo e brigam pelo vestiario_estado.json (WinError 32: a reunião se
 perdia). Um "mutex" nomeado do Windows deixa só o primeiro rodar; o segundo avisa e sai. O Windows solta a trava

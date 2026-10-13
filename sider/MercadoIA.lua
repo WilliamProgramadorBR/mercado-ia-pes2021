@@ -1,3 +1,4 @@
+-- Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 -- MercadoIA.lua
 -- Interface do "Mercado IA" / "Vestiário IA" (cérebros que rodam fora do jogo).
 -- Tecla 8 (mercado, na janela de transferências) ou 9 (vestiário, depois de cada jogo): cria o pedido

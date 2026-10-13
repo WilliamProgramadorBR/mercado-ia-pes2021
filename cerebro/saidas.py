@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """SAÍDAS E CHEGADAS do elenco (11/10/2026): a imprensa, a torcida e os rivais reagem às movimentações do clube.
 
 Fonte: tabela de TRANSFERÊNCIAS da carreira no save (~0x1291xxx no save de 2035), registros de 0xF0 bytes, achada pela

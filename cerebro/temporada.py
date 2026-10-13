@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """CALENDÁRIO E LIGA DE QUALQUER CARREIRA (12/10/2026).
 
 Antes, várias partes supunham a temporada europeia (julho a junho) e descobriam "a liga" pela competição mais jogada

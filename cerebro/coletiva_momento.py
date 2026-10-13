@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """COLETIVAS — LOTE 3 (12/10/2026): o MOMENTO, não só o último jogo.
 
 Pedido do usuário: "na vitória eu vi, mas na derrota eles não falam da quantidade de derrotas acumuladas — perdemos duas

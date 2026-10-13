@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Leitura das SÚMULAS de partidas guardadas no save da Master League (data.dat descriptografado).
 
 Descoberto em 09/10/2026 comparando o save antes/depois de Burnley 1 x 1 Man Utd (03/01/2034,

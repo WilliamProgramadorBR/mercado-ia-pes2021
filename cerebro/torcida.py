@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """ARQUIBANCADA (12/10/2026): o termômetro da torcida.
 
 Humor de 0 a 100, recalculado a cada reunião, a partir do que a arquibancada sente:

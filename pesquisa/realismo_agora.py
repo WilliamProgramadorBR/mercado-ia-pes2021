@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Realismo dos jogos SIMULADOS desde que o técnico da IA foi ligado (12/10/2026, data do jogo 21/10/2035).
 Só leitura: save da última reunião + fichas da foto da memória. Uso: python realismo_agora.py [AAAA-MM-DD início]
 

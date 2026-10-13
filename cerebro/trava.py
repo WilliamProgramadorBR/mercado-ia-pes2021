@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Trava entre processos (vigia, Central, scripts): um arquivo bloqueado com msvcrt.locking.
 
 Uso:  with trava('diario'): ...

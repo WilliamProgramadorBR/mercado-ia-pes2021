@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """BOLA NA MESA — pautas do MOMENTO (12/10/2026).
 
 O programa passa a discutir o que se acumulou (momento.py), a leitura dos analistas (analise_jogo.py) e o plano que o

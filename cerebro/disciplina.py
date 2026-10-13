@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Disciplina no vestiário (etapa 2 da vida futebolística, 10/10/2026).
 
 A cada rodada pode surgir 0-2 casos (atraso, noitada, briga no treino, corpo mole, redes sociais, declaração contra

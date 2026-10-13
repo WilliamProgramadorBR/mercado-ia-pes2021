@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Leitura do estado de uma Master League do PES 2021 (qualquer save).
 
 Fontes:

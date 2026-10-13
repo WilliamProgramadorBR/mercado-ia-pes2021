@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DATA FIFA (11/10/2026): os nossos jogadores nas seleções.
 
 As súmulas guardam os jogos de seleção (os dois times são seleções: índices >= find_team('ALBÂNIA'); comps 34/35/56).

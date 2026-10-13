@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Leitura e escrita da tabela de times no save DESCRIPTOGRAFADO da Master League (data.dat).
 
 Formato (igual à cópia da memória, confirmado no save de 2033):

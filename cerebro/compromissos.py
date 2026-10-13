@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Compromissos do técnico cobrados pelas SÚMULAS do jogo (etapa 2 da vida futebolística, 10/10/2026).
 
 O jogo não deixa ninguém "proibir" uma escalação. Então, quando o técnico promete algo na Central, a promessa vira um

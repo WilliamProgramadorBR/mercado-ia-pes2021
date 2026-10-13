@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Caixa de MENSAGENS da Master League (data.dat descriptografado): leitura e inserção de mensagens nativas.
 
 Descoberto em 09/10/2026:

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Escrita AO VIVO na memória do jogo (fase 1: mensagens) — para não precisar recarregar a carreira.
 
 Ideia: o jogo trabalha com os dados na memória e grava o save a partir deles. Se colocarmos a mudança NA MEMÓRIA

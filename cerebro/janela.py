@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Controle por janela de transferências: o cérebro "lembra" o que já fez em cada janela de cada carreira.
 
 Janelas (data da carreira lida da foto de memória):

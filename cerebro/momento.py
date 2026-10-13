@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """O MOMENTO DO TIME (12/10/2026): o que se acumulou nas últimas semanas, não só o último jogo.
 
 Pedido do usuário: "perdemos duas seguidas, o rival encostou, precisamos nos recuperar na Champions e no campeonato, o

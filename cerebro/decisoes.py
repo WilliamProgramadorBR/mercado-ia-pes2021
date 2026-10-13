@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Pedidos dos jogadores e decisões do técnico (Vestiário IA).
 
 A cada reunião (tecla 9 -> salvar -> aplicar), no máximo UM jogador pede uma conversa. O técnico responde no

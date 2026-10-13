@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Modificadores de humor (etapa 3 da vida futebolística, 10/10/2026).
 
 1) FATOS REAIS (automáticos, das súmulas e do registro do jogador): sequência de gols, jejum de atacante,

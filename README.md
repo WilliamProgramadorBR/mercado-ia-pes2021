@@ -1,5 +1,7 @@
 # Mercado IA para PES 2021
 
+**Autor:** William — [github.com/WilliamProgramadorBR](https://github.com/WilliamProgramadorBR)
+
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
 
 Motor externo de transferências para a Master Liga do eFootball PES 2021. O projeto lê o estado atual da carreira, identifica a formação e as necessidades de cada elenco e simula dirigentes com identidade esportiva e memória econômica entre temporadas.
@@ -40,7 +42,20 @@ Uma página local (`cerebro/central.py`, http://127.0.0.1:8765) que transforma a
 
 Algumas reações são escritas na memória do jogo enquanto ele está aberto (setas de condição, mensagens, apelidos, orçamento), com conferência antes e depois de cada escrita.
 
-Para iniciar: `JOGAR_COM_MERCADO_IA.bat` (vigia + Central + jogo) ou `ABRIR_CENTRAL.bat` (só a Central). A chave da IA vai em `cerebro/ia.json` (modelo em `cerebro/ia.json.exemplo`) e **nunca deve ser publicada**.
+## Painel (aplicativo)
+
+Tudo é controlado pelo **Painel**, um aplicativo Qt6 (PySide6) para Windows:
+
+- **Início:** o estado do jogo, do vigia, da Central, do técnico da IA e do duelo, com o botão **Jogar**;
+- **Central:** a Central do Técnico dentro do app (no celular continua pelo navegador, com PIN);
+- **Rede neural:** o duelo estatística × rede neural, com placar, evolução, curva de aprendizado e palpites;
+- **IA adversária:** o que o técnico do computador aprendeu contra você;
+- **Configuração:** pastas detectadas sozinhas, verificação do Sider (com instalação do módulo), download do pesXdecrypter, chave do Google Gemini e automações;
+- **Registros** e **Manual**.
+
+O pacote leva o Python oficial embutido: o jogador **não instala Python**. Baixe o instalador (`MercadoIA-Setup-<versão>.exe`) ou a versão portátil (`.zip`) na página de releases e siga o [Manual](docs/MANUAL.md).
+
+Para desenvolver: `python -m painel` na pasta que contém `painel/` e `cerebro/` (requer `pip install PySide6`). Para gerar o instalador, veja [Empacotar](docs/EMPACOTAR.md). Os `.bat` antigos continuam funcionando. A chave da IA vai em `cerebro/ia.json` (modelo em `cerebro/ia.json.exemplo`) e **nunca deve ser publicada**.
 
 ## Como funciona
 
@@ -61,17 +76,16 @@ PES 2021 + Sider
              └─ substitui o save e mantém o backup
 ```
 
-Mais detalhes em [Arquitetura](docs/ARQUITETURA.md).
+Mais detalhes em [Arquitetura](docs/ARQUITETURA.md) e no [guia completo do código](docs/CODIGO.md).
 
 ## Requisitos
 
-- Windows;
-- eFootball PES 2021 para PC;
-- Python 3.10 ou superior — testado com Python 3.14;
-- Sider compatível com o executável utilizado;
-- `decrypter21.exe` e `encrypter21.exe` do projeto [pesXdecrypter](https://github.com/the4chancup/pesXdecrypter/releases).
+- Windows 10 ou 11, 64 bits;
+- eFootball PES 2021 para PC (`PES2021.exe` 1.1.0.0, a versão em que a memória foi mapeada);
+- **Sider (obrigatório)**: testado com o 7.3.3. É ele que carrega o `MercadoIA.lua` dentro do jogo;
+- `decrypter21.exe` e `encrypter21.exe` do [pesXdecrypter](https://github.com/the4chancup/pesXdecrypter/releases): já vêm no pacote (versão oficial 6.0.0, domínio público; veja os [avisos de terceiros](THIRD_PARTY_NOTICES.md)).
 
-O código Python utiliza apenas a biblioteca padrão; o Pillow é opcional (fotos dos jogadores na Central). Consulte [Dependências](docs/DEPENDENCIAS.md) e [Instalação](docs/INSTALACAO.md).
+No pacote, o Python já vem embutido. Para rodar direto do código: Python 3.10+ (testado com 3.14), mais PySide6 para o Painel; o motor usa só a biblioteca padrão e o Pillow é opcional. Consulte o [Manual](docs/MANUAL.md), as [Dependências](docs/DEPENDENCIAS.md) e a [Instalação manual](docs/INSTALACAO.md).
 
 ## Uso resumido
 
@@ -86,6 +100,8 @@ O time do usuário e os limites ficam em `cerebro/mercado_config.json`. Comece c
 ## Estrutura
 
 ```text
+painel/                   aplicativo Qt6 (PySide6): Painel, verificação, serviços
+empacotar/                montagem do pacote (Python embutido) e do instalador (Inno Setup)
 cerebro/                  motor Python, integração com o save e Central do Técnico
 cerebro/central/          página da Central
 sider/MercadoIA.lua       interface dentro do Sider
@@ -99,7 +115,7 @@ tests/                    testes sem save real
 
 - o jogo, executáveis ou arquivos da KONAMI;
 - Sider;
-- binários do `pesXdecrypter`;
+- binários do `pesXdecrypter` no código-fonte (o pacote do Painel os inclui, na versão oficial conferida);
 - patches, bancos de dados, saves, snapshots ou dados de jogadores;
 - garantia de compatibilidade com qualquer versão do `PES2021.exe`.
 

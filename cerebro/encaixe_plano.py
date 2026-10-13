@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """ENCAIXE NO PLANO DE JOGO para o mercado da IA (12/10/2026).
 
 Cada clube da IA tem plano de jogo e instruções avançadas no save (tatica_save). O jogador que combina com o jeito do

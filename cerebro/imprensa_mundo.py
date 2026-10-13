@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Imprensa do MUNDO (11/10/2026): matérias que vão além do clube, com os números de destaques.py.
 
   premios     fim de temporada: a SELEÇÃO DA TEMPORADA votada por 30 jornalistas (4-3-3), artilheiro e garçom do

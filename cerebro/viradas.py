@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """VIRADAS HISTÓRICAS em mata-mata (11/10/2026): "isso é futebol".
 
 A súmula do PES não guarda o minuto dos gols (virada DENTRO de um jogo não dá para saber), mas os confrontos de ida

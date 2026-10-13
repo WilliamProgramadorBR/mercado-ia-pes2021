@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Estado da DIRETORIA DO PRÓPRIO PES lido do save (somente leitura). Descoberto em 10/10/2026 no laboratório
 (Flamengo 2026 e Mirassol 2027, duas demissões completas).
 

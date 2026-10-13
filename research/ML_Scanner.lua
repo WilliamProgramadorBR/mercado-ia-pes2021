@@ -1,3 +1,4 @@
+-- Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 -- ML_Scanner.lua
 -- Sonda SOMENTE LEITURA da Master League. Não escreve nada na memória.
 -- Uso: com uma Master League carregada, abra o overlay (Espaço). O ML Scanner é o primeiro

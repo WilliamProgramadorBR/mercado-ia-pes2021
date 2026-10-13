@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Próximo jogo + ENQUETE DA RODADA (10/10/2026), com números do próprio jogo.
 
 Fontes: calendário (partidas_save.agenda: jogos agendados de todas as competições), súmulas (forma, gols, confronto

@@ -30,3 +30,9 @@ central_rede.json
 *.db
 *.jsonl
 cerebro/automacao.json
+
+# Empacotamento
+dist/
+empacotar/_cache/
+empacotar/ultima_montagem.log
+config.json

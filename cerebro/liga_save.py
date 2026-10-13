@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Classificação da liga guardada pelo próprio jogo no save da Master League (SOMENTE LEITURA).
 
 Descoberto em 09/10/2026 (save de 28/01/2034, Premier League: Man Utd 59, Liverpool 55, City 43...).

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """BOLA NA MESA (11/10/2026): mesa-redonda esportiva + rede social + enquetes, gerados a cada reunião.
 
 Banco de 54 PAUTAS. Cada pauta só entra se os dados do save sustentam o assunto (coerência): Bola de Ouro só com

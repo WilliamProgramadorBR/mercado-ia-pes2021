@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Exporta o retrato do vestiário para a Central do Técnico (historico/central.json). SOMENTE LEITURA do jogo.
 
 Chamado no fim de cada reunião (aplicar_vestiario.py) e pelo vestiario.py (relatório avulso).

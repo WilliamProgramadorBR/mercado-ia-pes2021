@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Exigências por PERFIL de jogador (etapa 3 da vida futebolística, 10/10/2026).
 
 Cada jogador ganha um perfil a partir do que o jogo já tem: idade, nota, status (Lenda/Ídolo/Superastro/Craque),

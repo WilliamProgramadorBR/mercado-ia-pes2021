@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Troca segura do save da Master League (usada pelo mercado e pelo vestiário, inclusive no modo automático).
 
   1. confere que o save no disco ainda é EXATAMENTE o que foi lido no começo (byte a byte): se o jogo salvou

@@ -1,4 +1,6 @@
-# Instalação
+# Instalação manual (a partir do código)
+
+> Para jogar, use o instalador ou a versão portátil e siga o [Manual](MANUAL.md): o Painel faz tudo isto sozinho. Este guia é para quem roda direto do código.
 
 ## 1. Faça backups
 

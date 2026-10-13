@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Memória esportiva e econômica persistente dos clubes controlados pela IA.
 
 O save do PES não expõe de forma confiável toda a economia dos adversários. Este

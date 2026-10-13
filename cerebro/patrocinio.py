@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Patrocínio (etapa 3 da vida futebolística, 10/10/2026).
 
 ATRATIVIDADE do clube (0-100), com dados do próprio jogo: sócios-torcedores (save 0xB629A4), espírito de equipe

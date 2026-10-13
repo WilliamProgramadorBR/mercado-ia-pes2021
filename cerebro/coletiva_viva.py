@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """COLETIVA NO DIA DO JOGO (11/10/2026).
 
 Antes a coletiva só nascia na reunião (depois do save + mercado + vestiário + IA: alguns minutos). Quem simula rápido

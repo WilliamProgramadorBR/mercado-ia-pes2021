@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Escudos oficiais dos times (os mesmos que o jogo usa) para a Central do Técnico. SOMENTE LEITURA.
 
 O save da ML NÃO guarda o ID oficial do time (só o índice na tabela dele). O ID está na base do jogo:
@@ -19,7 +20,7 @@ import unicodedata
 import zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-GAME_DIR = os.path.normpath(os.path.join(HERE, '..', '..', 'eFootball PES 2021'))
+GAME_DIR = __import__('caminhos').GAME_DIR
 TEAM_BIN = os.path.join(GAME_DIR, 'GOGOSZ', 'Database', 'common', 'etc', 'pesdb', 'Team.bin')
 FLAG = os.path.join(GAME_DIR, 'GOGOSZ', 'Escudos', 'common', 'render', 'symbol', 'flag')
 ARQ = os.path.join(HERE, 'historico', 'escudos.json')

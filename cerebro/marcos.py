@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """MARCOS DA TEMPORADA (11/10/2026): FINAIS de copa e TÍTULO da liga — os jogos que a imprensa trata como históricos.
 
 FINAL: jogo de mata-mata (+7 do registro: 0x40/0x50 jogado, 0x00/0x10 agendado) que é o ÚLTIMO da competição e o

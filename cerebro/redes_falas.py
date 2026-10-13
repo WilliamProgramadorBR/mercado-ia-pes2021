@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """REDES SOCIAIS com mais vida (11/10/2026): banco de ~135 posts-modelo + respostas (comentários) embaixo dos posts.
 
 Cada modelo: (categoria, autor, texto, tom). Autor e texto usam campos {assim}; o modelo só entra se TODOS os campos

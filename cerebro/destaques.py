@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DESTAQUES DO MUNDO (11/10/2026): os números da temporada de TODOS os jogadores, para a imprensa ir além do clube.
 
 Fonte: as súmulas do próprio save (partidas_save: o save guarda os jogos do mundo todo, com gols, assistências, nota e

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Banco da IMPRENSA (11/10/2026): historico/imprensa.db (SQLite). A Central lê daqui e atualiza a tela.
 
 Tabelas:

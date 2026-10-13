@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Índice de encaixe de elencos (v0).
 
 Não é a fórmula oficial do PES. Mede quatro coisas, de 0 a 100:

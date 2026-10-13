@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """RODADA E MÊS (11/10/2026): o jornalismo de toda semana, não só o de fim de temporada.
 
   seleção da rodada   quando uma rodada da liga termina (todos os jogos dela disputados), o 4-3-3 dos melhores pela

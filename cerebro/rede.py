@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """REDE NEURAL PEQUENA EM PYTHON PURO (12/10/2026).
 
 Pedido do usuário: uma rede neural que dispute com a estatística quem prevê melhor os jogos (sem tirar a estatística).

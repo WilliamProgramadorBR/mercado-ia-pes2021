@@ -30,7 +30,7 @@ pesXdecrypter/decrypter21.exe
 pesXdecrypter/encrypter21.exe
 ```
 
-Baixe-os nos [releases oficiais do pesXdecrypter](https://github.com/the4chancup/pesXdecrypter/releases). O projeto é distribuído principalmente em domínio público; o código MT19937 incluído pelo projeto possui sua própria licença permissiva. Consulte o repositório original antes de redistribuir seus binários.
+No pacote do Painel eles já vêm incluídos (versão oficial 6.0.0, conferida por SHA-256). Para rodar direto do código, baixe-os nos [releases oficiais do pesXdecrypter](https://github.com/the4chancup/pesXdecrypter/releases). O projeto é de domínio público; o trecho MT19937 tem licença própria, que permite a redistribuição com o aviso reproduzido em [Avisos de terceiros](../THIRD_PARTY_NOTICES.md).
 
 O Mercado IA chama os executáveis como processos separados. Nenhum código do `pesXdecrypter` foi copiado para este repositório.
 

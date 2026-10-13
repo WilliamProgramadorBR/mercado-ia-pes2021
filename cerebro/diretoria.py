@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Diretoria / presidente (Central do Técnico, etapa 3a) — NÃO grava nada no save.
 
 Usa a classificação oficial do jogo (liga_save), os resultados (súmulas) e o vestiário para:
@@ -21,7 +22,7 @@ import financas_save
 import liga_save
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RESPOSTA = os.path.normpath(os.path.join(HERE, '..', '..', 'eFootball PES 2021', 'diretoria_resposta.txt'))
+RESPOSTA = os.path.join(__import__('caminhos').GAME_DIR, 'diretoria_resposta.txt')
 PRESIDENTE = 'O presidente'
 BONUS_PROMESSA = 10e6       # R$ ganho/perdido no orçamento quando a promessa de reação é cumprida/quebrada
 

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Calendário e rodízio (etapa 2 da vida futebolística, 10/10/2026).
 
 Fontes reais do jogo:

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Cobertura da LIGA INTEIRA pela mídia (10/10/2026).
 
 O jornal não fala só do clube do usuário: pega as competições que o usuário disputa na temporada (a liga e a copa

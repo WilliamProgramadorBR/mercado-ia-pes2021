@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Jornal com mais corpo (11/10/2026): as capas das Bancas ganham texto de abertura, ASPAS de jogadores (o que ele
 "disse" na zona mista, coerente com o fato e com o jeito dele: vaidoso, líder, jovem impaciente...) e quadros com a
 liga, a artilharia, a corrida da Bola de Ouro e a revelação da temporada (destaques.py).

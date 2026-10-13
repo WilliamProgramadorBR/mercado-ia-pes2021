@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Motor de decisão de transferências (v0).
 
 Fluxo de uma janela:

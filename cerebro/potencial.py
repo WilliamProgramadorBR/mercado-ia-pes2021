@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Potencial de evolução (estimado; o potencial real é oculto no PES).
 
 Origem do jogador, comparando a idade na carreira com a idade no EDIT (dados de 2025):

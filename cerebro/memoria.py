@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Foto da memória do PES 2021 tirada DE FORA do jogo (Windows ReadProcessMemory), sem risco de derrubar o jogo.
 
 Por quê: o overlay lia blocos FIXOS de memória (0x7FF4D7E00000...) com memory.read; em 09/10/2026 esse endereço

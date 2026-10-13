@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """ANÁLISE PÓS-JOGO COM O PORQUÊ (12/10/2026).
 
 Pedido do usuário: jornalismo que entende o que aconteceu — como o nosso time se comportou, como a máquina se

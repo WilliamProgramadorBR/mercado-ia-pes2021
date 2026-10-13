@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Simula uma janela de transferências da nossa IA sobre o estado atual de uma Master League.
 
 Uso:  python simular.py [foto.bin] [times.txt] [time_do_usuario]

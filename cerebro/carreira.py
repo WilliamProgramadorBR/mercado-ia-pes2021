@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Qual é o time do usuário numa carreira da ML (data.dat descriptografado). SOMENTE LEITURA.
 
 Descoberto em 10/10/2026 comparando 4 carreiras (Man Utd 13, Flamengo 122, Atlético de Madrid 41, Wolverhampton 19):

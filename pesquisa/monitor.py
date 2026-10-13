@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Monitor da sessão de testes (12/10/2026): imprime UMA linha só quando algo importa.
   ERRO     linha nova no historico/vigia_erros.txt (avisos de rotina ficam de fora)
   CENTRAL  a Central parou de responder (ou voltou)

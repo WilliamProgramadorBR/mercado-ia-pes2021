@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Aplica o Vestiário IA num save da Master League: moral -> seta de condição + notícias na mídia.
 
 Uso:  python aplicar_vestiario.py <arquivo ML0000000X> [foto_memoria.bin] [--ensaio]
@@ -50,10 +51,12 @@ from save_ml import SaveML
 import jogadores_save as js
 import vestiario as V
 
+import caminhos
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOLS = os.path.normpath(os.path.join(HERE, '..'))
-DECRYPT = os.path.join(TOOLS, 'pesXdecrypter', 'decrypter21.exe')
-ENCRYPT = os.path.join(TOOLS, 'pesXdecrypter', 'encrypter21.exe')
+TOOLS = caminhos.TOOLS                      # 12/10/2026: caminhos.py (config.json do Painel)
+DECRYPT = caminhos.DECRYPT
+ENCRYPT = caminhos.ENCRYPT
 ESTADO = os.environ.get('VESTIARIO_ESTADO') or os.path.join(HERE, 'historico', 'vestiario_estado.json')
 NEWS_FILE = os.path.join(V.GAME_DIR, 'vestiario_noticias.txt')
 DECISAO_FILE = os.path.join(V.GAME_DIR, 'vestiario_decisao.txt')     # pedido pendente (mostrado no overlay)

@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """O CELULAR DO TÉCNICO (11/10/2026): mensagens de quem vive em volta do clube, com respostas que mexem na moral.
 
 Cada conversa é um CASO (tipo 'celular') e usa o mesmo caminho das decisões de disciplina: a Central registra a

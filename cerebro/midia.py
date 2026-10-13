@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Mídia do clube (Central do Técnico, etapa 1 da "vida futebolística"): jornais, programa esportivo e coletiva.
 
 A cada RODADA NOVA (aplicar_vestiario), os fatos do clube viram:

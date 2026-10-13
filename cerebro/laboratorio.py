@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Laboratório: compara saves da carreira de TESTE (copiados pelo vigia) para achar campos do jogo. SOMENTE LEITURA.
 
 Uso:
@@ -17,8 +18,12 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAB = os.path.join(HERE, 'historico', 'laboratorio')
 DEC = os.path.join(LAB, '_dec')
-GAME_DIR = os.path.normpath(os.path.join(HERE, '..', '..', 'eFootball PES 2021'))
-DECRYPT_REL = os.path.join('..', 'Ferramentas', 'pesXdecrypter', 'decrypter21.exe')   # caminho relativo liberado
+import caminhos  # noqa: E402
+GAME_DIR = caminhos.GAME_DIR
+try:   # caminho relativo à pasta do jogo (em outro disco não existe relativo: usa o completo)
+    DECRYPT_REL = os.path.relpath(caminhos.DECRYPT, GAME_DIR)
+except ValueError:
+    DECRYPT_REL = caminhos.DECRYPT
 
 
 def copias():

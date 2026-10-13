@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """IMPRENSA da Central (11/10/2026): o noticiário do futebol em cinco frentes, gravado no banco (imprensa_db.py).
 
   pré-jogo        prévia do próximo jogo: possível escalação dos dois times (formação e titulares do próprio save),

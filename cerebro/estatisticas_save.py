@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Estatísticas detalhadas dos jogadores guardadas no save da Master League (SOMENTE LEITURA).
 
 Descoberto em 09/10/2026 no save de 03/01/2034, conferido com as telas "Estatíst. dos jogadores" (2033-2034),

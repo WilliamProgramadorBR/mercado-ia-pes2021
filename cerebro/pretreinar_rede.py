@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """Pré-treino das redes do duelo com o histórico de súmulas do save (12/10/2026).
 
 python pretreinar_rede.py            -> treina com 80% dos jogos (em ordem de data), testa nos 20% finais contra a

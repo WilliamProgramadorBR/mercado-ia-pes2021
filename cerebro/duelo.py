@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DUELO ESTATÍSTICA x REDE NEURAL (12/10/2026).
 
 Pedido do usuário: "a rede neural entra como apoio ou competidor: quantos resultados (ou próximo deles) a estatística
@@ -71,8 +72,11 @@ def gravar(e):
 
 
 def rede(arena):
+    """A rede da arena: a desta carreira (historico) ou, na 1ª vez, o modelo inicial que vem no pacote (só para os
+    jogos da IA, que não têm nada pessoal), ou uma rede nova que aprende do zero."""
     if arena not in _REDES:
-        _REDES[arena] = R.Rede.carregar(ARQ_REDE[arena]) or R.Rede(N_IN[arena], 10, 2, semente=7)
+        _REDES[arena] = (R.Rede.carregar(ARQ_REDE[arena]) or R.Rede.carregar(os.path.join(HERE, 'modelos', f'rede_{arena}.json'))
+                         or R.Rede(N_IN[arena], 10, 2, semente=7))
     return _REDES[arena]
 
 
@@ -255,12 +259,16 @@ def treinar(arena, amostras, epocas=3):
     rnd = random.Random(len(buf))
     lote = list(amostras) + rnd.sample(buf, min(len(buf), 6 * len(amostras)))
     r = rede(arena)
-    r.treinar(lote, epocas=epocas, lr=0.004)
+    perda = r.treinar(lote, epocas=epocas, lr=0.004)
+    # histórico do aprendizado (o Painel mostra a curva): perda média e quantos jogos novos em cada treino
+    ex = getattr(r, 'extra', None) or {}
+    ex['perdas'] = (ex.get('perdas') or [])[-299:] + [[amostras and len(amostras), round(perda, 4)]]
+    r.extra = ex
     buf = (buf + [list(a) for a in amostras])[-4000:]
     with open(ARQ_BUF[arena] + '.tmp', 'w', encoding='utf-8') as f:
         json.dump(buf, f)
     os.replace(ARQ_BUF[arena] + '.tmp', ARQ_BUF[arena])
-    r.salvar(ARQ_REDE[arena])
+    r.salvar(ARQ_REDE[arena], extra=r.extra)
 
 
 def saldo(arena, modelo, x, lam_est):

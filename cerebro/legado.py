@@ -1,3 +1,4 @@
+# Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """LEGADO (11/10/2026): a memória do futebol deste mundo, guardada no banco da imprensa (historico/imprensa.db).
 
 O save só guarda o presente (última edição de cada prêmio, duas temporadas de súmulas). A cada reunião:
