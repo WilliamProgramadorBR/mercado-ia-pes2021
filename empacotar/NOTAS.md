@@ -1,4 +1,6 @@
-Mercado IA 0.9.2: quadro de palpites da rede neural mais fácil de ler.
-- Painel > Rede neural > Palpites nos seus jogos: cada jogo mostra mandante x visitante, o resultado (você venceu, empatou ou perdeu) e os palpites da estatística e da rede no mesmo formato do placar.
-- Cada palpite vem colorido pelos pontos que fez, com o motivo (placar exato, saldo certo, vencedor certo ou errou), e uma coluna diz quem foi melhor naquele jogo.
-- Jogos futuros mostram o que cada um aposta e quem escolheu o plano do adversário.
+Mercado IA 0.9.3: as IAs passam a enxergar o cansaço e o momento do elenco.
+- Ficha do jogo: antes de cada partida sua, os dois times são avaliados por condição física, minutos jogados nos últimos 14 dias, descanso, desfalques, espírito de equipe e moral.
+- Estatística e rede neural usam a ficha nos palpites dos seus jogos. A estatística se reajusta a cada jogo, dando mais peso aos recentes, e mede o quanto você supera a força dos elencos.
+- A IA adversária olha o físico: contra um time no limite, joga com ritmo alto e pressão; quando é ela que chega cansada, guarda energia e fecha o bloco.
+- Painel > Rede neural: novo cartão "Próximo jogo: ficha e por quê", e o porquê de cada palpite ao passar o mouse. A Central mostra o resumo no card do próximo jogo.
+- Para a estatística nova aproveitar o histórico do seu save, use "Estudar o histórico do save de novo" na aba Rede neural.
