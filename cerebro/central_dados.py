@@ -12,6 +12,34 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ARQ = os.environ.get('CENTRAL_DADOS')   # testes (sandbox); normal: historico/central_<arquivo da carreira>.json
 
 
+
+def _jogos_temporada(r):
+    """Os jogos do usuário na temporada: os disputados (com placar) e os agendados (calendário do save)."""
+    try:
+        import clube
+        import temporada
+        from proximo_jogo import nome_comp
+        ti, hoje = r['ti'], tuple(r['hoje'])
+        nm = r.get('_nomes_time') or (lambda t: str(t))
+        todas = r.get('todas_partidas') or []
+        ini = temporada.inicio(todas, temporada.liga(todas, ti, r.get('agenda') or []), hoje)
+        out = []
+        for p in r.get('jogos') or []:
+            if tuple(p['data']) < ini:
+                continue
+            casa = p['time1'] == ti
+            out.append({'data': list(p['data']), 'adv': clube.nome_time(nm(p['time2'] if casa else p['time1']).strip()),
+                        'comp': nome_comp(p['comp']), 'casa': casa, 'jogado': True,
+                        'gp': p['gols1'] if casa else p['gols2'], 'gc': p['gols2'] if casa else p['gols1']})
+        for p in r.get('agenda') or []:
+            if ti in (p['time1'], p['time2']) and tuple(p['data']) >= hoje:
+                casa = p['time1'] == ti
+                out.append({'data': list(p['data']), 'adv': clube.nome_time(nm(p['time2'] if casa else p['time1']).strip()),
+                            'comp': nome_comp(p['comp']), 'casa': casa, 'jogado': False})
+        return sorted(out, key=lambda x: x['data'])
+    except Exception:  # noqa: BLE001
+        return []
+
 def arquivo(slot):
     return ARQ or os.path.join(HERE, 'historico', f'central_{slot}.json')
 SALARIO_X = 430
@@ -94,6 +122,7 @@ def exportar(r, car=None, noticias_rodada=None, setas=None):
         'corrida': car.get('corrida'),   # 12/10/2026: disputa do usuário na liga (disputa.py)
         'lesao': car.get('lesao_ultima'), 'lesao_volta': car.get('lesao_volta'),   # departamento médico (lesoes.py)
         'momento': car.get('momento'), 'analise_porques': car.get('analise_porques'), 'analise_data': car.get('analise_data'),
+        'temporada_jogos': _jogos_temporada(r),   # 12/10/2026: o calendário de jogos da Central (mês a mês)
         'movimentos': [{k: v for k, v in m.items() if k != 'pos'} for m in r.get('movimentos') or []],   # saídas/chegadas   # prévias dos próximos 3 jogos (a Central troca pelo pulso)
         'patrocinio': {k: v for k, v in (car.get('patrocinio') or {}).items() if k in ('contrato', 'atratividade', 'historico', 'imagem', 'imagem_hist')},
         'dificuldade': car.get('dificuldade'),

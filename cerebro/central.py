@@ -344,6 +344,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     with open(png, 'rb') as f:
                         return self._send(200, f.read(), 'image/png')
                 return self._send(404, b'', 'text/plain')
+            if path == '/sw.js':   # 12/10/2026: notificações do navegador com decisão (central/sw.js)
+                with open(os.path.join(WEB, 'sw.js'), 'rb') as f:
+                    return self._send(200, f.read(), 'application/javascript; charset=utf-8')
+            if path.startswith('/fundo/'):   # foto de fundo própria de uma aba (central/fundos/<aba>.jpg|png|webp)
+                aba = ''.join(ch for ch in path[len('/fundo/'):] if ch.isalnum())
+                for ext, tipo in (('jpg', 'image/jpeg'), ('jpeg', 'image/jpeg'), ('png', 'image/png'), ('webp', 'image/webp')):
+                    arq = os.path.join(WEB, 'fundos', f'{aba}.{ext}')
+                    if os.path.isfile(arq):
+                        with open(arq, 'rb') as f:
+                            return self._send(200, f.read(), tipo)
+                return self._send(404, b'', 'text/plain')
             if path.startswith('/foto/'):
                 png = foto_png(path[len('/foto/'):].replace('.png', ''))
                 if png:

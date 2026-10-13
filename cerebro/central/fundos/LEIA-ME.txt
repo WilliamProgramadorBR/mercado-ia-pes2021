@@ -1,0 +1,6 @@
+Fotos de fundo das telas da Central (opcional)
+
+Coloque aqui uma imagem com o nome da aba para trocar a ilustração padrão:
+resumo, vestiario, imprensa, coletiva, analise, disciplina, calendario, celular, diretoria, mercado, historia
+(.jpg, .png ou .webp). Ex.: vestiario.jpg
+A Central escurece a foto automaticamente para não atrapalhar a leitura.

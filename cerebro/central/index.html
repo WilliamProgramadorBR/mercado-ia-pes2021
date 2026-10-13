@@ -7,10 +7,10 @@
 <title>Central do Técnico</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0b100d; --bg2: #101712; --panel: #151d18; --panel2: #1b251f; --line: #26332b; --text: #e8efe9; --muted: #8fa196;
+  --bg: #070d1a; --bg2: #0a1222; --panel: #0e1830; --panel2: #13213d; --line: #1f3156; --text: #eef3ff; --muted: #93a5c8;
   --red: #da291c; --red2: #8f1a12; --gold: #f5c542; --grass: #1f7a3c; --grass2: #145a2b;
   --good: #3ecf6e; --ok: #9ad64b; --mid: #f2c94c; --bad: #f2994a; --worse: #eb5757;
   --paper: #f3eee2; --ink: #1b1b1b; --ink2: #555;
@@ -21,13 +21,13 @@
 * { box-sizing: border-box; }
 html { background: var(--bg); }
 body { margin: 0; color: var(--text); font: 14px/1.45 var(--f-body);
-  background: radial-gradient(1200px 500px at 50% -200px, #18412a 0%, transparent 70%), var(--bg); min-height: 100vh; }
+  background: radial-gradient(1200px 500px at 50% -200px, #13305e 0%, transparent 70%), var(--bg); min-height: 100vh; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* placar */
 .placar { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 14px 22px;
-  background: linear-gradient(90deg, #2b0c09 0%, #141b16 45%, #141b16 100%); border-bottom: 3px solid var(--red); }
+  background: linear-gradient(90deg, #3a0d0a 0%, #0c1528 45%, #0c1528 100%); border-bottom: 3px solid var(--red); }
 .crest { object-fit: contain; vertical-align: middle; flex: none; }
 .escudo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 8px #000a); }
 .escudo.tem { background: none; box-shadow: none; }
@@ -36,7 +36,7 @@ button { font: inherit; color: inherit; }
 .clube h1 { margin: 0; font: 700 24px/1.1 var(--f-score); letter-spacing: 1.5px; text-transform: uppercase; }
 .clube .sub { color: var(--muted); font-size: 13px; }
 .mostrador { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; justify-content: flex-end; }
-.lcd { background: #050806; border: 1px solid #2c3a30; border-radius: 8px; padding: 5px 12px; min-width: 92px; text-align: center; }
+.lcd { background: #04070f; border: 1px solid #24365c; border-radius: 8px; padding: 5px 12px; min-width: 92px; text-align: center; }
 .lcd .r { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; }
 .lcd .v { font: 700 20px/1.15 var(--f-score); color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
 .vivo { display: inline-flex; align-items: center; gap: 7px; font: 700 12px var(--f-score); letter-spacing: 1.5px; padding: 0 12px;
@@ -87,7 +87,7 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
 .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
 .card { background: linear-gradient(180deg, var(--panel2), #18211b); border: 1px solid var(--line); border-radius: 10px; padding: 10px;
   display: grid; grid-template-columns: 58px 1fr; gap: 10px; position: relative; }
-.card.revoltado { border-color: #6b2525; } .card.motivado { border-color: #24563a; }
+.card.revoltado { border-color: #6b2525; } .card.motivado { border-color: #1d4f8c; }
 .card.mexeu { animation: brilho 2.5s ease-out; }
 @keyframes brilho { from { box-shadow: 0 0 0 3px var(--gold); } to { box-shadow: 0 0 0 0 transparent; } }
 .foto { border-radius: 8px; background: #263040; display: grid; place-items: center; color: var(--muted); font-weight: 700; overflow: hidden; flex: none; }
@@ -97,16 +97,16 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
 .cap { background: var(--gold); color: #000; font-size: 10px; font-weight: 800; border-radius: 4px; padding: 0 4px; }
 .meta { color: var(--muted); font-size: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
-.chip { font-size: 11px; padding: 1px 7px; border-radius: 99px; background: #26332b; color: #cfdcd2; }
+.chip { font-size: 11px; padding: 1px 7px; border-radius: 99px; background: #1f3156; color: #cfdcd2; }
 .chip.st-Lenda { background: #4a3a10; color: var(--gold); } .chip.st-Ídolo { background: #3d1f4d; color: #e2b6ff; }
-.chip.st-Superastro { background: #123b52; color: #8fd3ff; } .chip.st-Craque { background: #173a2a; color: #8ee6b0; }
-.barra { height: 7px; background: #26332b; border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.chip.st-Superastro { background: #123b52; color: #8fd3ff; } .chip.st-Craque { background: #12305a; color: #8ee6b0; }
+.barra { height: 7px; background: #1f3156; border-radius: 99px; overflow: hidden; margin-top: 4px; }
 .barra > i { display: block; height: 100%; border-radius: 99px; transition: width .8s; }
 .linha { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
 .seta { position: absolute; top: 8px; right: 10px; font-size: 20px; font-weight: 900; }
 .s0 { color: var(--worse); } .s1 { color: var(--bad); } .s2 { color: var(--mid); } .s3 { color: var(--ok); } .s4 { color: var(--good); }
 .numeros, .motivos { grid-column: 1 / -1; font-size: 11.5px; border-top: 1px solid var(--line); padding-top: 5px; }
-.numeros { color: #b8c8bc; } .motivos { color: var(--muted); }
+.numeros { color: #b8c4dc; } .motivos { color: var(--muted); }
 
 /* sala de reunião / opções */
 .pedido { background: linear-gradient(180deg, #2a1414, var(--panel)); border-color: #5b2323; }
@@ -116,13 +116,13 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
   margin-bottom: 7px; background: var(--panel2); }
 .opcao:hover:not(:disabled) { border-color: var(--gold); }
 .opcao b { color: var(--gold); margin-right: 6px; }
-.opcao.escolhida { border-color: var(--good); background: #173a2a; }
+.opcao.escolhida { border-color: var(--good); background: #12305a; }
 .opcao.confirmar { border-color: var(--gold); }
 .opcao:disabled { cursor: default; opacity: .55; }
 .opcao.escolhida:disabled { opacity: 1; }
 .conf { display: block; margin-top: 6px; font-size: 12.5px; color: var(--gold); }
 .conf .sim, .conf .nao { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px; font-weight: 700; }
-.conf .sim { background: var(--good); color: #08140d; } .conf .nao { background: #3a4452; color: var(--text); }
+.conf .sim { background: var(--good); color: #060d1c; } .conf .nao { background: #3a4452; color: var(--text); }
 
 /* jornais */
 .bancas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -167,7 +167,7 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
 .pergunta .rep b { color: var(--text); }
 .pergunta .q { font-size: 16px; font-weight: 600; margin: 4px 0 10px; }
 .efeitos { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
-.ef { font-size: 12px; border-radius: 6px; padding: 2px 8px; background: #26332b; }
+.ef { font-size: 12px; border-radius: 6px; padding: 2px 8px; background: #1f3156; }
 .ef.mais { color: var(--good); } .ef.menos { color: var(--worse); }
 .ao-vivo-msg { font-size: 12.5px; margin-top: 6px; color: var(--gold); }
 
@@ -194,7 +194,7 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
 .caso.g-média { border-left-color: var(--bad); } .caso.g-grave { border-left-color: var(--worse); } .caso.cal { border-left-color: #4aa3df; }
 .caso .cab { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
 .caso .cab .tit { font-weight: 700; font-size: 15px; }
-.caso .relato { color: #cdd8cf; margin: 6px 0 10px; }
+.caso .relato { color: #cdd6ea; margin: 6px 0 10px; }
 .grav { font: 700 10.5px var(--f-body); text-transform: uppercase; letter-spacing: .8px; border-radius: 4px; padding: 1px 6px; }
 .grav.leve { background: #3b3416; color: var(--mid); } .grav.média { background: #3e2612; color: var(--bad); } .grav.grave { background: #3f1515; color: var(--worse); }
 .grav.cal { background: #13304a; color: #8fd3ff; }
@@ -206,14 +206,14 @@ select { background: var(--panel2); color: var(--text); border: 1px solid var(--
 .plano { text-align: left; cursor: pointer; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
 .plano b { font: 700 15px var(--f-score); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 4px; }
 .plano:hover:not(:disabled) { border-color: var(--gold); } .plano:disabled { cursor: default; opacity: .5; }
-.plano.escolhido { border-color: var(--good); background: #173a2a; opacity: 1; }
+.plano.escolhido { border-color: var(--good); background: #12305a; opacity: 1; }
 .carga { width: 100%; border-collapse: collapse; font-size: 13px; }
 .carga th { text-align: left; color: var(--muted); font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: .8px; padding: 4px 6px; border-bottom: 1px solid var(--line); }
 .carga td { padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .carga .bar { width: 120px; display: inline-block; vertical-align: middle; }
 
 /* carreiras */
-.seletor { background: #050806; color: var(--text); border: 1px solid #2c3a30; border-radius: 8px; padding: 4px 8px; font: 600 12px var(--f-body); max-width: 260px; }
+.seletor { background: #04070f; color: var(--text); border: 1px solid #24365c; border-radius: 8px; padding: 4px 8px; font: 600 12px var(--f-body); max-width: 260px; }
 .lab { display: none; background: repeating-linear-gradient(45deg, #3a2c05, #3a2c05 12px, #2e2304 12px, #2e2304 24px); color: var(--gold);
   font: 700 13px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; padding: 7px 22px; border-bottom: 1px solid #5a4a10; }
 body.somente-leitura .lab { display: block; }
@@ -231,7 +231,7 @@ body.somente-leitura .opcao, body.somente-leitura .plano { pointer-events: none;
 .pj .t { font: 700 16px var(--f-score); letter-spacing: 1px; text-transform: uppercase; }
 .pj .vs { font: 700 22px var(--f-score); color: var(--muted); }
 .prob { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 10px 0 4px; font: 700 12px var(--f-score); }
-.prob span { display: grid; place-items: center; color: #08140d; }
+.prob span { display: grid; place-items: center; color: #060d1c; }
 .forma-mini { font: 700 12px var(--f-score); letter-spacing: 2px; }
 
 /* jogo da rodada 4 x 4 */
@@ -304,7 +304,7 @@ body.somente-leitura .opcao, body.somente-leitura .plano { pointer-events: none;
 .post .tx { margin: 3px 0 5px; font-size: 14.5px; line-height: 1.4; }
 .post .ac { font-size: 12px; color: var(--muted); display: flex; gap: 16px; }
 .enq { margin-bottom: 16px; } .enq b { display: block; margin-bottom: 6px; font-size: 14px; }
-.enq .op { position: relative; background: #0d1410; border: 1px solid var(--line); border-radius: 8px; margin: 4px 0; padding: 6px 10px; font-size: 13px; overflow: hidden; }
+.enq .op { position: relative; background: #0a1428; border: 1px solid var(--line); border-radius: 8px; margin: 4px 0; padding: 6px 10px; font-size: 13px; overflow: hidden; }
 .enq .op i { position: absolute; inset: 0 auto 0 0; background: #1f7a3c55; } .enq .op.top i { background: #f5c54255; }
 .enq .op span { position: relative; display: flex; justify-content: space-between; gap: 8px; }
 
@@ -319,7 +319,7 @@ footer { color: var(--muted); font-size: 11px; padding: 0 22px 16px; }
 
 /* ===== cara de futebol (11/10/2026): gramado ao fundo, títulos com faixa, tudo responsivo ===== */
 body { background:
-  radial-gradient(1200px 500px at 50% -200px, #18412a 0%, transparent 70%),
+  radial-gradient(1200px 500px at 50% -200px, #13305e 0%, transparent 70%),
   repeating-linear-gradient(90deg, #0d1510 0 90px, #0b120e 90px 180px), var(--bg); }
 section h2::before { content: ""; width: 4px; height: 14px; background: var(--red); border-radius: 2px; margin-right: 8px; flex: none; }
 section h2 { justify-content: flex-start; }
@@ -329,12 +329,12 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 
 /* ----- vestiário: o painel do grupo */
 .vest-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.vt { position: relative; overflow: hidden; background: linear-gradient(160deg, #18231c, #101712); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.vt { position: relative; overflow: hidden; background: linear-gradient(160deg, #18231c, #0a1222); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
 .vt::after { content: ""; position: absolute; inset: auto -20px -30px auto; width: 110px; height: 110px; border-radius: 50%; border: 2px solid #ffffff08; }
 .vt .r { font: 600 11px var(--f-score); letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
 .vt .v { font: 700 30px/1.1 var(--f-score); letter-spacing: .5px; margin: 2px 0; }
 .vt .s { font-size: 12px; color: var(--muted); }
-.humores { display: flex; height: 10px; border-radius: 99px; overflow: hidden; margin: 8px 0 6px; background: #26332b; }
+.humores { display: flex; height: 10px; border-radius: 99px; overflow: hidden; margin: 8px 0 6px; background: #1f3156; }
 .humores i { display: block; height: 100%; }
 .legenda-h { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; color: var(--muted); }
 .legenda-h b { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
@@ -348,15 +348,15 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 /* ----- vestiário: cada jogador é um armário */
 .armarios { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 12px; }
 .armario { position: relative; min-width: 0; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;
-  background: linear-gradient(180deg, #223028 0%, #1a241e 38%, #141c17 100%); border: 1px solid #2f3e34;
+  background: linear-gradient(180deg, #1a2a4a 0%, #1a241e 38%, #141c17 100%); border: 1px solid #2f3e34;
   box-shadow: inset 0 1px 0 #ffffff10, 0 6px 16px #0006; transition: transform .15s, box-shadow .15s; }
 .armario:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 #ffffff14, 0 10px 22px #000a; }
-.armario.revoltado { border-color: #6b2525; } .armario.insatisfeito { border-color: #5c4420; } .armario.motivado { border-color: #24563a; }
+.armario.revoltado { border-color: #6b2525; } .armario.insatisfeito { border-color: #5c4420; } .armario.motivado { border-color: #1d4f8c; }
 .armario.mexeu { animation: brilho 2.5s ease-out; }
 .arm-placa { display: flex; align-items: center; gap: 8px; padding: 7px 10px 6px; background:
-  repeating-linear-gradient(90deg, transparent 0 7px, #00000040 7px 9px) top / 100% 5px no-repeat, linear-gradient(180deg, #2c3b32, #223028);
+  repeating-linear-gradient(90deg, transparent 0 7px, #00000040 7px 9px) top / 100% 5px no-repeat, linear-gradient(180deg, #2c3b32, #1a2a4a);
   border-bottom: 1px solid #00000055; }
-.arm-pos { font: 700 12px var(--f-score); letter-spacing: 1px; padding: 1px 7px; border-radius: 4px; background: #0b100d; color: var(--gold); }
+.arm-pos { font: 700 12px var(--f-score); letter-spacing: 1px; padding: 1px 7px; border-radius: 4px; background: #070d1a; color: var(--gold); }
 .arm-pos.GK { color: #ffb86b; } .arm-pos.def { color: #8fd3ff; } .arm-pos.mei { color: #8ee6b0; } .arm-pos.ata { color: #ff8a80; }
 .arm-ovr { margin-left: auto; font: 700 24px/1 var(--f-score); color: var(--text); text-shadow: 0 2px 6px #000; }
 .arm-ovr small { font-size: 10px; color: var(--muted); margin-left: 2px; letter-spacing: 1px; }
@@ -370,11 +370,11 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 .medidor .barra { margin: 0; height: 6px; }
 .medidor b { color: var(--text); text-align: right; font: 700 12px var(--f-score); }
 .arm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 10px; }
-.arm-stats div { background: #0b100d; border: 1px solid #1f2b23; border-radius: 6px; text-align: center; padding: 3px 0; }
+.arm-stats div { background: #070d1a; border: 1px solid #12224a; border-radius: 6px; text-align: center; padding: 3px 0; }
 .arm-stats b { display: block; font: 700 16px/1.1 var(--f-score); }
 .arm-stats span { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
 .arm-rodape { padding: 0 10px 8px; font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 10px; }
-.arm-motivos { margin-top: auto; padding: 7px 10px 9px; border-top: 1px dashed #2b392f; font-size: 11.5px; color: #b8c8bc; }
+.arm-motivos { margin-top: auto; padding: 7px 10px 9px; border-top: 1px dashed #2b392f; font-size: 11.5px; color: #b8c4dc; }
 .arm-motivos ul { margin: 0; padding-left: 15px; } .arm-motivos li { margin: 1px 0; }
 .arm-motivos .mais { color: var(--muted); font-style: italic; }
 .arm-quer { font-size: 11.5px; color: #ffd27a; margin-top: 3px; }
@@ -423,7 +423,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 .campo .area { position: absolute; left: 25%; right: 25%; height: 13%; border: 2px solid #ffffff55; }
 .campo .area.baixo { bottom: 4%; border-bottom: 0; } .campo .area.cima { top: 4%; border-top: 0; }
 .peca { position: absolute; transform: translate(-50%, -50%); width: 21%; text-align: center; }
-.peca .bola { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 2px solid #fff; background: #0b100d;
+.peca .bola { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 2px solid #fff; background: #070d1a;
   display: grid; place-items: center; font: 700 15px var(--f-score); color: var(--muted); box-shadow: 0 4px 10px #0009; position: relative; }
 .peca .bola img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .peca.nosso .bola { border-color: var(--gold); box-shadow: 0 0 0 3px #f5c54266, 0 4px 10px #0009; }
@@ -442,7 +442,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 
 /* ----- painel "antes do próximo jogo" */
 .pend-painel { border-color: #5a4a10; background: linear-gradient(180deg, #221d0d, var(--panel)); }
-.pend-painel.limpo { border-color: #24563a; background: linear-gradient(180deg, #11241a, var(--panel)); }
+.pend-painel.limpo { border-color: #1d4f8c; background: linear-gradient(180deg, #11241a, var(--panel)); }
 .pend { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #ffffff10; font-size: 13px; }
 .pend:last-of-type { border-bottom: 0; }
 .pend i { width: 9px; height: 9px; border-radius: 50%; background: var(--mid); }
@@ -452,17 +452,17 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 .pend button:hover { background: var(--gold); color: #141414; }
 
 /* ----- celular do técnico */
-.celular { max-width: 560px; margin: 0 auto; background: #0e1512; border: 1px solid #263a2e; border-radius: 26px; padding: 12px 12px 18px;
+.celular { max-width: 560px; margin: 0 auto; background: #0a1222; border: 1px solid #1f3157; border-radius: 26px; padding: 12px 12px 18px;
   box-shadow: 0 20px 50px #000a, inset 0 0 0 6px #070b09; }
 .cel-topo { display: flex; justify-content: space-between; padding: 6px 12px 12px; font: 700 13px var(--f-score); letter-spacing: 1px; color: var(--muted); }
-.conversa { background: #121c17; border: 1px solid #22322a; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+.conversa { background: #0e1830; border: 1px solid #1d2c4c; border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
 .conversa.nova { border-color: #3d6b4e; }
-.conversa .cab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #16241d; border-bottom: 1px solid #22322a; }
+.conversa .cab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #12203c; border-bottom: 1px solid #1d2c4c; }
 .conversa .cab .ic { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; background: #22352b; flex: none; }
 .conversa .cab b { display: block; font-size: 14px; } .conversa .cab small { color: var(--muted); font-size: 11.5px; }
 .conversa .cab .dt { margin-left: auto; font-size: 11px; color: var(--muted); }
 .balao-lista { padding: 10px 12px; display: grid; gap: 6px; }
-.balao { max-width: 85%; padding: 8px 11px; border-radius: 14px 14px 14px 4px; background: #24332b; font-size: 14px; line-height: 1.4; justify-self: start; }
+.balao { max-width: 85%; padding: 8px 11px; border-radius: 14px 14px 14px 4px; background: #1d2c4c; font-size: 14px; line-height: 1.4; justify-self: start; }
 .balao.eu { justify-self: end; border-radius: 14px 14px 4px 14px; background: #1f6b3a; color: #f2fff6; }
 .balao.eu.vacuo { background: #3a3f3c; color: var(--muted); font-style: italic; }
 .respostas { padding: 0 12px 12px; display: grid; gap: 6px; }
@@ -471,20 +471,20 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 
 /* ----- história do clube */
 .linha-tempo { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
-.temp-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: linear-gradient(180deg, #1b251f, #121a15); position: relative; }
+.temp-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: linear-gradient(180deg, #13213d, #121a15); position: relative; }
 .temp-card.ouro { border-color: #8a6d1a; background: linear-gradient(180deg, #2a2412, #141a12); }
 .temp-card .ano { font: 700 22px var(--f-score); color: var(--gold); letter-spacing: 1px; }
 .temp-card .liga { font: 700 13px var(--f-score); letter-spacing: 1px; text-transform: uppercase; margin: 2px 0 6px; }
 .temp-card .tacas { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
 .temp-card .tacas span { font-size: 11px; background: #3a2e0e; color: var(--gold); border-radius: 99px; padding: 1px 8px; }
-.temp-card .ln { font-size: 12.5px; color: #cdd8cf; margin: 2px 0; }
+.temp-card .ln { font-size: 12.5px; color: #cdd6ea; margin: 2px 0; }
 .recordes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
 .recorde { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 10px; padding: 10px 12px; background: var(--panel2); }
 .recorde .r { font: 600 11px var(--f-score); letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); }
 .recorde .v { font: 700 15px/1.3 var(--f-body); margin-top: 3px; }
 
 /* ----- gráficos (linha; série validada contra o fundo escuro: âmbar #bf8410; referência em cinza tracejado) */
-:root { --serie: #bf8410; --serie-ref: #7d8a81; --grade: #26332b; }
+:root { --serie: #bf8410; --serie-ref: #7d8a81; --grade: #1f3156; }
 .graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
 .graf { position: relative; }
 .graf svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -493,7 +493,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 .leg-g { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin: -4px 0 6px; }
 .leg-g b { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--serie); vertical-align: middle; margin-right: 5px; }
 .leg-g b.ref { border-top: 2px dashed var(--serie-ref); }
-.graf .dica-g { position: absolute; pointer-events: none; background: #0b100d; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px;
+.graf .dica-g { position: absolute; pointer-events: none; background: #070d1a; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px;
   font-size: 12px; line-height: 1.4; box-shadow: 0 6px 18px #000a; white-space: nowrap; transform: translate(-50%, -110%); display: none; z-index: 2; }
 .graf .dica-g b { color: var(--text); } .graf .dica-g span { color: var(--muted); }
 .graf .tabela-g { margin-top: 6px; } .graf .tabela-g summary { cursor: pointer; font-size: 11.5px; color: var(--muted); }
@@ -534,9 +534,235 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
   .pj .t { font-size: 13px; }
   .materia { padding: 12px 14px; }
 }
+
+/* ============================================================================================================
+   TEMA PES 21 (12/10/2026) — repaginada geral da Central: azul-marinho do menu do PES 2021, destaques em azul
+   elétrico e dourado, fonte condensada, abas inclinadas, painéis de vidro sobre o fundo ilustrado de cada tela.
+   ============================================================================================================ */
+:root {
+  --bg: #050a16; --bg2: #08101f; --panel: rgba(10, 19, 38, .88); --panel2: #12203c; --line: #1f3157; --text: #eef3ff; --muted: #93a5c8;
+  --azul: #1e9bff; --ciano: #3fd2ff; --gold: #ffcc33; --vidro: rgba(9, 17, 34, .78);
+  --f-score: "Barlow Condensed", "Bahnschrift", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --serie: #ffcc33; --grade: #1f3157;
+}
+html { background: var(--bg); }
+body { background: transparent; font: 15px/1.5 var(--f-body); }
+#fundo { position: fixed; inset: 0; z-index: -2; background: #050a16 center / cover no-repeat; transition: background-image .4s; }
+#fundo::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(5, 10, 22, .55) 0%, rgba(5, 10, 22, .74) 45%, rgba(5, 10, 22, .9) 100%); }
+
+/* placar (cabeçalho) */
+.placar { position: sticky; top: 0; z-index: 30; padding: 10px 22px;
+  background: linear-gradient(100deg, rgba(120, 14, 10, .92) 0%, rgba(10, 20, 42, .94) 38%, rgba(6, 13, 28, .96) 100%);
+  border-bottom: 2px solid var(--azul); box-shadow: 0 6px 24px #000a; backdrop-filter: blur(8px); }
+.placar::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255, 255, 255, .025) 22px 24px); }
+.clube h1 { font: 800 26px/1.05 var(--f-score); letter-spacing: 1.2px; }
+.lcd { background: rgba(3, 8, 18, .75); border: 1px solid #23406f; border-radius: 4px; transform: skewX(-10deg); min-width: 96px; }
+.lcd > * { transform: skewX(10deg); }
+.lcd .r { color: #8fb4ee; font: 600 10.5px var(--f-score); letter-spacing: 1.6px; }
+.lcd .v { font: 800 21px/1.15 var(--f-score); }
+.vivo { transform: skewX(-10deg); border-radius: 4px; } .vivo > * { transform: skewX(10deg); }
+.sino { position: relative; width: 44px; height: 44px; border-radius: 4px; border: 1px solid #23406f; background: rgba(3, 8, 18, .75);
+  cursor: pointer; display: grid; place-items: center; color: var(--text); transform: skewX(-10deg); }
+.sino svg { transform: skewX(10deg); }
+.sino:hover { border-color: var(--azul); }
+.sino .n { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; border-radius: 99px; background: #ff3b30; color: #fff;
+  font: 700 11px/20px var(--f-body); padding: 0 5px; transform: skewX(10deg); box-shadow: 0 0 0 2px #050a16; }
+.sino.toca svg { animation: toca 1s ease-in-out 2; }
+@keyframes toca { 0%, 100% { rotate: 0deg; } 25% { rotate: 14deg; } 75% { rotate: -14deg; } }
+
+/* plantão */
+.plantao { background: rgba(3, 8, 18, .88); border-bottom: 1px solid var(--line); }
+.plantao b { background: linear-gradient(90deg, var(--gold), #ffb300); clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%); padding-right: 24px; }
+
+/* abas inclinadas */
+nav.abas { position: sticky; top: var(--h-placar, 74px); z-index: 25; gap: 6px; padding: 10px 22px; background: rgba(5, 10, 22, .9); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
+nav.abas button { flex: none; padding: 8px 18px; font: 700 15px var(--f-score); letter-spacing: 1.4px; color: #a9bbdc; border: 1px solid #1d3156;
+  background: linear-gradient(180deg, #0f1d38, #0a1428); clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); border-bottom: 0; }
+nav.abas button:hover { color: #fff; background: linear-gradient(180deg, #16294d, #0e1c38); }
+nav.abas button[aria-selected="true"] { color: #fff; background: linear-gradient(180deg, #2a8cff, #0d5fd0); border-color: transparent;
+  text-shadow: 0 1px 0 #0006; }
+nav.abas .badge { top: 1px; right: 8px; background: #ff3b30; }
+main { padding: 18px 22px 40px; max-width: 1680px; margin: 0 auto; }
+
+/* painéis */
+section { background: var(--panel); border: 1px solid #1c2e52; border-top: 2px solid #2a4f8c; border-radius: 6px; backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px #0007; padding: 16px 18px; }
+section h2 { font: 700 15px var(--f-score); letter-spacing: 1.8px; color: #dce7ff; padding-left: 12px; position: relative; }
+section h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom: 2px; width: 4px; background: linear-gradient(var(--azul), var(--ciano));
+  transform: skewX(-12deg); }
+.item { border-bottom-color: #1a2a4a; }
+.tag { color: var(--ciano); }
+.dica, .vazio { color: var(--muted); }
+.btn, .opcao.confirmar { border-radius: 4px; }
+.titulo-tela { display: flex; align-items: baseline; gap: 14px; margin: 2px 0 16px; }
+.titulo-tela h1 { margin: 0; font: 800 34px/1 var(--f-score); letter-spacing: 1.5px; text-transform: uppercase; color: #fff;
+  text-shadow: 0 2px 12px #000; }
+.titulo-tela span { color: #a9bbdc; font: 500 14px var(--f-body); }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+
+/* resumo reorganizado */
+.res-topo { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(380px, 1.5fr); gap: 16px; align-items: start; }
+.res-meio { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+.res-meio .col > section:first-child { margin-top: 0; }
+@media (max-width: 1100px) { .res-topo, .res-meio { grid-template-columns: 1fr; } }
+
+/* vestiário: armários compactos; clique abre o armário inteiro */
+#elenco .armario { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+#elenco .armario:hover { transform: translateY(-3px); box-shadow: 0 10px 24px #000a, 0 0 0 1px var(--azul); }
+#elenco .armario .arm-rodape, #elenco .armario .arm-motivos, #elenco .armario .arm-quer { display: none; }
+#elenco .armario .arm-medidores .medidor:nth-child(n+2) { display: none; }
+.armario.completo { max-width: none; cursor: default; }
+
+/* modal */
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(2, 5, 12, .72); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.modal[hidden] { display: none; }
+.modal-caixa { position: relative; width: min(760px, 100%); max-height: 88vh; overflow: auto; padding-top: 50px !important; background: #0b1630; border: 1px solid #2a4f8c;
+  border-top: 3px solid var(--azul); border-radius: 8px; padding: 22px; box-shadow: 0 30px 80px #000c; }
+.modal-x { z-index: 3; position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 4px; border: 1px solid #23406f; background: #0a1428;
+  color: #fff; font-size: 20px; cursor: pointer; }
+.modal h3 { margin: 0 0 10px; font: 800 24px var(--f-score); letter-spacing: 1px; text-transform: uppercase; }
+
+/* notificações */
+.notif { position: fixed; top: 84px; right: 16px; z-index: 55; width: min(420px, calc(100vw - 32px)); max-height: 70vh; overflow: auto;
+  background: #0b1630; border: 1px solid #2a4f8c; border-top: 3px solid var(--gold); border-radius: 8px; box-shadow: 0 24px 60px #000c; padding: 14px; }
+.notif[hidden] { display: none; }
+.notif h3 { margin: 0 0 8px; font: 800 18px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; display: flex; justify-content: space-between; }
+.notif .it { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: center; padding: 10px 6px; border-bottom: 1px solid #1a2a4a; cursor: pointer; border-radius: 4px; }
+.notif .it:hover { background: #12224a; }
+.notif .it i { width: 10px; height: 10px; border-radius: 50%; background: #5b6b8a; }
+.notif .it i.u2 { background: #ff3b30; box-shadow: 0 0 0 3px #ff3b3033; } .notif .it i.u1 { background: var(--gold); }
+.notif .it small { display: block; color: var(--muted); font-size: 12px; }
+.notif .acoes-n { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.notif .acoes-n button { flex: 1; background: #12224a; border: 1px solid #2a4f8c; color: #fff; border-radius: 4px; padding: 8px 10px; cursor: pointer; font: 600 13px var(--f-body); }
+.toast { background: #0b1630; border: 1px solid #2a4f8c; border-left: 4px solid var(--azul); border-radius: 6px; cursor: pointer; }
+
+/* calendário de jogos (mês) */
+.cal-cab { display: flex; align-items: center; gap: 10px; }
+.cal-cab button { background: #0f1d38; border: 1px solid #23406f; color: #fff; border-radius: 4px; width: 34px; height: 30px; cursor: pointer; font-size: 16px; }
+.cal-cab b { font: 800 22px var(--f-score); letter-spacing: 1.2px; text-transform: uppercase; min-width: 190px; text-align: center; }
+.cal-grade { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.cal-grade .dsem { text-align: center; font: 700 12px var(--f-score); letter-spacing: 1.5px; color: #8fb4ee; text-transform: uppercase; }
+.cal-dia { min-height: 92px; background: rgba(8, 16, 32, .8); border: 1px solid #1a2a4a; border-radius: 4px; padding: 5px; position: relative; }
+.cal-dia.fora { opacity: .35; }
+.cal-dia.hoje { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.cal-dia .n { font: 700 13px var(--f-score); color: #8fb4ee; }
+.cal-jogo { margin-top: 4px; padding: 5px 6px; border-radius: 4px; background: #12224a; border-left: 3px solid var(--azul); cursor: pointer; font-size: 12px; line-height: 1.25; }
+.cal-jogo:hover { background: #1a2f5e; }
+.cal-jogo.V { border-left-color: var(--good); } .cal-jogo.E { border-left-color: var(--mid); } .cal-jogo.D { border-left-color: var(--worse); }
+.cal-jogo b { display: block; font: 700 13px var(--f-score); letter-spacing: .5px; }
+.cal-jogo .pl { font: 800 14px var(--f-score); }
+.cal-jogo small { color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) { .cal-dia { min-height: 64px; } .cal-jogo small, .cal-jogo .adv-t { display: none; } }
+
+/* WhatsApp */
+.wa { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; height: calc(100vh - 210px); min-height: 520px; border-radius: 8px; overflow: hidden;
+  border: 1px solid #22303a; box-shadow: 0 20px 60px #000b; background: #111b21; font-family: "Segoe UI", system-ui, sans-serif; }
+.wa-lista { background: #111b21; border-right: 1px solid #222d34; display: flex; flex-direction: column; min-width: 0; }
+.wa-topo { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #202c33; color: #e9edef; }
+.wa-topo b { font: 700 19px "Segoe UI", system-ui; color: #e9edef; }
+.wa-topo span { color: #8696a0; font-size: 13px; }
+.wa-busca { padding: 8px 12px; background: #111b21; }
+.wa-busca div { background: #202c33; border-radius: 8px; padding: 7px 12px; color: #8696a0; font-size: 13.5px; }
+.wa-chats { overflow: auto; flex: 1; }
+.wa-item { display: grid; grid-template-columns: 50px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #1f2b31; }
+.wa-item:hover, .wa-item.ativo { background: #2a3942; }
+.wa-av { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; color: #fff; overflow: hidden; flex: none; position: relative; }
+.wa-av img { width: 100%; height: 100%; object-fit: cover; }
+.wa-av .foto { width: 100% !important; height: 100% !important; border-radius: 50%; }
+.wa-nome { color: #e9edef; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa-prev { color: #8696a0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa-prev .tick { color: #53bdeb; }
+.wa-meta { text-align: right; font-size: 12px; color: #8696a0; display: grid; gap: 6px; justify-items: end; }
+.wa-meta.nova { color: #00a884; }
+.wa-badge { background: #00a884; color: #111b21; font: 700 12px/20px "Segoe UI"; min-width: 20px; height: 20px; border-radius: 99px; padding: 0 6px; text-align: center; }
+.wa-espera { color: #00a884; font-size: 12px; }
+.wa-chat { display: flex; flex-direction: column; min-width: 0; background: #0b141a; position: relative; padding: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; }
+.wa-chat::before { content: ""; position: absolute; inset: 0; opacity: .035; pointer-events: none; background-image: var(--wa-doodle); background-size: 220px; }
+.wa-cab { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #202c33; color: #e9edef; position: relative; z-index: 1; }
+.wa-cab .wa-av { width: 40px; height: 40px; font-size: 18px; }
+.wa-cab b { display: block; font-size: 16px; font-weight: 600; } .wa-cab small { color: #8696a0; font-size: 13px; }
+.wa-voltar { display: none; background: none; border: 0; color: #e9edef; font-size: 22px; cursor: pointer; }
+.wa-msgs { flex: 1; overflow: auto; padding: 18px 7%; display: flex; flex-direction: column; gap: 3px; position: relative; z-index: 1; }
+.wa-dia { align-self: center; background: #182229; color: #8696a0; font-size: 12.5px; padding: 5px 12px; border-radius: 8px; margin: 10px 0 6px; box-shadow: 0 1px 1px #0005; }
+.wa-b { max-width: 72%; padding: 6px 9px 8px; border-radius: 8px; font-size: 14.5px; line-height: 1.38; color: #e9edef; position: relative; box-shadow: 0 1px 1px #0005; }
+.wa-b.in { align-self: flex-start; background: #202c33; border-top-left-radius: 0; }
+.wa-b.out { align-self: flex-end; background: #005c4b; border-top-right-radius: 0; }
+.wa-b.out.vacuo { background: #2a3942; color: #8696a0; font-style: italic; }
+.wa-b .h { float: right; margin: 6px 0 -4px 10px; font-size: 11px; color: #ffffff99; }
+.wa-b .h .tick { color: #53bdeb; margin-left: 3px; }
+.wa-ef { align-self: flex-end; margin: 2px 0 8px; }
+.wa-resp { background: #202c33; padding: 10px 14px 12px; position: relative; z-index: 1; }
+.wa-resp .dica { color: #8696a0; display: block; margin-bottom: 8px; }
+.wa-resp .opcao { display: block; width: 100%; text-align: left; margin: 0 0 6px; background: #2a3942; border: 1px solid #33444f; color: #e9edef;
+  border-radius: 18px; padding: 9px 14px; cursor: pointer; font: 14px "Segoe UI", system-ui; }
+.wa-resp .opcao:hover { border-color: #00a884; }
+.wa-resp .opcao b { color: #00a884; margin-right: 8px; }
+.wa-resp .opcao.confirmar { border-color: #00a884; background: #103529; }
+.wa-vazio { margin: auto; text-align: center; color: #8696a0; padding: 30px; position: relative; z-index: 1; }
+.wa-vazio b { display: block; color: #e9edef; font-size: 26px; font-weight: 300; margin-bottom: 8px; }
+@media (max-width: 820px) {
+  .wa { grid-template-columns: 1fr; height: calc(100vh - 190px); }
+  .wa .wa-chat { display: none; } .wa.aberto .wa-chat { display: flex; } .wa.aberto .wa-lista { display: none; }
+  .wa-voltar { display: block; } .wa-msgs { padding: 14px 4%; } .wa-b { max-width: 86%; }
+}
+
+/* WhatsApp: em grade/flex o filho só rola com min-height: 0 */
+.wa > *, .wa-lista, .wa-chat { min-height: 0; }
+.wa-chat { overflow: hidden; }
+.wa-chats, .wa-msgs { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #374248 transparent; }
+.wa-resp { max-height: 42%; overflow-y: auto; flex: none; }
+
+/* RESUMO EM CARROSSÉIS (13/10/2026): quatro blocos alinhados, cada um com várias telas que trocam sozinhas */
+.res-grade { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
+.res-grade.baixo .carrossel { --alt: 420px; }
+.carrossel { --alt: 640px; background: var(--panel); border: 1px solid #1c2e52; border-top: 2px solid #2a4f8c; border-radius: 6px;
+  backdrop-filter: blur(6px); box-shadow: 0 10px 30px #0007; display: flex; flex-direction: column; min-width: 0; }
+.car-cab { display: flex; align-items: center; gap: 8px; padding: 10px 12px 8px; border-bottom: 1px solid #1a2a4a; flex-wrap: wrap; }
+.car-cab h2 { margin: 0 10px 0 0; font: 800 16px var(--f-score); letter-spacing: 1.8px; text-transform: uppercase; color: #fff; padding-left: 12px; position: relative; }
+.car-cab h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom: 2px; width: 4px; background: linear-gradient(var(--gold), #ff9f1a); transform: skewX(-12deg); }
+.car-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.car-chips button { background: #0f1d38; border: 1px solid #23406f; color: #a9bbdc; border-radius: 99px; padding: 3px 11px; cursor: pointer;
+  font: 600 12.5px var(--f-body); white-space: nowrap; position: relative; }
+.car-chips button[aria-selected="true"] { background: linear-gradient(180deg, #2a8cff, #0d5fd0); color: #fff; border-color: transparent; }
+.car-chips button .pt { position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 0 2px #0a1428; }
+.car-setas { display: flex; gap: 4px; margin-left: auto; }
+.car-setas button { width: 30px; height: 28px; border-radius: 4px; border: 1px solid #23406f; background: #0f1d38; color: #fff; cursor: pointer; font-size: 15px; }
+.car-setas button:hover, .car-chips button:hover { border-color: var(--azul); }
+.car-auto { width: 100%; height: 3px; background: #12224a; border-radius: 2px; overflow: hidden; position: relative; }
+.car-auto i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, var(--azul), var(--ciano)); }
+.car-auto.rodando i { animation: car-tempo var(--car-ms, 9000ms) linear forwards; }
+@keyframes car-tempo { from { width: 0; } to { width: 100%; } }
+.car-pausa { font: 600 11.5px var(--f-body); color: var(--muted); width: 100%; text-align: right; margin-top: -2px; min-height: 14px; }
+.car-janela { overflow: hidden; height: var(--alt); position: relative; }
+.car-trilho { display: flex; height: 100%; transition: transform .7s cubic-bezier(.4, .1, .2, 1); will-change: transform; }
+.car-slide { flex: 0 0 100%; height: 100%; overflow-y: auto; padding: 14px 16px; scrollbar-width: thin; }
+.car-slide > section, .car-slide > div > section { background: none; border: 0; box-shadow: none; backdrop-filter: none; padding: 0; margin: 0 0 12px; border-radius: 0; }
+.car-slide > section[hidden] { display: none; }
+.car-slide #resCapa .capa { margin: 0; }
+@media (max-width: 1100px) { .res-grade { grid-template-columns: 1fr; } .carrossel, .res-grade.baixo .carrossel { --alt: 70vh; } }
+@media (prefers-reduced-motion: reduce) { .car-trilho { transition: none; } .car-auto.rodando i { animation: none; } }
+
+/* telas pequenas */
+@media (max-width: 760px) {
+  .placar { grid-template-columns: auto 1fr auto; padding: 8px 12px; gap: 10px; }
+  .placar .mostrador { grid-column: 1 / -1; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+  .lcd { min-width: 78px; } .lcd .v { font-size: 17px; }
+  .clube h1 { font-size: 20px; } .clube .sub { font-size: 12px; }
+  nav.abas { top: 0; position: relative; padding: 8px 12px; }
+  main { padding: 12px 12px 30px; }
+  .titulo-tela h1 { font-size: 26px; }
+  .notif { top: 70px; }
+}
+@media (prefers-reduced-motion: reduce) { #elenco .armario, .sino.toca svg { transition: none; animation: none; } }
+
 </style>
 </head>
 <body>
+<div id="fundo" aria-hidden="true"></div>
 <header class="placar">
   <div class="escudo" id="escudo" aria-hidden="true">MU</div>
   <div class="clube">
@@ -550,6 +776,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
     <div class="lcd"><div class="r">Orçamento</div><div class="v" id="lcdOrc">—</div></div>
     <div class="lcd"><div class="r">Forma</div><div class="v forma" id="forma">—</div></div>
     <div class="vivo" id="vivo" title="conexão em tempo real com o jogo"><i></i><span>OFFLINE</span></div>
+    <button class="sino" id="sino" aria-label="notificações" title="o que espera por você"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="n" hidden></span></button>
   </div>
 </header>
 <div class="lab" id="lab">Carreira de laboratório (teste): a Central só mostra. Nada aqui é escrito no jogo.</div>
@@ -570,24 +797,13 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
 </nav>
 <main>
   <div class="tela" id="t-resumo">
-    <div class="grid3">
-      <div>
-        <section id="resCasos" class="pend-painel"></section>
-        <section id="proxJogo"></section>
-        <section id="arquibancada"></section>
-        <section id="resColetiva"></section>
-        <section><h2>Últimos jogos</h2><div id="jogos"></div></section>
-        <section><h2>Diretoria</h2><div id="resDir"></div></section>
-      </div>
-      <div>
-        <div id="resCapa"></div>
-        <section style="margin-top:16px"><h2>Jornal do clube</h2><div id="jornal"></div></section>
-      </div>
-      <div>
-        <section id="secPedido"><h2>Sala de reunião</h2><div id="pedido"></div></section>
-        <section><h2>Conflitos no grupo</h2><div id="conflitos"></div></section>
-        <section><h2>Atividade ao vivo</h2><div id="atividade"></div></section>
-      </div>
+    <div class="res-grade">
+      <div class="carrossel" id="carDestaque"><div class="car-cab"><h2>Em destaque</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Próximo jogo"><section id="proxJogo"></section></div><div class="car-slide" data-nome="Capa do jornal"><div id="resCapa"></div></div></div></div></div>
+      <div class="carrossel" id="carClube"><div class="car-cab"><h2>O clube</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Antes do próximo jogo"><section id="resCasos" class="pend-painel"></section></div><div class="car-slide" data-nome="Sala de reunião"><section id="secPedido"><h2>Sala de reunião</h2><div id="pedido"></div></section></div><div class="car-slide" data-nome="Coletiva"><section id="resColetiva"></section></div><div class="car-slide" data-nome="Arquibancada"><section id="arquibancada"></section></div><div class="car-slide" data-nome="Diretoria"><section><h2>Diretoria</h2><div id="resDir"></div></section></div></div></div></div>
+    </div>
+    <div class="res-grade baixo">
+      <div class="carrossel" id="carResultados"><div class="car-cab"><h2>Resultados</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Últimos jogos"><section><h2>Últimos jogos</h2><div id="jogos"></div></section></div><div class="car-slide" data-nome="Jornal do clube"><section><h2>Jornal do clube</h2><div id="jornal"></div></section></div></div></div></div>
+      <div class="carrossel" id="carBastidores"><div class="car-cab"><h2>Bastidores</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Conflitos no grupo"><section><h2>Conflitos no grupo</h2><div id="conflitos"></div></section></div><div class="car-slide" data-nome="Atividade ao vivo"><section><h2>Atividade ao vivo</h2><div id="atividade"></div></section></div></div></div></div>
     </div>
   </div>
   <div class="tela" id="t-vestiario">
@@ -666,6 +882,7 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
     </div>
   </div>
   <div class="tela" id="t-calendario">
+    <section><h2>Calendário de jogos</h2><div id="calMes"></div></section>
     <div class="grid2">
       <div>
         <section><h2>Calendário</h2><div id="densidade"></div></section>
@@ -679,10 +896,19 @@ section h2 > select, section h2 > .dica:last-child { margin-left: auto; }
   </div>
   <div class="tela" id="t-diretoria"><div class="grid2"><section id="secDir"><h2>Diretoria</h2><div id="diretoria"></div></section>
     <div><section><h2>Patrocínio</h2><div id="patrocinio"></div></section></div></div></div>
-  <div class="tela" id="t-celular"><div class="celular"><div class="cel-topo"><span>📱 Celular do técnico</span><span id="celHora"></span></div><div id="celConversas"></div></div></div>
+  <div class="tela" id="t-celular"><div class="wa" id="wa">
+    <aside class="wa-lista"><div class="wa-topo"><b>WhatsApp</b><span id="celHora"></span></div><div class="wa-busca"><div>🔍 Pesquisar ou começar uma nova conversa</div></div><div class="wa-chats" id="waChats"></div></aside>
+    <section class="wa-chat" id="waChat"></section></div></div>
   <div class="tela" id="t-historia"><div id="historia"></div></div>
   <div class="tela" id="t-mercado"><div class="grid2"><section><h2>Insatisfeitos em outros clubes</h2><div id="foraClube"></div></section><div></div></div></div>
 </main>
+<div class="notif" id="notif" hidden role="dialog" aria-label="notificações">
+  <h3>Notificações <button class="modal-x" style="position:static;width:28px;height:28px;font-size:16px" id="notifX" aria-label="fechar">×</button></h3>
+  <div id="notifLista"></div>
+  <div class="dica" id="notifInfo" style="margin-top:8px"></div>
+  <div class="acoes-n"><button id="notifPerm">🔔 Ativar notificações do navegador</button></div>
+</div>
+<div class="modal" id="modal" hidden><div class="modal-caixa" role="dialog" aria-modal="true"><button class="modal-x" aria-label="fechar">×</button><div id="modalCorpo"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <footer id="rodape"></footer>
 <script>
@@ -715,7 +941,10 @@ function nomeK(k) {
 
 // ------------------------------------------------------------- abas
 function irPara(a) {
+  if (!document.getElementById('t-' + a)) a = 'resumo';
   aba = a; store.set('aba', a);
+  document.body.dataset.aba = a;
+  if (typeof aplicarFundo === 'function') { aplicarFundo(a); tituloTela(a); }
   document.querySelectorAll('nav.abas button').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === a));
   document.querySelectorAll('.tela').forEach(t => t.classList.toggle('ativa', t.id === 't-' + a));
 }
@@ -750,6 +979,8 @@ function render() {
   }).join('') || '—';
   renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
   renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderDuelo(d); renderFrentes(d);
+  renderCalMes(d); ligarArmarios(); renderSino(); notificarNovos(); atualizarModal(d); atualizarCarrosseis();
+  document.documentElement.style.setProperty('--h-placar', document.querySelector('.placar').offsetHeight + 'px');
   $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
     (d.ao_vivo ? ` · ao vivo da memória do jogo: ${new Date(d.ao_vivo.quando * 1000).toLocaleTimeString('pt-BR')}` : '') +
     ' · o que você faz aqui vai para o jogo na hora quando possível') + (REDE ? ` · <b style="color:var(--gold)">📱 No celular (mesmo Wi-Fi): ${esc(REDE.url)} · PIN ${esc(REDE.pin)}</b>` : '');
@@ -859,7 +1090,7 @@ function armarioHTML(j, comuns) {
   const min = j.minutos_recentes == null ? '—' : Math.round(j.minutos_recentes * 100) + '%';
   const proprios = (j.motivos || []).filter(m => !comuns.has(m));
   const contrato = j.contrato_fim ? `contrato até ${j.contrato_fim[0]}` : '';
-  return `<article class="armario ${j.humor.toLowerCase()} ${mexidos.has(k) ? 'mexeu' : ''}">
+  return `<article class="armario ${j.humor.toLowerCase()} ${mexidos.has(k) ? 'mexeu' : ''}" data-k="${esc(k)}">
     <div class="arm-placa"><span class="arm-pos ${classePos(j.pos)}">${esc(j.pos)}</span>
       ${j.capitao ? '<span class="cap" title="capitão">C</span>' : ''}
       ${j.seta == null ? '' : `<span class="arm-seta s${j.seta}" title="seta de condição no jogo">${SETAS[j.seta]}</span>`}
@@ -1624,7 +1855,7 @@ function renderPendencias(d, resp, feito, cg) {
   if (d.diretoria && d.diretoria.reuniao && !d.resposta_diretoria) it.push({u: 1, tag: 'diretoria', txt: d.diretoria.reuniao.titulo, ir: 'diretoria'});
   (d.casos || []).filter(c => !resp[c.id]).forEach(c => {
     const prazo = PRAZO_CASO[c.tipo], resta = prazo && c.data ? Math.min(prazo, prazo - diasEntre(hoje, c.data)) : null;
-    it.push({u: c.tipo === 'crise' || c.gravidade === 'grave' || (resta != null && resta <= 2) ? 2 : 1, tag: NOME_CASO[c.tipo] || c.tipo,
+    it.push({caso: c.id, k: 'caso|' + c.id, u: c.tipo === 'crise' || c.gravidade === 'grave' || (resta != null && resta <= 2) ? 2 : 1, tag: NOME_CASO[c.tipo] || c.tipo,
              txt: c.tipo === 'celular' ? `${(c.contato || {}).nome || ''}: ${c.titulo}` : c.titulo,
              sub: resta != null ? (resta > 0 ? `sem resposta em ${resta} dia(s) vale o silêncio` : 'vence nesta reunião') : (c.tipo === 'calendario' ? 'vale só para o próximo jogo' : ''),
              ir: ABA_CASO[c.tipo] || 'resumo'});
@@ -1640,6 +1871,8 @@ function renderPendencias(d, resp, feito, cg) {
     } else it.push({u: 0, tag: 'promessa', txt: `${p.nome}: ${({minutos: 'mais minutos', capitao: 'braçadeira'})[p.tipo] || p.tipo}`, ir: 'vestiario'});
   });
   it.sort((a, b) => b.u - a.u);
+  it.forEach(x => { x.k = x.k || `${x.tag}|${x.txt}`; });
+  PEND = it;
   const pj = d.proximo_jogo, quando = pj && pj.data ? diasEntre(pj.data, hoje) : null;
   const box = $('resCasos');
   box.classList.toggle('limpo', !it.some(x => x.u > 0));
@@ -1647,7 +1880,7 @@ function renderPendencias(d, resp, feito, cg) {
     + (it.length ? it.map(x => `<div class="pend"><i class="u${x.u}"></i><div><span class="tag" style="display:inline;margin-right:6px">${esc(x.tag)}</span>${esc(x.txt)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</div>
         <button data-ir="${x.ir}">abrir</button></div>`).join('')
       : '<div class="vazio">Tudo respondido. Pode jogar tranquilo.</div>');
-  box.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => irPara(b.dataset.ir));
+  box.querySelectorAll('[data-ir]').forEach((b, i) => b.onclick = () => abrirItem(it[i]));
 }
 
 function renderPatrocinio(d) {
@@ -1680,30 +1913,6 @@ function renderAtividade(d) {
       if (e.tipo === 'ao_vivo_orcamento') return `<div class="item"><span class="tag" style="color:var(--good)">orçamento${e.ensaio ? ' (ensaio)' : ''}</span>+${mi(e.valor)} (${esc(e.motivo)})</div>`;
       return '';
     }).join('')) || '<div class="vazio">Nada ainda. Responda a coletiva para ver o efeito no jogo.</div>';
-}
-
-function renderCelular(d) {
-  const resp = d.casos_respostas || {}, evs = d.eventos || [];
-  const abertos = (d.casos || []).filter(c => c.tipo === 'celular');
-  const faltam = abertos.filter(c => !resp[c.id]).length;
-  $('badgeCel').hidden = !faltam; $('badgeCel').textContent = faltam;
-  $('celHora').textContent = dataBR(d.data_jogo);
-  const cab = (ct, data) => `<div class="cab"><span class="ic">${esc(ct.icone || '💬')}</span><div><b>${esc(ct.nome)}</b><small>${esc((ct.papel || '').split('|')[0])}</small></div><span class="dt">${dataBR(data)}</span></div>`;
-  const abertosHTML = abertos.map(c => {
-    const r = resp[c.id], o = r && c.opcoes.find(o => o.id === r);
-    return `<div class="conversa ${r ? '' : 'nova'}">${cab(c.contato || {nome: c.titulo}, c.data)}
-      <div class="balao-lista">${(c.mensagens || []).map(m => `<div class="balao">${esc(m)}</div>`).join('')}
-        ${o ? `<div class="balao eu ${o.texto.startsWith('(') ? 'vacuo' : ''}">${esc(o.texto)}</div>` : ''}</div>
-      ${o ? `<div class="respostas">${efeitosHTML(o.efeitos || [])}</div>` : `<div class="respostas">${c.opcoes.map(op => { const key = c.id + '|' + op.id, conf = confirmandoCaso === key;
-        return `<button class="opcao ${conf ? 'confirmar' : ''}" data-caso="${esc(key)}"><b>${op.id}</b>${esc(op.texto)}
-          ${conf ? `<span class="conf">Enviar? <span class="sim" data-ksim="${esc(key)}">Sim</span> <span class="nao" data-knao="1">Não</span></span>` : ''}</button>`; }).join('')}</div>`}</div>`;
-  }).join('');
-  const hist = (d.celular || []).slice().reverse().filter(h => !abertos.some(c => c.id === h.id)).slice(0, 12).map(h => `<div class="conversa">${cab(h.contato || {nome: '—'}, h.data)}
-      <div class="balao-lista">${(h.mensagens || []).map(m => `<div class="balao">${esc(m)}</div>`).join('')}
-        <div class="balao eu ${(h.resposta || '').startsWith('(') ? 'vacuo' : ''}">${esc(h.resposta || '')}</div></div></div>`).join('');
-  $('celConversas').innerHTML = (abertosHTML || hist ? abertosHTML + hist : '<div class="vazio" style="padding:20px">Nenhuma mensagem. Quando o presidente, um empresário ou um jogador quiser falar com você, aparece aqui.</div>')
-    + (erroCaso ? `<div class="dica" style="color:var(--worse)">${esc(erroCaso)}</div>` : '');
-  ligarCasos($('celConversas'));
 }
 
 // ----- gráficos de linha em SVG (12/10/2026): 1 eixo só, linha de 2px, pontos de 8px, grade discreta,
@@ -1899,10 +2108,11 @@ async function definirTreino(plano) {
 }
 
 // ------------------------------------------------------------- avisos (eventos novos)
-function avisar(titulo, texto, erro) {
+function avisar(titulo, texto, erro, aoClicar) {
   const t = document.createElement('div');
   t.className = 'toast' + (erro ? ' erro' : '');
   t.innerHTML = `<b>${esc(titulo)}</b>${esc(texto)}`;
+  if (aoClicar) t.onclick = () => { t.remove(); aoClicar(); };
   $('toasts').appendChild(t);
   setTimeout(() => t.remove(), 9000);
 }
@@ -1924,6 +2134,403 @@ function novosEventos(d) {
   }
 }
 
+// ============================================================================================================
+// REPAGINADA PES 21 (12/10/2026): fundo ilustrado por tela, títulos, notificações (página + navegador, com decisão),
+// celular estilo WhatsApp, calendário real de jogos, armário em janela. Foto própria de fundo: central/fundos/<aba>.jpg
+// ============================================================================================================
+const TITULOS = {resumo: ['Resumo', 'o seu dia no clube, num relance'], vestiario: ['Vestiário', 'clima, moral e cada armário do elenco'],
+  imprensa: ['Imprensa', 'jornais, TV, redes e o mundo do futebol'], coletiva: ['Coletiva', 'a sala de imprensa: cada resposta mexe no grupo'],
+  analise: ['Análise', 'a comissão técnica, o adversário e o duelo estatística x rede neural'],
+  disciplina: ['Disciplina', 'casos, compromissos e a ficha do elenco'], calendario: ['Calendário', 'os jogos da temporada, a carga e o treino'],
+  celular: ['Celular', 'quem quer falar com você'], diretoria: ['Diretoria', 'metas, confiança, orçamento e patrocínio'],
+  mercado: ['Mercado', 'quem está insatisfeito em outros clubes'], historia: ['História', 'recordes, gráficos e a linha do tempo da sua era']};
+
+// ---------- fundos ilustrados (SVG desenhado aqui: sem direitos de imagem, leve e nítido em qualquer tela)
+const L = 'stroke="#9cc3ff" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+const jersey = (x, y, s, n, cor) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-40 -60 L-14 -72 Q0 -60 14 -72 L40 -60 L64 -28 L42 -16 L42 64 L-42 64 L-42 -16 L-64 -28Z" fill="${cor}" stroke="#cfe1ff" stroke-width="3" opacity=".9"/><text x="0" y="22" text-anchor="middle" font-family="Arial Black,Arial" font-size="44" fill="#fff" opacity=".9">${n}</text></g>`;
+const FUNDOS = {
+  resumo: `<defs><radialGradient id="a" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#4c8dff" stop-opacity=".7"/><stop offset="1" stop-color="#4c8dff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="g" y2="1" x2="0"><stop offset="0" stop-color="#2a8a4a"/><stop offset="1" stop-color="#0f4a24"/></linearGradient>
+    <pattern id="p" width="14" height="10" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="2.2" fill="#2b4a7a"/><circle cx="11" cy="3" r="2" fill="#3a5c8f"/></pattern></defs>
+    <rect width="1600" height="900" fill="#07122a"/><ellipse cx="800" cy="60" rx="1000" ry="420" fill="url(#a)"/>
+    <path d="M-50 380 Q800 180 1650 380 L1650 560 Q800 380 -50 560Z" fill="url(#p)" opacity=".9"/>
+    <path d="M-50 560 Q800 380 1650 560 L1650 620 Q800 470 -50 620Z" fill="#0c1a36"/>
+    <path d="M140 900 L540 560 L1060 560 L1460 900Z" fill="url(#g)"/>
+    <g stroke="#ffffff" stroke-opacity=".55" stroke-width="3" fill="none"><path d="M140 900 L540 560 L1060 560 L1460 900"/><path d="M330 740 L1270 740"/>
+    <ellipse cx="800" cy="740" rx="150" ry="48"/><path d="M660 560 L640 610 L960 610 L940 560"/></g>
+    ${[160, 1440].map(x => `<g><path d="M${x} 90 L${x + (x < 800 ? 30 : -30)} 470" stroke="#5f7fb3" stroke-width="10"/><rect x="${x - 60}" y="50" width="120" height="50" rx="4" fill="#dfe9ff"/>
+      <circle cx="${x}" cy="75" r="140" fill="#cfe1ff" opacity=".16"/></g>`).join('')}`,
+  vestiario: `<rect width="1600" height="900" fill="#0b1426"/><rect y="700" width="1600" height="200" fill="#0e1a30"/>
+    ${Array.from({length: 7}, (_, i) => { const x = 40 + i * 225; return `<g><rect x="${x}" y="120" width="200" height="560" rx="6" fill="#13243f" stroke="#4d6fa8" stroke-width="4"/>
+      ${[0, 1, 2, 3].map(k => `<line x1="${x + 70}" x2="${x + 130}" y1="${150 + k * 12}" y2="${150 + k * 12}" stroke="#4d6fa8" stroke-width="4"/>`).join('')}
+      <rect x="${x + 70}" y="200" width="60" height="22" rx="4" fill="#ffcc33" opacity=".75"/>
+      ${jersey(x + 100, 400, 1.15, [1, 4, 5, 8, 10, 7, 9][i], ['#c8102e', '#c8102e', '#1d3c78', '#c8102e', '#c8102e', '#1d3c78', '#c8102e'][i])}</g>`; }).join('')}
+    <rect x="80" y="720" width="1440" height="44" rx="8" fill="#6b4a2a"/><rect x="120" y="764" width="22" height="90" fill="#4a3320"/><rect x="1458" y="764" width="22" height="90" fill="#4a3320"/>
+    <g opacity=".25" stroke="#9cc3ff">${Array.from({length: 17}, (_, i) => `<line x1="${i * 100}" y1="780" x2="${i * 100}" y2="900"/>`).join('')}</g>`,
+  imprensa: `<rect width="1600" height="900" fill="#0b1426"/>
+    ${[[220, 220, -8], [560, 160, 5], [930, 240, -4], [1270, 180, 7]].map(([x, y, r]) => `<g transform="rotate(${r} ${x} ${y})"><rect x="${x - 150}" y="${y}" width="300" height="400" fill="#e9e3d2"/>
+      <rect x="${x - 130}" y="${y + 20}" width="260" height="34" fill="#c1121f"/><rect x="${x - 130}" y="${y + 70}" width="260" height="22" fill="#222"/>
+      <rect x="${x - 130}" y="${y + 104}" width="120" height="110" fill="#8a96a8"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(k => `<rect x="${x}" y="${y + 104 + k * 14}" width="130" height="6" fill="#777"/>`).join('')}
+      ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<rect x="${x - 130}" y="${y + 236 + k * 14}" width="${k % 3 ? 260 : 190}" height="6" fill="#999"/>`).join('')}</g>`).join('')}
+    <g transform="translate(1420 640)"><rect x="-26" y="-120" width="52" height="110" rx="26" fill="#2c3e5f" stroke="#9cc3ff" stroke-width="4"/>
+      <path d="M-46 -60 Q-46 20 0 20 Q46 20 46 -60" ${L} stroke-width="6"/><line x1="0" y1="20" x2="0" y2="200" stroke="#9cc3ff" stroke-width="8"/></g>`,
+  coletiva: `<rect width="1600" height="900" fill="#0b1426"/>
+    <g>${Array.from({length: 5}, (_, r) => Array.from({length: 9}, (_, c) => { const x = 20 + c * 180 + (r % 2) * 90, y = 20 + r * 120;
+      return `<g><rect x="${x}" y="${y}" width="150" height="90" rx="6" fill="${(r + c) % 3 ? '#122544' : '#16305a'}" stroke="#26467e"/>
+      <circle cx="${x + 40}" cy="${y + 45}" r="22" fill="${(r + c) % 2 ? '#c8102e' : '#ffcc33'}" opacity=".8"/><rect x="${x + 72}" y="${y + 34}" width="60" height="9" fill="#9cc3ff" opacity=".7"/><rect x="${x + 72}" y="${y + 50}" width="40" height="7" fill="#9cc3ff" opacity=".45"/></g>`; }).join('')).join('')}</g>
+    <rect x="0" y="640" width="1600" height="260" fill="#0a1222"/><rect x="0" y="640" width="1600" height="14" fill="#1e9bff" opacity=".7"/>
+    ${[600, 700, 800, 900, 1000].map((x, i) => `<g><line x1="${x}" y1="640" x2="${x + (i - 2) * 14}" y2="560" stroke="#cfd9ea" stroke-width="5"/><rect x="${x + (i - 2) * 14 - 12}" y="530" width="24" height="40" rx="10" fill="${['#c8102e', '#1e9bff', '#ffcc33', '#ffffff', '#3ecf6e'][i]}"/></g>`).join('')}
+    <rect x="690" y="680" width="220" height="60" rx="6" fill="#e9e3d2"/><rect x="710" y="702" width="180" height="16" fill="#222"/>`,
+  analise: `<rect width="1600" height="900" fill="#0b1426"/><rect x="160" y="110" width="1280" height="680" rx="16" fill="#145a2b" stroke="#c9d6e8" stroke-width="10"/>
+    <g stroke="#ffffff" stroke-opacity=".75" stroke-width="4" fill="none"><rect x="210" y="160" width="1180" height="580"/><line x1="800" y1="160" x2="800" y2="740"/>
+      <circle cx="800" cy="450" r="90"/><rect x="210" y="300" width="170" height="300"/><rect x="1220" y="300" width="170" height="300"/></g>
+    ${[[420, 300], [430, 600], [560, 450], [660, 300], [660, 600]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="20" fill="#1e9bff" stroke="#fff" stroke-width="4"/>`).join('')}
+    ${[[1000, 280], [1020, 620], [1120, 450], [940, 450]].map(([x, y]) => `<g stroke="#ff4d4d" stroke-width="9" stroke-linecap="round"><line x1="${x - 16}" y1="${y - 16}" x2="${x + 16}" y2="${y + 16}"/><line x1="${x + 16}" y1="${y - 16}" x2="${x - 16}" y2="${y + 16}"/></g>`).join('')}
+    <g stroke="#ffcc33" stroke-width="6" fill="none" stroke-dasharray="16 12"><path d="M560 450 Q700 360 880 330"/><path d="M660 600 Q820 690 980 610"/></g>
+    <path d="M880 330 l-26 -4 l12 22z M980 610 l-24 10 l20 14z" fill="#ffcc33"/>`,
+  disciplina: `<rect width="1600" height="900" fill="#0b1426"/>
+    <g transform="rotate(-14 560 430)"><rect x="440" y="230" width="240" height="340" rx="18" fill="#ffd21f"/><rect x="440" y="230" width="240" height="340" rx="18" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="6"/></g>
+    <g transform="rotate(10 920 450)"><rect x="800" y="250" width="240" height="340" rx="18" fill="#e3242b"/><rect x="800" y="250" width="240" height="340" rx="18" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="6"/></g>
+    <g transform="translate(1280 640) rotate(-20)"><rect x="-120" y="-40" width="170" height="80" rx="40" fill="#cfd9ea"/><circle cx="60" cy="0" r="58" fill="#cfd9ea"/><circle cx="60" cy="0" r="22" fill="#0b1426"/>
+      <path d="M-120 0 Q-260 -80 -320 40" stroke="#9cc3ff" stroke-width="8" fill="none"/></g>
+    <g transform="translate(230 650) rotate(8)"><rect x="-90" y="-120" width="180" height="240" rx="8" fill="#1d2f52" stroke="#9cc3ff" stroke-width="4"/>${[0, 1, 2, 3, 4, 5].map(k => `<rect x="-66" y="${-80 + k * 30}" width="${k % 2 ? 100 : 132}" height="8" fill="#9cc3ff" opacity=".6"/>`).join('')}</g>`,
+  calendario: `<rect width="1600" height="900" fill="#0b1426"/>
+    <g transform="rotate(-4 800 450)"><rect x="300" y="140" width="1000" height="640" rx="14" fill="#eef2f8"/><rect x="300" y="140" width="1000" height="120" rx="14" fill="#c8102e"/>
+      ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(k => `<rect x="${360 + k * 110}" y="110" width="22" height="70" rx="10" fill="#cfd9ea" stroke="#0b1426" stroke-width="4"/>`).join('')}
+      ${Array.from({length: 5}, (_, r) => Array.from({length: 7}, (_, c) => `<rect x="${330 + c * 138}" y="${290 + r * 96}" width="124" height="82" rx="6" fill="${(r * 7 + c) % 5 === 2 ? '#1e9bff' : (r * 7 + c) % 7 === 4 ? '#ffcc33' : '#dde3ee'}"/>`).join('')).join('')}</g>
+    <g transform="translate(1340 690)"><circle r="120" fill="#fff" stroke="#0b1426" stroke-width="6"/><path d="M0 -40 L38 -12 L24 32 L-24 32 L-38 -12Z" fill="#0b1426"/>
+      ${[0, 72, 144, 216, 288].map(a => `<line x1="0" y1="-40" x2="0" y2="-118" stroke="#0b1426" stroke-width="5" transform="rotate(${a})"/>`).join('')}</g>`,
+  diretoria: `<rect width="1600" height="900" fill="#0b1426"/><rect x="0" y="80" width="1600" height="420" fill="#10213f"/>
+    ${Array.from({length: 18}, (_, i) => { const h = 80 + ((i * 53) % 190); return `<rect x="${i * 90}" y="${500 - h}" width="70" height="${h}" fill="#183058"/>
+      ${Array.from({length: Math.floor(h / 30)}, (_, k) => `<rect x="${i * 90 + 14}" y="${500 - h + 12 + k * 30}" width="10" height="12" fill="#ffcc33" opacity="${(i + k) % 3 ? .15 : .7}"/><rect x="${i * 90 + 40}" y="${500 - h + 12 + k * 30}" width="10" height="12" fill="#ffcc33" opacity="${(i + k) % 2 ? .12 : .6}"/>`).join('')}`; }).join('')}
+    ${[200, 600, 1000, 1400].map(x => `<rect x="${x - 6}" y="80" width="12" height="420" fill="#0b1426"/>`).join('')}
+    <path d="M520 520 L1080 520 L1380 900 L220 900Z" fill="#5a3b22"/><path d="M520 520 L1080 520 L1380 900 L220 900Z" fill="none" stroke="#8a6040" stroke-width="6"/>
+    ${[[450, 600], [380, 700], [300, 810], [1150, 600], [1220, 700], [1300, 810]].map(([x, y]) => `<rect x="${x - 40}" y="${y - 50}" width="80" height="100" rx="18" fill="#1a1a1a" stroke="#333" stroke-width="4"/>`).join('')}`,
+  mercado: `<rect width="1600" height="900" fill="#0b1426"/>
+    <g transform="rotate(-6 620 460)"><rect x="380" y="130" width="500" height="660" fill="#eef2f8"/><rect x="420" y="170" width="300" height="30" fill="#0b1426"/>
+      ${Array.from({length: 16}, (_, k) => `<rect x="420" y="${230 + k * 26}" width="${[420, 380, 400, 300][k % 4]}" height="8" fill="#9aa6ba"/>`).join('')}
+      <path d="M440 700 C480 650 520 740 560 690 S640 660 680 700 S760 720 800 680" stroke="#1d3c78" stroke-width="6" fill="none"/></g>
+    <g transform="translate(990 600) rotate(-35)"><rect x="-14" y="-200" width="28" height="300" rx="12" fill="#1a1a1a"/><path d="M-14 100 L0 160 L14 100Z" fill="#ffcc33"/></g>
+    <g ${L} stroke-width="16" opacity=".9"><path d="M1080 300 L1460 300"/><path d="M1400 240 L1460 300 L1400 360"/><path d="M1460 470 L1080 470"/><path d="M1140 410 L1080 470 L1140 530"/></g>
+    ${[0, 1, 2].map(k => `<rect x="${1120 + k * 30}" y="${640 + k * 26}" width="260" height="120" rx="8" fill="#2f7d4a" stroke="#cfe1ff" stroke-width="3"/><circle cx="${1250 + k * 30}" cy="${700 + k * 26}" r="30" fill="none" stroke="#cfe1ff" stroke-width="3"/>`).join('')}`,
+  historia: `<rect width="1600" height="900" fill="#0b1426"/><rect x="100" y="560" width="1400" height="30" fill="#6b4a2a"/><rect x="100" y="590" width="1400" height="12" fill="#3d2a17"/>
+    ${[[400, 1.1], [800, 1.45], [1200, 1.1]].map(([x, s]) => `<g transform="translate(${x} 560) scale(${s})"><path d="M-90 -330 L90 -330 Q90 -200 0 -170 Q-90 -200 -90 -330Z" fill="#ffcc33"/>
+      <path d="M-90 -310 Q-150 -300 -130 -250 Q-115 -215 -70 -215" stroke="#ffcc33" stroke-width="14" fill="none"/><path d="M90 -310 Q150 -300 130 -250 Q115 -215 70 -215" stroke="#ffcc33" stroke-width="14" fill="none"/>
+      <rect x="-14" y="-172" width="28" height="80" fill="#e0a800"/><rect x="-60" y="-92" width="120" height="30" rx="4" fill="#c99600"/><rect x="-75" y="-62" width="150" height="62" rx="6" fill="#2a1e10"/></g>`).join('')}
+    ${Array.from({length: 26}, (_, i) => `<path d="M${(i * 137) % 1600} ${(i * 211) % 420 + 20} l6 14 l15 2 l-11 10 l3 15 l-13 -7 l-13 7 l3 -15 l-11 -10 l15 -2z" fill="#ffcc33" opacity="${.15 + (i % 4) * .1}"/>`).join('')}`,
+  celular: `<rect width="1600" height="900" fill="#0b1426"/><g transform="translate(800 470)"><rect x="-210" y="-400" width="420" height="800" rx="56" fill="#111b21" stroke="#9cc3ff" stroke-width="10"/>
+    <rect x="-180" y="-340" width="360" height="660" rx="10" fill="#0b141a"/>${[0, 1, 2, 3, 4].map(k => `<rect x="${k % 2 ? -10 : -160}" y="${-300 + k * 120}" width="170" height="70" rx="14" fill="${k % 2 ? '#005c4b' : '#202c33'}"/>`).join('')}</g>`,
+};
+const WA_DOODLE = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180" ${L} stroke-width="2">
+  <circle cx="30" cy="30" r="14"/><path d="M30 16 L36 24 L32 34 L28 34 L24 24Z"/><path d="M120 20 h30 v40 h-30z M126 30 h18 M126 40 h18"/><path d="M70 90 q10 -20 20 0 q10 20 20 0"/>
+  <circle cx="150" cy="120" r="10"/><path d="M20 130 l10 20 l10 -20 M60 150 h40"/><path d="M90 40 l8 8 l14 -14"/><rect x="40" y="70" width="18" height="26" rx="3"/></svg>`)}")`;
+const fundoCache = {};
+function aplicarFundo(a) {
+  const el = $('fundo');
+  if (!el) return;
+  const svg = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">${FUNDOS[a] || FUNDOS.resumo}</svg>`)}")`;
+  const usar = u => { el.style.backgroundImage = u; };
+  if (fundoCache[a] === undefined) {   // foto própria em central/fundos/<aba>.jpg tem preferência
+    usar(svg);
+    const im = new Image();
+    im.onload = () => { fundoCache[a] = `url("/fundo/${a}")`; if (aba === a) usar(fundoCache[a]); };
+    im.onerror = () => { fundoCache[a] = null; };
+    im.src = '/fundo/' + a;
+  } else usar(fundoCache[a] || svg);
+  document.documentElement.style.setProperty('--wa-doodle', WA_DOODLE);
+}
+function tituloTela(a) {
+  const t = TITULOS[a], tela = $('t-' + a);
+  if (!t || !tela || tela.querySelector(':scope > .titulo-tela')) return;
+  tela.insertAdjacentHTML('afterbegin', `<div class="titulo-tela"><h1>${esc(t[0])}</h1><span>${esc(t[1])}</span></div>`);
+}
+
+// ---------- janela (modal)
+let modalAtual = null;
+function abrirModal(html, estado) {
+  modalAtual = estado || null;
+  $('modalCorpo').innerHTML = html;
+  $('modal').hidden = false;
+  $('modal').querySelector('.modal-x').focus();
+  ligarCasos($('modalCorpo'));
+}
+function fecharModal() { $('modal').hidden = true; modalAtual = null; }
+function atualizarModal(d) {
+  if (!modalAtual || $('modal').hidden) return;
+  if (modalAtual.tipo === 'caso') {
+    const c = (d.casos || []).find(x => x.id === modalAtual.id);
+    if (c) { $('modalCorpo').innerHTML = `<h3>${esc(c.titulo || 'Decisão')}</h3>` + casoHTML(c, d); ligarCasos($('modalCorpo')); }
+  } else if (modalAtual.tipo === 'armario') {
+    const j = (d.jogadores || []).find(j => `${j.reg}:${j.pid}` === modalAtual.id);
+    if (j) $('modalCorpo').innerHTML = armarioHTML(j, motivosComuns(d.jogadores || [])).replace('class="armario', 'class="armario completo');
+  }
+}
+function abrirCaso(id) {
+  const c = ((dados && dados.casos) || []).find(x => x.id === id);
+  if (!c) return;
+  if (c.tipo === 'celular') { waAtual = (c.contato || {}).nome || c.titulo; irPara('celular'); render(); return; }
+  abrirModal(`<h3>${esc(c.titulo || 'Decisão')}</h3>` + casoHTML(c, dados), {tipo: 'caso', id});
+}
+
+// ---------- notificações: sininho + painel + navegador (com decisão pelo botão da notificação)
+let PEND = [], notifVistas = null, swReg = null;
+const NO_PAINEL = /QtWebEngine/.test(navigator.userAgent);   // dentro do Painel: avisos do Windows pela bandeja
+const chaveNotif = () => 'notifVistas_' + ((dados && dados.carreira) || '');
+function itensNotif() { return PEND.filter(x => x.u > 0); }
+function renderSino() {
+  const n = itensNotif().length, b = $('sino');
+  if (!b) return;
+  b.querySelector('.n').hidden = !n;
+  b.querySelector('.n').textContent = n;
+  if (!$('notif').hidden) renderPainelNotif();
+}
+function renderPainelNotif() {
+  const it = PEND;
+  const perm = 'Notification' in window ? Notification.permission : 'indisponivel';
+  $('notifLista').innerHTML = it.length ? it.map((x, i) => `<div class="it" data-i="${i}"><i class="u${x.u}"></i><div><span class="tag" style="display:inline;margin-right:6px">${esc(x.tag)}</span>${esc(x.txt)}${x.sub ? `<small>${esc(x.sub)}</small>` : ''}</div><span class="dica">abrir ›</span></div>`).join('')
+    : '<div class="vazio">Nada esperando por você. Pode jogar tranquilo.</div>';
+  $('notifLista').querySelectorAll('[data-i]').forEach(el => el.onclick = () => { const x = it[+el.dataset.i]; $('notif').hidden = true; abrirItem(x); });
+  $('notifPerm').hidden = perm === 'granted' || perm === 'indisponivel';
+  $('notifInfo').textContent = perm === 'granted' ? 'Notificações do navegador ligadas: decisões chegam mesmo com a aba em segundo plano.'
+    : perm === 'denied' ? 'O navegador bloqueou as notificações desta página (libere no cadeado da barra de endereço).'
+    : perm === 'indisponivel' ? 'Este navegador/endereço não permite notificações (no celular pela rede elas não funcionam; use o sininho).' : '';
+}
+function abrirItem(x) {
+  if (x.caso) return abrirCaso(x.caso);
+  irPara(x.ir || 'resumo');
+}
+async function pedirNotificacoes() {
+  if (!('Notification' in window)) return;
+  const p = await Notification.requestPermission();
+  if (p === 'granted' && !NO_PAINEL && 'serviceWorker' in navigator && !swReg) swReg = await navigator.serviceWorker.register('/sw.js').catch(() => null);
+  renderPainelNotif();
+}
+function notificarNovos() {
+  if (!dados) return;
+  if (notifVistas === null) {
+    try { notifVistas = new Set(JSON.parse(store.get(chaveNotif()) || '[]')); } catch (e) { notifVistas = new Set(); }
+    if (!notifVistas.size) { itensNotif().forEach(x => notifVistas.add(x.k)); store.set(chaveNotif(), JSON.stringify([...notifVistas])); return; }
+  }
+  const novos = itensNotif().filter(x => !notifVistas.has(x.k));
+  if (!novos.length) return;
+  novos.forEach(x => notifVistas.add(x.k));
+  store.set(chaveNotif(), JSON.stringify([...notifVistas].slice(-300)));
+  $('sino').classList.remove('toca'); void $('sino').offsetWidth; $('sino').classList.add('toca');
+  novos.slice(0, 3).forEach(x => {
+    avisar(x.tag, x.txt, false, () => abrirItem(x));
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const c = x.caso ? (dados.casos || []).find(y => y.id === x.caso) : null;
+      const corpo = c && c.tipo === 'celular' ? (c.mensagens || []).join(' ') : (x.sub || '');
+      const op = {body: corpo.slice(0, 180), tag: x.k, icon: '/escudo/' + encodeURIComponent(dados.time || ''), data: {aba: x.ir, caso: x.caso},
+                  actions: c && c.opcoes ? c.opcoes.slice(0, 2).map(o => ({action: 'op:' + o.id, title: o.texto.slice(0, 40)})) : []};
+      if (swReg && swReg.showNotification) swReg.showNotification(`${x.tag}: ${x.txt}`.slice(0, 90), op);
+      else { try { const n = new Notification(`${x.tag}: ${x.txt}`.slice(0, 90), {body: op.body, tag: op.tag, icon: op.icon}); n.onclick = () => { window.focus(); abrirItem(x); }; } catch (e) { /* sem notificação */ } }
+    }
+  });
+}
+if ('serviceWorker' in navigator && !NO_PAINEL) {
+  navigator.serviceWorker.addEventListener('message', ev => {
+    const m = ev.data || {};
+    if (m.tipo === 'decidir' && m.caso && m.opcao) decidirCaso(m.caso, m.opcao).then(() => avisar('Decisão enviada', 'pela notificação do navegador'));
+    else if (m.tipo === 'abrir') { if (m.caso) abrirCaso(m.caso); else if (m.aba) irPara(m.aba); }
+  });
+  if ('Notification' in window && Notification.permission === 'granted') navigator.serviceWorker.register('/sw.js').then(r => { swReg = r; }).catch(() => {});
+}
+
+// ---------- celular: WhatsApp
+let waAtual = null;
+const CORES_PAPEL = {presidente: '#b8860b', auxiliar: '#2b7a78', 'empresário': '#7b4ab8', empresario: '#7b4ab8', 'médico': '#2e7d32', medico: '#2e7d32',
+  jornalista: '#455a9a', torcida: '#c62828', capitao: '#c8102e', jogador: '#1565c0', diretor: '#8d6e63'};
+function waAvatar(ct, tam) {
+  const nome = ct.nome || '?', papel = (ct.papel || '').split('|')[0].toLowerCase();
+  const js = (dados && dados.jogadores) || [];
+  const alvo = js.find(j => nome === j.nome) || js.find(j => nome.endsWith(' ' + j.nome) || nome.includes(`de ${j.nome}`));
+  if (alvo && (papel.includes('jogador') || nome === alvo.nome)) return `<div class="wa-av" style="background:#1565c0">${foto(alvo, tam)}</div>`;
+  const cor = Object.entries(CORES_PAPEL).find(([k]) => papel.includes(k) || nome.toLowerCase().includes(k));
+  return `<div class="wa-av" style="background:${cor ? cor[1] : '#3b4a54'}">${esc(ct.icone || nome.split(' ').map(p => p[0]).slice(0, 2).join(''))}</div>`;
+}
+const numData = d => d ? d[0] * 10000 + d[1] * 100 + d[2] : 0;   // data como número (texto punha 11/10 antes de 22/9)
+function waConversas(d) {
+  const resp = d.casos_respostas || {}, porNome = new Map();
+  const add = (ct, ep) => { const k = ct.nome || ep.titulo || '—'; if (!porNome.has(k)) porNome.set(k, {ct, eps: []}); porNome.get(k).eps.push(ep); };
+  (d.celular || []).forEach(h => add(h.contato || {}, {id: h.id, data: h.data, msgs: h.mensagens || [], resposta: h.resposta, fechado: true}));
+  (d.casos || []).filter(c => c.tipo === 'celular').forEach(c => {
+    const r = resp[c.id], o = r && c.opcoes.find(o => o.id === r);
+    if ((d.celular || []).some(h => h.id === c.id)) return;
+    add(c.contato || {nome: c.titulo}, {id: c.id, data: c.data, msgs: c.mensagens || [], resposta: o ? o.texto : null, efeitos: o ? o.efeitos : null, caso: c, fechado: !!o});
+  });
+  const lidas = (() => { try { return new Set(JSON.parse(store.get('waLidas') || '[]')); } catch (e) { return new Set(); } })();
+  return [...porNome.entries()].map(([nome, t]) => {
+    t.eps.sort((a, b) => numData(a.data) - numData(b.data));
+    const ult = t.eps[t.eps.length - 1], aberto = t.eps.find(e => !e.fechado);
+    return {nome, ct: t.ct, eps: t.eps, ult, aberto, naoLidas: aberto && !lidas.has(aberto.id) ? aberto.msgs.length : 0};
+  }).sort((a, b) => (!!b.aberto - !!a.aberto) || numData(b.ult.data) - numData(a.ult.data));
+}
+function renderCelular(d) {
+  const resp = d.casos_respostas || {};
+  const abertos = (d.casos || []).filter(c => c.tipo === 'celular' && !resp[c.id]);
+  $('badgeCel').hidden = !abertos.length; $('badgeCel').textContent = abertos.length;
+  $('celHora').textContent = dataBR(d.data_jogo);
+  const cs = waConversas(d);
+  const hora = ep => ep && ep.data ? `${String(ep.data[2]).padStart(2, '0')}/${String(ep.data[1]).padStart(2, '0')}` : '';
+  $('waChats').innerHTML = cs.map(c => `<div class="wa-item ${waAtual === c.nome ? 'ativo' : ''}" data-wa="${esc(c.nome)}">${waAvatar(c.ct, 50)}
+      <div style="min-width:0"><div class="wa-nome">${esc(c.nome)}</div><div class="wa-prev">${c.ult.fechado && c.ult.resposta ? `<span class="tick">✓✓</span> ${esc(c.ult.resposta)}` : esc(c.ult.msgs[c.ult.msgs.length - 1] || '')}</div></div>
+      <div class="wa-meta ${c.naoLidas ? 'nova' : ''}">${hora(c.ult)}${c.naoLidas ? `<span class="wa-badge">${c.naoLidas}</span>` : c.aberto ? '<span class="wa-espera">responder</span>' : ''}</div></div>`).join('')
+    || '<div class="wa-vazio">Nenhuma conversa ainda.</div>';
+  $('waChats').querySelectorAll('[data-wa]').forEach(el => el.onclick = () => { waAtual = el.dataset.wa; $('wa').classList.add('aberto'); renderCelular(dados); });
+  const c = cs.find(x => x.nome === waAtual) || (window.innerWidth > 820 ? cs[0] : null);
+  if (!c) { $('waChat').innerHTML = `<div class="wa-vazio"><b>Celular do técnico</b>Quando o presidente, um empresário ou um jogador quiser falar com você, a conversa aparece aqui.</div>`; return; }
+  if (c.aberto) {   // abriu a conversa: marca como lida (some a bolinha verde)
+    let lidas; try { lidas = new Set(JSON.parse(store.get('waLidas') || '[]')); } catch (e) { lidas = new Set(); }
+    if (!lidas.has(c.aberto.id) && (waAtual === c.nome)) { lidas.add(c.aberto.id); store.set('waLidas', JSON.stringify([...lidas].slice(-400))); }
+  }
+  let ultimoDia = '';
+  const msgs = c.eps.map(ep => {
+    const dia = dataBR(ep.data), sep = dia && dia !== ultimoDia ? `<div class="wa-dia">${dia}</div>` : '';
+    ultimoDia = dia || ultimoDia;
+    return sep + ep.msgs.map(m => `<div class="wa-b in">${esc(m)}<span class="h">${hora(ep)}</span></div>`).join('')
+      + (ep.resposta ? `<div class="wa-b out ${ep.resposta.startsWith('(') ? 'vacuo' : ''}">${esc(ep.resposta)}<span class="h">${hora(ep)}<span class="tick">✓✓</span></span></div>` : '')
+      + (ep.efeitos ? `<div class="wa-ef">${efeitosHTML(ep.efeitos)}</div>` : '');
+  }).join('');
+  const ab = c.aberto && c.aberto.caso;
+  const opcoes = ab ? `<div class="wa-resp"><span class="dica">Escolha a sua resposta:</span>${ab.opcoes.map(op => { const key = ab.id + '|' + op.id, conf = confirmandoCaso === key;
+      return `<button class="opcao ${conf ? 'confirmar' : ''}" data-caso="${esc(key)}"><b>${op.id}</b>${esc(op.texto)}
+        ${conf ? `<span class="conf">Enviar? <span class="sim" data-ksim="${esc(key)}">Sim</span> <span class="nao" data-knao="1">Não</span></span>` : ''}</button>`; }).join('')}
+      ${erroCaso ? `<div class="dica" style="color:var(--worse)">${esc(erroCaso)}</div>` : ''}</div>` : '';
+  $('waChat').innerHTML = `<div class="wa-cab"><button class="wa-voltar" aria-label="voltar">‹</button>${waAvatar(c.ct, 40)}<div><b>${esc(c.nome)}</b><small>${esc((c.ct.papel || '').split('|')[0] || 'contato')}${c.aberto ? ' · online' : ''}</small></div></div>
+    <div class="wa-msgs">${msgs}</div>${opcoes}`;
+  $('waChat').querySelector('.wa-voltar').onclick = () => { $('wa').classList.remove('aberto'); waAtual = null; renderCelular(dados); };
+  const box = $('waChat').querySelector('.wa-msgs'); box.scrollTop = box.scrollHeight;
+  ligarCasos($('waChat'));
+}
+
+// ---------- calendário real de jogos (mês a mês)
+let calMes = null;
+const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+function renderCalMes(d) {
+  const el = $('calMes');
+  if (!el) return;
+  let js = d.temporada_jogos || [];
+  if (!js.length) {   // antes da 1ª reunião com o calendário completo: os últimos jogos e as próximas prévias
+    js = (d.ultimos_jogos || []).filter(g => g.data).map(g => ({data: g.data, adv: g.adversario, comp: g.comp || '', casa: !!g.casa, jogado: true, gp: g.pro, gc: g.contra}))
+      .concat((d.proximos || []).filter(p => p && p.data).map(p => ({data: p.data, adv: p.adversario, comp: p.competicao || '', casa: !!p.eu_casa, jogado: false})));
+  }
+  const hoje = d.data_jogo || [2000, 1, 1];
+  if (!calMes) calMes = [hoje[0], hoje[1]];
+  const [ano, mes] = calMes;
+  const prim = new Date(Date.UTC(ano, mes - 1, 1)), dias = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  const offset = (prim.getUTCDay() + 6) % 7;   // semana começa na segunda
+  const doDia = dd => js.filter(g => g.data[0] === ano && g.data[1] === mes && g.data[2] === dd);
+  let cel = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'].map(s => `<div class="dsem">${s}</div>`).join('');
+  for (let i = 0; i < offset; i++) cel += '<div class="cal-dia fora"></div>';
+  for (let dd = 1; dd <= dias; dd++) {
+    const eh = hoje[0] === ano && hoje[1] === mes && hoje[2] === dd;
+    cel += `<div class="cal-dia ${eh ? 'hoje' : ''}"><span class="n">${dd}</span>${doDia(dd).map(g => {
+      const r = g.jogado ? (g.gp > g.gc ? 'V' : g.gp === g.gc ? 'E' : 'D') : '';
+      return `<div class="cal-jogo ${r}" data-cal="${esc(JSON.stringify(g))}">${crest(g.adv, 16)} <span class="adv-t"><b>${g.casa ? '' : '@ '}${esc(g.adv)}</b></span>
+        ${g.jogado ? `<span class="pl">${g.gp} x ${g.gc}</span>` : ''}<small>${esc(g.comp)}</small></div>`; }).join('')}</div>`;
+  }
+  const n = js.filter(g => g.data[0] === ano && g.data[1] === mes).length;
+  el.innerHTML = `<div class="cal-cab"><button data-m="-1" aria-label="mês anterior">‹</button><b>${MESES[mes - 1]} ${ano}</b><button data-m="1" aria-label="próximo mês">›</button>
+      <span class="dica">${n} jogo(s) no mês · ${js.filter(g => !g.jogado).length} ainda pela frente na temporada</span></div><div class="cal-grade">${cel}</div>`;
+  el.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { let [a, m] = calMes; m += +b.dataset.m; if (m < 1) { m = 12; a--; } if (m > 12) { m = 1; a++; } calMes = [a, m]; renderCalMes(dados); });
+  el.querySelectorAll('[data-cal]').forEach(b => b.onclick = () => {
+    const g = JSON.parse(b.dataset.cal), r = g.jogado ? (g.gp > g.gc ? 'Vitória' : g.gp === g.gc ? 'Empate' : 'Derrota') : 'A jogar';
+    abrirModal(`<h3>${esc(g.casa ? `${dados.time} x ${g.adv}` : `${g.adv} x ${dados.time}`)}</h3>
+      <div style="display:flex;align-items:center;gap:18px;margin:6px 0 12px">${crest(g.casa ? dados.time : g.adv, 64)}<b style="font:800 40px var(--f-score)">${g.jogado ? (g.casa ? `${g.gp} x ${g.gc}` : `${g.gc} x ${g.gp}`) : 'x'}</b>${crest(g.casa ? g.adv : dados.time, 64)}</div>
+      <div class="item"><span class="tag">competição</span>${esc(g.comp)}</div><div class="item"><span class="tag">data</span>${dataBR(g.data)} · ${g.casa ? 'em casa' : 'fora de casa'}</div>
+      <div class="item"><span class="tag">resultado</span>${r}</div>`);
+  });
+}
+
+// ---------- armário em janela (vestiário)
+function ligarArmarios() {
+  $('elenco').querySelectorAll('.armario[data-k]').forEach(a => a.onclick = () => {
+    const j = (dados.jogadores || []).find(j => `${j.reg}:${j.pid}` === a.dataset.k);
+    if (j) abrirModal(armarioHTML(j, motivosComuns(dados.jogadores || [])).replace('class="armario', 'class="armario completo'), {tipo: 'armario', id: a.dataset.k});
+  });
+}
+
+
+// ---------- carrosséis do Resumo: trocam sozinhos; troca manual desliga o automático daquele carrossel por 2 min
+const CAR_MS = 9000, CAR_PAUSA = 120000, CARS = {};
+function iniciarCarrossel(id, atraso) {
+  const el = $(id);
+  if (!el) return;
+  const slides = [...el.querySelectorAll('.car-slide')];
+  const c = CARS[id] = {el, slides, i: 0, pausaAte: 0, timer: null, sobre: false};
+  el.querySelector('.car-chips').innerHTML = slides.map((sl, i) => `<button role="tab" data-i="${i}">${esc(sl.dataset.nome)}<span class="pt" hidden></span></button>`).join('');
+  el.querySelectorAll('.car-chips [data-i]').forEach(b => b.onclick = () => irSlide(id, +b.dataset.i, true));
+  el.querySelectorAll('[data-passo]').forEach(b => b.onclick = () => irSlide(id, c.i + +b.dataset.passo, true));
+  el.addEventListener('mouseenter', () => { c.sobre = true; marcarAuto(id); });
+  el.addEventListener('mouseleave', () => { c.sobre = false; marcarAuto(id); });
+  let x0 = null;   // arrastar com o dedo
+  el.querySelector('.car-janela').addEventListener('touchstart', ev => { x0 = ev.touches[0].clientX; }, {passive: true});
+  el.querySelector('.car-janela').addEventListener('touchend', ev => {
+    if (x0 == null) return;
+    const dx = ev.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) irSlide(id, c.i + (dx < 0 ? 1 : -1), true);
+  });
+  irSlide(id, 0, false);
+  setTimeout(() => { c.timer = setInterval(() => avancar(id), CAR_MS); marcarAuto(id); }, atraso || 0);
+}
+function visiveis(c) { return c.slides.map((sl, i) => i).filter(i => !c.slides[i].classList.contains('vazio')); }
+function irSlide(id, i, manual) {
+  const c = CARS[id];
+  if (!c) return;
+  const vs = visiveis(c);
+  if (!vs.length) return;
+  if (!vs.includes(i)) {   // pula telas vazias, na direção do movimento
+    const n = c.slides.length, dir = i < c.i ? -1 : 1;
+    let j = ((i % n) + n) % n;
+    for (let k = 0; k < n && !vs.includes(j); k++) j = ((j + dir) % n + n) % n;
+    i = j;
+  }
+  c.i = i;
+  c.el.querySelector('.car-trilho').style.transform = `translateX(${-100 * i}%)`;
+  c.el.querySelectorAll('.car-chips [data-i]').forEach(b => { b.setAttribute('aria-selected', +b.dataset.i === i); b.hidden = c.slides[+b.dataset.i].classList.contains('vazio'); });
+  if (manual) { c.pausaAte = Date.now() + CAR_PAUSA; store.set('carPausa_' + id, String(c.pausaAte)); }
+  marcarAuto(id);
+}
+function avancar(id) {
+  const c = CARS[id];
+  if (!c || c.sobre || Date.now() < c.pausaAte || document.hidden || aba !== 'resumo') return marcarAuto(id);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const vs = visiveis(c), p = vs.indexOf(c.i);
+  if (vs.length > 1) irSlide(id, vs[(p + 1) % vs.length], false);
+}
+function marcarAuto(id) {
+  const c = CARS[id];
+  if (!c) return;
+  const barra = c.el.querySelector('.car-auto'), aviso = c.el.querySelector('.car-pausa');
+  const pausado = Date.now() < c.pausaAte;
+  barra.classList.remove('rodando');
+  if (!pausado && !c.sobre && visiveis(c).length > 1) { void barra.offsetWidth; barra.style.setProperty('--car-ms', CAR_MS + 'ms'); barra.classList.add('rodando'); }
+  const resta = Math.ceil((c.pausaAte - Date.now()) / 1000);
+  aviso.textContent = pausado ? `troca automática volta em ${Math.floor(resta / 60)}:${String(resta % 60).padStart(2, '0')}` : c.sobre ? 'pausado enquanto o mouse está aqui' : '';
+}
+setInterval(() => Object.keys(CARS).forEach(id => { if (Date.now() < CARS[id].pausaAte) marcarAuto(id); }), 1000);
+function atualizarCarrosseis() {   // depois de cada render: tela vazia sai da roda; ponto vermelho onde há decisão
+  Object.entries(CARS).forEach(([id, c]) => {
+    c.slides.forEach(sl => {
+      const sec = sl.querySelector('section, #resCapa');
+      const vazio = !sec || sec.hidden || !sl.textContent.trim();
+      sl.classList.toggle('vazio', vazio);
+    });
+    c.el.querySelectorAll('.car-chips [data-i]').forEach(b => {
+      const sl = c.slides[+b.dataset.i];
+      b.querySelector('.pt').hidden = !(sl.querySelector('.pend i.u2, .pend i.u1') || (sl.querySelector('#resColetiva') && $('badgeCol') && !$('badgeCol').hidden));
+    });
+    if (c.slides[c.i] && c.slides[c.i].classList.contains('vazio')) irSlide(id, c.i, false);
+    else c.el.querySelectorAll('.car-chips [data-i]').forEach(b => { b.hidden = c.slides[+b.dataset.i].classList.contains('vazio'); });
+  });
+}
+['carDestaque', 'carClube', 'carResultados', 'carBastidores'].forEach((id, k) => {
+  iniciarCarrossel(id, k * 1700);   // começam defasados: não trocam todos ao mesmo tempo
+  const p = +store.get('carPausa_' + id) || 0;
+  if (p > Date.now() && CARS[id]) { CARS[id].pausaAte = p; marcarAuto(id); }
+});
+
 // ------------------------------------------------------------- tempo real
 function aplicar(d) {
   if (carreiraVista !== d.carreira_ativa) { carreiraVista = d.carreira_ativa; vistos = null; }   // trocou de save
@@ -1938,7 +2545,13 @@ function conectar() {
 }
 $('ordem').addEventListener('change', () => { store.set('ordem', $('ordem').value); render(); });
 const o = store.get('ordem'); if (o) $('ordem').value = o;
-irPara(store.get('aba') || 'resumo');
+irPara(new URLSearchParams(location.search).get('aba') || store.get('aba') || 'resumo');
+$('sino').onclick = () => { $('notif').hidden = !$('notif').hidden; if (!$('notif').hidden) renderPainelNotif(); };
+$('notifX').onclick = () => { $('notif').hidden = true; };
+$('notifPerm').onclick = pedirNotificacoes;
+$('modal').querySelector('.modal-x').onclick = fecharModal;
+$('modal').addEventListener('click', ev => { if (ev.target === $('modal')) fecharModal(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { fecharModal(); $('notif').hidden = true; } });
 let REDE = null;   // endereço + PIN para abrir no celular (só aparece no próprio PC)
 fetch('/api/rede').then(r => r.ok ? r.json() : null).then(x => { if (x && x.rede) { REDE = x; if (dados) render(); } }).catch(() => {});
 conectar();

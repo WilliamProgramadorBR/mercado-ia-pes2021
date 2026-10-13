@@ -236,12 +236,40 @@ class PaginaCentral(QWidget):
             from PySide6.QtWebEngineWidgets import QWebEngineView
             self.web = QWebEngineView()
             self.web.page().setBackgroundColor(QColor(COR['fundo']))
+            self._ligar_notificacoes()
             b1.clicked.connect(self.carregar)
             v.addWidget(self.web, 1)
         except Exception as e:  # noqa: BLE001 - sem o motor web: abre no navegador
             v.addWidget(rotulo(f'O visualizador embutido não está disponível ({e}). Use "Abrir no navegador".'))
             b1.clicked.connect(lambda: webbrowser.open(URL_CENTRAL))
         self.carregou = False
+
+    def _ligar_notificacoes(self):
+        """As notificações da Central (sininho) aparecem como aviso do Windows pela bandeja do Painel."""
+        from PySide6 import QtWebEngineCore as W
+        pg = self.web.page()
+        self._ultima_notif = None
+
+        def apresentar(n):
+            self._ultima_notif = n
+            n.show()
+            self.j.bandeja.showMessage(n.title(), n.message(), icone_app(), 8000)
+        try:
+            pg.profile().setNotificationPresenter(apresentar)
+        except Exception:  # noqa: BLE001
+            return
+        if hasattr(pg, 'permissionRequested'):          # Qt 6.8+
+            pg.permissionRequested.connect(lambda p: p.grant() if p.permissionType() == W.QWebEnginePermission.PermissionType.Notifications else None)
+        else:
+            pg.featurePermissionRequested.connect(lambda url, f: pg.setFeaturePermission(
+                url, f, W.QWebEnginePage.PermissionPolicy.PermissionGrantedByUser) if f == W.QWebEnginePage.Feature.Notifications else None)
+
+        def clicou():
+            self.j.mostrar()
+            self.j.ir('central')
+            if self._ultima_notif is not None:
+                self._ultima_notif.click()
+        self.j.bandeja.messageClicked.connect(clicou)
 
     def carregar(self):
         if self.web is not None and self.j.central_ok:
