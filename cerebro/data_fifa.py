@@ -1,7 +1,7 @@
 # Mercado IA — autor: William (https://github.com/WilliamProgramadorBR)
 """DATA FIFA (11/10/2026): os nossos jogadores nas seleções.
 
-As súmulas guardam os jogos de seleção (os dois times são seleções: índices >= find_team('ALBÂNIA'); comps 34/35/56).
+As súmulas guardam os jogos de seleção (os dois times são seleções: índices >= selecoes.primeira(s); comps 34/35/56).
 Quando uma janela termina (nenhum jogo de seleção nos últimos 2 dias), a imprensa conta:
   convocados   quem jogou pela seleção, minutos, gols, assistências e nota
   esquecidos   jogador de nível (nota >= 85) que já defendeu a seleção antes e desta vez ficou de fora, com o país jogando
@@ -31,7 +31,7 @@ def da_reuniao(car, r, d, snap, log=print):
     hoje = tuple(r['hoje'])
     ctx = imprensa._contexto(car, r, d, snap)
     s = ctx['s']
-    n_cl = s.find_team('ALBÂNIA') or 625
+    n_cl = __import__('selecoes').primeira(s, 625)
     todas = r.get('todas_partidas') or []
     nt = [p for p in todas if p['time1'] >= n_cl and p['time2'] >= n_cl]
     nossos = {j['k']: j for j in r['J']}

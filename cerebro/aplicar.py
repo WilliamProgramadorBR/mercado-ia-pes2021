@@ -196,7 +196,7 @@ def main():
         planos = encaixe_plano.planos(bytes(save.d), teams)
         say(f'encaixe no plano de jogo: ligado ({len(planos)} clubes com plano)')
     # 12/10/2026: Gibraltar (seleção) escapava da lista e recebia jogadores: todo time a partir da ALBÂNIA é seleção
-    primeira_selecao = save.find_team('ALBÂNIA') or 10 ** 6
+    primeira_selecao = __import__('selecoes').primeira(save, 10 ** 6)   # 13/10/2026: sem depender do idioma do patch
     selecoes = set(potencial.national_team_names()) | {t.name for t in teams if t.idx >= primeira_selecao}
     moves, clubs = mercado.run_window(players, teams, cfg['time_do_usuario'], free_agents=free, seed=seed,
                                       national=selecoes, buyers=buyers,

@@ -240,6 +240,7 @@ Para publicar: suba `VERSAO` em `painel/base.py`, escreva `empacotar/NOTAS.md` e
 | Testar a reunião numa carreira de teste | `laboratorio.py` (lista e compara saves copiados pelo vigia) |
 | Ver o que a página recebe | `curl http://127.0.0.1:8765/api/estado` |
 | Ver erros de JavaScript | F12 no navegador; no Painel, "Abrir no navegador" |
+| Algo não funciona no PC de outra pessoa | Painel → Configuração → **Diagnóstico da instalação** (`painel/diagnostico.py`): ambiente, save e memória num relatório para copiar |
 | Conferir o ambiente | Painel → Configuração → Verificar de novo (ou `python -c "from painel import verificar as v; print(v.tudo())"`) |
 | Atualização sem publicar | `MERCADO_IA_ATUALIZACAO_URL=http://127.0.0.1:8000/atualizacao.json` + `python -m http.server` |
 | Re-treinar a rede | `python cerebro/pretreinar_rede.py` (ou o botão na aba Rede neural) |

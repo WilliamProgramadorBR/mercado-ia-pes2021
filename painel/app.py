@@ -132,6 +132,7 @@ class Sinais(QObject):
     erro = Signal(str)
     progresso = Signal(int, int)
     baixou = Signal(str)
+    diagnostico = Signal(str, str)   # (relatório, arquivo)
 
 
 # ====================================================================== Início
@@ -688,6 +689,16 @@ class PaginaConfig(QWidget):
         caixas.append(self.lan)
         v.addWidget(cartao(rotulo('Automações', 'h2'), *caixas))
 
+        # diagnóstico da instalação (painel/diagnostico.py)
+        bd = QPushButton('Rodar diagnóstico')
+        bd.clicked.connect(lambda: self.j.rodar_diagnostico())
+        hd = QHBoxLayout()
+        hd.addWidget(bd)
+        hd.addStretch(1)
+        v.addWidget(cartao(rotulo('Diagnóstico da instalação', 'h2'),
+                           rotulo('Confere se esta instalação roda o Mercado IA completo: versões, o save e, com o jogo aberto numa carreira, '
+                                  'os pontos da memória que dependem da versão do PES. Gera um relatório para mandar a quem dá suporte. Só leitura.', 'sub'), hd))
+
         # atualizações (OTA pelo GitHub Releases)
         self.att_auto = QCheckBox('Procurar atualização sozinho ao abrir o Painel')
         self.att_auto.setChecked(cfg.get('atualizacao_auto', True) is not False)
@@ -918,6 +929,7 @@ class Janela(QMainWindow):
         self.sinais.erro.connect(lambda m: self._prog_fechar() or (self._att_manual and QMessageBox.warning(self, 'Atualização', m)))
         self.sinais.progresso.connect(self._prog)
         self.sinais.baixou.connect(self._baixou)
+        self.sinais.diagnostico.connect(self._mostrar_diagnostico)
         self.att_info, self._att_manual, self._dlg = None, False, None
         if caminhos.config().get('atualizacao_auto', True) is not False:
             QTimer.singleShot(6000, self.procurar_atualizacao)            # um pouco depois de abrir
@@ -944,6 +956,44 @@ class Janela(QMainWindow):
             except Exception as e:  # noqa: BLE001 - sem internet, GitHub fora: tenta de novo mais tarde
                 self.sinais.erro.emit(f'Não consegui procurar atualização: {e}')
         threading.Thread(target=tarefa, daemon=True).start()
+
+    def rodar_diagnostico(self):
+        import threading
+        from painel import diagnostico
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+
+        def tarefa():
+            try:
+                self.sinais.diagnostico.emit(*diagnostico.rodar())
+            except Exception as e:  # noqa: BLE001
+                self.sinais.diagnostico.emit(f'O diagnóstico falhou: {e}', '')
+        threading.Thread(target=tarefa, daemon=True).start()
+
+    def _mostrar_diagnostico(self, texto, arq):
+        QApplication.restoreOverrideCursor()
+        from PySide6.QtWidgets import QDialog
+        dlg = QDialog(self)
+        dlg.setWindowTitle('Diagnóstico da instalação')
+        dlg.resize(900, 640)
+        lv = QVBoxLayout(dlg)
+        t = QPlainTextEdit(texto)
+        t.setReadOnly(True)
+        t.setFont(QFont('Consolas', 9))
+        lv.addWidget(t, 1)
+        h = QHBoxLayout()
+        bc = QPushButton('Copiar o relatório')
+        bc.clicked.connect(lambda: (QApplication.clipboard().setText(texto), bc.setText('Copiado ✔')))
+        h.addWidget(bc)
+        if arq:
+            bp = QPushButton('Abrir a pasta')
+            bp.clicked.connect(lambda: os.startfile(os.path.dirname(arq)))
+            h.addWidget(bp)
+        h.addStretch(1)
+        bf = QPushButton('Fechar')
+        bf.clicked.connect(dlg.accept)
+        h.addWidget(bf)
+        lv.addLayout(h)
+        dlg.exec()
 
     def _achou_atualizacao(self, info):
         self.att_info = info

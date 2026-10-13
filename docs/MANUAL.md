@@ -15,7 +15,7 @@ Tudo é controlado pelo **Painel**, um aplicativo para Windows. A Central do Té
 | Sistema | Windows 10 ou 11, 64 bits |
 | Jogo | eFootball PES 2021 Season Update para PC, com o `PES2021.exe` na versão **1.1.0.0** (os endereços de memória foram mapeados nela) |
 | **Sider** | **Obrigatório.** Testado com o Sider **7.3.3**. É o Sider que carrega o módulo do Mercado IA dentro do jogo. |
-| Patch | Qualquer patch que use o Sider. Desenvolvido com o GOGOSZ; outros devem funcionar, porque o que importa é o Sider. |
+| Patch | Qualquer patch que use o Sider. Desenvolvido com o GOGOSZ; outros devem funcionar, porque o que importa é o Sider. Para conferir se o seu funciona, rode o **Diagnóstico da instalação** no Painel. |
 | Disco | cerca de 600 MB para o programa, mais espaço para backups dos saves |
 | Memória | a mesma que o PES pede; o Painel usa pouco além do jogo |
 | Internet | Só é necessária para a IA de texto do Google Gemini (opcional). Todo o resto já vem no pacote. |
@@ -128,6 +128,7 @@ Atualizar o Mercado IA (reinstalar uma versão nova) **não apaga** esses dados.
 | A Central não abre dentro do Painel | Use **Abrir no navegador** (aba Central). Na aba **Registros**, veja se a Central está rodando e clique em **Reiniciar Central**. |
 | Antivírus reclamou | O Mercado IA lê e escreve na memória do PES (é assim que ele mexe nas setas, mensagens e táticas). Libere a pasta do Mercado IA. O Python que vem no pacote é o oficial, assinado pela Python Software Foundation. |
 | Versão do jogo diferente de 1.1.0.0 | A verificação mostra um aviso. As partes que leem e escrevem na memória podem não funcionar em outra versão do executável. |
+| Algo não funciona e quero pedir ajuda | Em **Configuração → Diagnóstico da instalação**, com o jogo aberto numa carreira, clique em **Rodar diagnóstico** e mande o relatório (botão **Copiar o relatório**). Ele mostra versões, save e memória, e o que não funciona na sua instalação. |
 | Quero voltar o `sider.ini` ao que era | O Painel guarda os backups em `app\Backups\sider`. |
 
 ## 12. Desinstalar

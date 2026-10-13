@@ -251,9 +251,13 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
             log(f'DUELO: {"a REDE NEURAL" if novo == "rede" else "a ESTATÍSTICA"} assumiu a arena {arena}')
     except Exception as ex:  # noqa: BLE001
         log(f'duelo: {ex}')
+    s = SaveML.__new__(SaveML)
+    s.path, s.d, s.base = None, bytearray(d), d.index(b'ARSENAL\x00')
+    import selecoes
+    n_cl = selecoes.primeira(s, N_CLUBES)   # 13/10/2026: onde começam as seleções, sem depender do idioma do patch
     lim = (dt.date(*hoje) + dt.timedelta(days=dias)).timetuple()[:3]
     prox = [j for j in jogos if not j['jogado'] and hoje < tuple(j['data']) <= lim
-            and j['time1'] < N_CLUBES and j['time2'] < N_CLUBES]
+            and j['time1'] < n_cl and j['time2'] < n_cl]
     pend = []
     for j in prox:
         for ti in (j['time1'], j['time2']):
@@ -262,9 +266,7 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
                 pend.append((j, ti, chave))
     if not pend:
         return 0
-    s = SaveML.__new__(SaveML)
-    s.path, s.d, s.base = None, bytearray(d), d.index(b'ARSENAL\x00')
-    teams = {t.idx: t for t in aplicar.build_teams(s, P, N_CLUBES)}
+    teams = {t.idx: t for t in aplicar.build_teams(s, P, n_cl)}
     forca, nomes = {}, {}
     for ti in {ti for j, ti, _ in pend} | {j['time1'] for j, _, _ in pend} | {j['time2'] for j, _, _ in pend}:
         t = teams.get(ti)

@@ -66,7 +66,7 @@ def mundo(car, r, d, snap, ctx=None):
     import destaques
     ini = destaques.ini_temporada(hoje)
     todas = r.get('todas_partidas') or []
-    n_clubes = s.find_team('ALBÂNIA') or 625   # depois disso vêm as seleções
+    n_clubes = __import__('selecoes').primeira(s, 625)   # depois disso vêm as seleções
     clube_de = {}
     for i in range(n_clubes):
         for k in s.squad(i):

@@ -282,7 +282,7 @@ def amostras_historicas(r, P, s, d=None):
     """Amostras das duas arenas a partir das súmulas do save (vestiario.analisar): os 11 de cada lado, notas pela foto
     da memória, forma antes do jogo, competição; contra o usuário, as características do plano original do clube."""
     import encaixe
-    n_clubes = s.find_team('ALBÂNIA') or 625
+    n_clubes = __import__('selecoes').primeira(s, 625)
     todas = sorted(r.get('todas_partidas') or [], key=lambda p: tuple(p['data']))
     F = Formas(todas)
     ti = r['ti']

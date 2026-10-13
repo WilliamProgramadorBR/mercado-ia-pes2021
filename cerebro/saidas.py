@@ -142,7 +142,7 @@ def executadas(car, r, d, hoje, dias=21):
     if prev:
         s = SaveML.__new__(SaveML)
         s.path, s.d, s.base = None, bytearray(d), d.index(b'ARSENAL\x00')
-        n_clubes = s.find_team('ALBÂNIA') or 625
+        n_clubes = __import__('selecoes').primeira(s, 625)
         pend = {f'{m["k"][0]}:{m["k"][1]}': m for m in car.get('mov_pendentes') or []}
         for kc, info in prev.items():
             if kc in atual or any(h['kc'] == kc and h['tipo'] == 'saida' for h in hist):

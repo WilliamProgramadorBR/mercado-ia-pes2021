@@ -68,6 +68,7 @@ Toda leitura ou escrita na **memória** do jogo usa ReadProcessMemory/WriteProce
 | `premios_save.py` | Prêmios individuais e time do mês. |
 | `tatica_save.py` | Plano de jogo dos clubes. São blocos de 600 B a partir de `0x133C50`: planos, instruções avançadas e escalação em bloco+600. |
 | `familiaridade.py` | Entrosamento tático do elenco do usuário, com os números do jogo. |
+| `selecoes.py` | Onde começam as seleções na tabela de times, pelos dados do save (jogador de seleção também está num clube; clube nunca repete jogador), sem depender do idioma do patch. |
 | `temporada.py` | A liga e o calendário de qualquer carreira (europeia ou de ano civil). |
 | `trava.py` | Trava entre processos. |
 | `unica.py` | Garante uma única cópia do vigia e da Central. |
@@ -182,6 +183,8 @@ Toda leitura ou escrita na **memória** do jogo usa ReadProcessMemory/WriteProce
 | `app.py` | Janela Qt6. Abas: Início, Central (QWebEngineView), Rede neural (QtCharts), IA adversária, Configuração, Registros e Manual. Também a bandeja e a cópia única. A opção `--captura PASTA` grava uma imagem de cada página. |
 | `servicos.py` | Vigia e Central como `QProcess`: sem console, com registro capturado, religando sozinhos se caírem. |
 | `verificar.py` | Verificações sem Qt: Python, jogo (versão), Sider, Lua, módulo, pesXdecrypter (impressão digital), saves, foto da memória e Gemini. Também instala o módulo no Sider e restaura o decrypter. |
+| `diagnostico.py` | Relatório da instalação: ambiente, save e memória (bytes do simulador, tabela de jogadores, blocos táticos), só leitura. |
+| `atualizar.py` | Atualização automática pelos releases do GitHub (leve ou completa), com SHA-256 e backup. |
 | `sistema.py` | Processos do Windows por ctypes e abertura do jogo. |
 | `base.py` | Pastas do Painel no desenvolvimento e no pacote, e a versão. |
 

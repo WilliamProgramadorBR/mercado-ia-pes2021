@@ -1,6 +1,4 @@
-Primeira versão pública do Mercado IA para PES 2021 (precisa do Sider).
-- Painel (aplicativo) com a Central do Técnico, a rede neural, a IA adversária e a configuração assistida
-- Central repaginada no estilo PES 21: carrosséis, notificações com decisão, WhatsApp, calendário de jogos
-- IA adversária que estuda o seu time, técnico da IA nos jogos simulados, diretor de campeonato
-- Duelo estatística x rede neural; imprensa que acompanha o momento do time
-- Atualização automática pelo Painel a partir desta versão
+Mercado IA 0.9.1: funciona com patches em outros idiomas e ganha o diagnóstico da instalação.
+- Seleções reconhecidas pelos próprios dados do save (antes dependia do nome "ALBÂNIA", do banco em português): com um patch em inglês, o mercado podia deixar uma seleção comprar jogadores.
+- Novo: Configuração > Diagnóstico da instalação. Confere versões, save e, com o jogo aberto, os pontos da memória que dependem da versão do PES, e gera um relatório para mandar ao suporte.
+- Primeira atualização automática: quem tem a 0.9.0 recebe esta versão pelo Painel.

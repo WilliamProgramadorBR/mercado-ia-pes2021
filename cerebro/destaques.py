@@ -170,7 +170,7 @@ def votacao(fichas, semente, jurados=JURADOS):
 
 def calcular(todas, s, P, hoje, ti, nos, n_clubes=None, forca=None, interesse=(), ini=None, fim=None, tecnico=None):
     """Resumo da temporada do mundo (JSON). interesse = nomes de clubes cujos destaques a imprensa quer (liga, adversários)."""
-    n_clubes = n_clubes or s.find_team('ALBÂNIA') or 625
+    n_clubes = n_clubes or __import__('selecoes').primeira(s, 625)
     ini = ini or ini_temporada(hoje)
     E = estatisticas(todas, n_clubes, ini, fim)
     if forca is None:
