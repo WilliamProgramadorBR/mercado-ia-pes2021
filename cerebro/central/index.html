@@ -1566,7 +1566,14 @@ function iaAdvHTML(d, p) {
     <div class="dica">${sim(pl.estilo_ofensivo, 'posse de bola', 'contra-ataque')} · ${sim(pl.saida_de_bola, 'passe curto', 'passe longo')} · ${sim(pl.estilo_defensivo, 'defesa total', 'pressão na frente')} · pressão ${sim(pl.pressao, 'tradicional', 'agressiva')} · linha ${pl.linha_defensiva} · compactação ${pl.compactacao}</div>
     ${(a.instrucoes || []).length ? `<div class="dica">📋 Instruções: ${a.instrucoes.map(esc).join(' · ')}</div>` : ''}
     ${apr}${(() => { const pr = d.duelo && d.duelo.usuario && d.duelo.usuario.proximo; if (!pr) return '';
-      return `<div class="dica">🤖 Palpites (você primeiro): ${NOME_MOD.estatistica} ${pr.est[0]} x ${pr.est[1]} · ${NOME_MOD.rede} ${pr.rede[0]} x ${pr.rede[1]} · plano escolhido por ${NOME_MOD[pr.decidiu] || '—'}</div>`; })()}</div>`;
+      // 13/10/2026: ficha do jogo (físico) e o porquê do palpite da estatística (gols de saldo para você)
+      const g = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1).replace('.', ',');
+      const pq = ((pr.porque || {}).estatistica || []).slice(0, 3).map(([n, v]) => `${esc(n)} ${g(v)}`).join(' · ');
+      const fis = pr.fisico || {};
+      return `<div class="dica">🤖 Palpites (você primeiro): ${NOME_MOD.estatistica} ${pr.est[0]} x ${pr.est[1]} · ${NOME_MOD.rede} ${pr.rede[0]} x ${pr.rede[1]} · plano escolhido por ${NOME_MOD[pr.decidiu] || '—'}</div>`
+        + (pq ? `<div class="dica">📊 Por que: ${pq}</div>` : '')
+        + (fis.nos ? `<div class="dica">⚠ Seu time no limite: ${esc(fis.nos)}</div>` : '')
+        + (fis.adv ? `<div class="dica">✔ O rival chega cansado: ${esc(fis.adv)}</div>` : ''); })()}</div>`;
 }
 
 // 12/10/2026: duelo estatística x rede neural (duelo.py) — duas arenas, placar de 100 jogos, quem decide

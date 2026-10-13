@@ -81,6 +81,17 @@ def nosso_time():
     return 'seu time'
 
 
+def fmt_gols(v):
+    """+1,2 / −0,4 (gols de saldo, com vírgula)."""
+    if v is None:
+        return '—'
+    return ('+' if v >= 0 else '−') + f'{abs(v):.1f}'.replace('.', ',')
+
+
+def porque_txt(pq, n=4):
+    return ' · '.join(f'{g} {fmt_gols(v)}' for g, v in pq[:n])
+
+
 def esc_html(t):
     return str(t).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
@@ -374,6 +385,10 @@ class PaginaRede(QWidget):
         self.vazio_p = rotulo('A curva aparece depois do primeiro treino com jogos novos.', 'sub')
         if self.perdas is not None:
             self.v.addWidget(cartao(rotulo('Aprendizado da rede (perda média a cada treino; quanto mais baixo, melhor ela explica os placares)', 'h2'), self.vazio_p, self.perdas))
+        # 13/10/2026: a ficha do próximo jogo (físico, desfalques, vestiário) e o porquê de cada palpite
+        self.ficha = rotulo('', rico=True)
+        self.ficha.setWordWrap(True)
+        self.v.addWidget(cartao(rotulo('Próximo jogo: ficha e por quê', 'h2'), self.ficha))
         self.tab = QTableWidget(0, 5)
         self.tab.setHorizontalHeaderLabels(['Jogo', 'Resultado', '📊 Palpite da estatística', '🧠 Palpite da rede neural', 'Quem foi melhor'])
         self.tab.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -381,7 +396,8 @@ class PaginaRede(QWidget):
         self.tab.setWordWrap(True)
         self.tab.setMinimumHeight(300)
         legenda = rotulo('Placares sempre no formato <b>mandante x visitante</b>. Cada palpite ganha: <b>3</b> pelo placar exato · '
-                         '<b>2</b> pelo saldo certo · <b>1</b> pelo vencedor (ou empate) certo · <b>0</b> se errar.', 'sub', rico=True)
+                         '<b>2</b> pelo saldo certo · <b>1</b> pelo vencedor (ou empate) certo · <b>0</b> se errar. '
+                         'Passe o mouse num palpite para ver o porquê.', 'sub', rico=True)
         self.v.addWidget(cartao(rotulo('Palpites nos seus jogos', 'h2'), legenda, self.tab))
         bar = QHBoxLayout()
         self.b_estudar = QPushButton('Estudar o histórico do save de novo')
@@ -498,6 +514,34 @@ class PaginaRede(QWidget):
             if ss:
                 self._series(self.perdas, ss, 'treinos', 'perda')
         self._tabela_palpites(e)
+        self._ficha(r['usuario'])
+
+    def _ficha(self, u):
+        p = u.get('proximo')
+        vc = u.get('voce') or {}
+        voce = (f'<span style="color:{COR["mudo"]}">Você nas contas: supera a força dos elencos em '
+                f'{fmt_gols(vc.get("media"))} gol por jogo em média · momento {fmt_gols(vc.get("momento"))} · '
+                f'seus jogos têm {str(round(vc.get("gols_por_jogo") or 0, 1)).replace(".", ",")} gols em média</span>')
+        if not p:
+            self.ficha.setText('O próximo jogo aparece aqui quando a IA adversária preparar o rival (com a Central e o jogo abertos).<br>' + voce)
+            return
+        nos = nosso_time()
+        linhas = [f'<b>{"/".join(str(x) for x in (p.get("data") or [])[::-1])} · {esc_html(p.get("adv") or "?")}</b>']
+        for t in p.get('ficha_txt') or []:
+            linhas.append(esc_html(t))
+        fis = p.get('fisico') or {}
+        if fis.get('nos'):
+            linhas.append(f'<span style="color:{COR["ruim"]}">⚠ {esc_html(nos)} no limite: {esc_html(fis["nos"])}</span>')
+        if fis.get('adv'):
+            linhas.append(f'<span style="color:{COR["bom"]}">✔ o {esc_html(p.get("adv") or "rival")} chega cansado: {esc_html(fis["adv"])}</span>')
+        for k, nome, cor in (('estatistica', '📊 Estatística', COR['ouro']), ('rede', '🧠 Rede neural', COR['azul'])):
+            g = p.get('est' if k == 'estatistica' else 'rede')
+            pq = (p.get('porque') or {}).get(k) or []
+            txt = f'{nome}: <b>{esc_html(nos)} {g[0]} x {g[1]} {esc_html(p.get("adv") or "")}</b>' if g else f'{nome}: —'
+            if pq:
+                txt += ' — ' + porque_txt(pq)
+            linhas.append(f'<span style="color:{cor}">{txt}</span>')
+        self.ficha.setText('<br>'.join(linhas) + '<br>' + voce)
 
     # 13/10/2026: o quadro conta a história de cada jogo — quem jogou onde, o que cada um apostou e quanto fez
     def _tabela_palpites(self, e):
@@ -546,10 +590,14 @@ class PaginaRede(QWidget):
                     continue
                 aposta = res(g)
                 if futuro:
-                    self.tab.setItem(i, col, item(f'{placar(g, fora)}\naposta: {APOSTA[aposta]}', COR['texto']))
+                    it = item(f'{placar(g, fora)}\naposta: {APOSTA[aposta]}', COR['texto'])
                 else:
                     p = h.get(kp, 0)
-                    self.tab.setItem(i, col, item(f'{placar(g, fora)}\n+{p} · {MOTIVO.get(p, "")}', COR_PTS.get(p), p > 0))
+                    it = item(f'{placar(g, fora)}\n+{p} · {MOTIVO.get(p, "")}', COR_PTS.get(p), p > 0)
+                pq = (h.get('porque') or {}).get('estatistica' if k == 'est' else 'rede')
+                if pq:   # 13/10/2026: o porquê do palpite (gols de saldo para o seu time)
+                    it.setToolTip('Por que (gols de saldo para o seu time):\n' + '\n'.join(f'  {g_} {fmt_gols(v)}' for g_, v in pq))
+                self.tab.setItem(i, col, it)
             if futuro:
                 quem = {'estatistica': '📊 Estatística', 'rede': '🧠 Rede neural'}.get(h.get('decidiu'), '—')
                 self.tab.setItem(i, 4, item(f'a decidir\nplano do rival por: {quem}', COR['mudo']))

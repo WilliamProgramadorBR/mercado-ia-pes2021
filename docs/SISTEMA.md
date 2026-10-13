@@ -124,7 +124,24 @@ O diário funciona como *event sourcing* simples: cada ação vira um evento num
 - **Troca de comando:** depois de 100 jogos pontuados numa arena, quem somar mais nos últimos 100 assume:
   - nos simulados, o rodízio (`_rodizio_pelo_lider`);
   - contra você, o plano (`_escolher_pela_rede`).
-- **A rede** (`rede.py`): MLP em Python puro, 15 ou 19 entradas → 10 tanh → 2 saídas softplus (gols esperados), perda de Poisson, Adam. O palpite é o resultado mais provável e, dentro dele, o placar mais provável.
+- **A rede** (`rede.py`): MLP em Python puro, 15 (simulados) ou 28 (seus jogos) entradas → 10 tanh → 2 saídas softplus (gols esperados), perda de Poisson, Adam. O palpite é o resultado mais provável e, dentro dele, o placar mais provável.
+- **Ficha do jogo** (`ficha_jogo.py`, desde a 0.9.3). Antes de cada jogo seu, `central._preparar_adversario` monta, para os dois lados:
+  - o XI provável (o seu vem do bloco 730; o do rival, da escalação do técnico da IA) e a nota média;
+  - a condição física (registro de 156 B, +120) e quantos titulares estão abaixo de 75;
+  - a carga de minutos em 14 dias e quantos titulares passaram de 250 minutos (súmulas);
+  - os dias de descanso e os desfalques por lesão;
+  - do seu lado, também o espírito de equipe (`0xB629BC`) e a moral média.
+
+  O save não guarda a condição de cada jogo, então a ficha é gravada junto com o palpite e com o registro da IA adversária.
+- **Arena do usuário v2:**
+  - **Estatística:** uma regressão *ridge* do saldo (`duelo.ajustar_est`). Ela parte de valores medidos (`PRIOR`), dá mais peso aos jogos recentes e se reajusta a cada jogo pontuado.
+  - **Média de gols:** acompanha os jogos recentes.
+  - **Você:** a constante da regressão mede o quanto você supera a força dos elencos; o "momento" é a média rápida menos a média lenta desse excedente.
+  - **Por quê:** `porque_est` e `porque_rede` dizem quanto cada grupo (força, mando, forma, cansaço, desfalques, vestiário, você, plano do rival) mexe no saldo previsto. O Painel e a Central mostram.
+  - **Pré-treino:** `python pretreinar_rede.py --so-usuario` refaz a carga e o descanso dos jogos antigos a partir das súmulas.
+- **Físico na IA adversária** (`postura`):
+  - se você chega no limite e o rival está inteiro, ele joga com ritmo alto, pressão na frente e pressão ofensiva;
+  - se é o rival que chega cansado, ele guarda energia, com pressão tradicional e bloco mais baixo e compacto.
 
 ---
 

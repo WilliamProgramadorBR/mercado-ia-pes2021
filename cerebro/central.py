@@ -518,7 +518,15 @@ def _preparar_adversario(slot, pr):
         except Exception:  # noqa: BLE001
             P = {}
         olho = olheiro.perfil(d, dados, P, s.squad(s.find_team(nome)))
-        ia_adversaria.preparar(d, ti, adv, ia_adversaria.contexto(dados, pr), olho=olho, P=P,
+        ctx = ia_adversaria.contexto(dados, pr)
+        ctx['nome_nos'] = nome
+        try:   # 13/10/2026: ficha do jogo (condição, carga, descanso, desfalques, espírito) para as IAs
+            import ficha_jogo
+            if ctx.get('data'):
+                ctx['ficha'] = ficha_jogo.montar(d, s, s.find_team(nome), ti, ctx['data'], P, dados)
+        except Exception as e:  # noqa: BLE001
+            print('aviso: ficha do jogo:', e, flush=True)
+        ia_adversaria.preparar(d, ti, adv, ctx, olho=olho, P=P,
                                resultados=dados.get('ultimos_jogos'), escrever_de_verdade=True,
                                log=lambda m: print(time.strftime('%H:%M:%S'), m, flush=True))
     except Exception as e:  # noqa: BLE001 - nunca derruba a Central

@@ -20,6 +20,21 @@ Os modelos:
                prévia (força + mando + forma) + o que a IA adversária aprendeu sobre o plano escolhido.
   rede         rede.Rede (Python puro): lê notas dos XI, forma, competição (e, contra o usuário, as características do
                plano do adversário), prevê os gols de cada lado e aprende a cada jogo pontuado.
+
+ARENA DO USUÁRIO v2 (13/10/2026, pedido do usuário: "vamos dar mais dados... cansaço, espírito de equipe, condições
+físicas"). A análise dos jogos mostrou duas coisas: o cansaço é o sinal mais forte de 2035/36 e o jogo mudou de
+patamar (2034/35 tinha 1 x 0 em metade dos jogos; 2035/36 ~4 gols por jogo) — os modelos tinham ficado no "mundo do
+1 x 0". Agora os dois enxergam a FICHA DO JOGO (ficha_jogo.py: XI real/provável, condição, carga de 14 dias,
+descanso, desfalques, espírito de equipe, moral) e o usuário como "fora da curva":
+  estatística  regressão linear do saldo (ridge) que PARTE de valores medidos/combinados (PRIOR) e se ajusta aos
+               jogos do usuário, com peso maior para os recentes (RECENCIA); a média de gols por jogo acompanha os
+               jogos recentes (ALFA_TOTAL). O que nunca foi visto (condição, desfalques...) fica no valor de partida.
+  rede         as mesmas entradas + notas dos XI + características do plano do adversário (28 entradas); as entradas
+               que os jogos antigos não têm começam com peso zero e crescem com os dados novos.
+  você         `const` da regressão = quanto o usuário costuma superar a força dos elencos; `voce` = o momento dele
+               (média rápida - média lenta do quanto superou o esperado).
+  por quê      porque_est / porque_rede: quanto cada grupo (força, mando, forma, cansaço, desfalques, vestiário,
+               você, plano do rival) mexe no saldo previsto — o Painel mostra.
 """
 import collections
 import datetime as dt
@@ -32,10 +47,11 @@ import rede as R
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ARQ = os.path.join(HERE, 'historico', 'duelo.json')
+# 13/10/2026: a rede do usuário mudou de entradas (v2) — arquivos novos; os antigos ficam como estavam
 ARQ_REDE = {'simulados': os.path.join(HERE, 'historico', 'rede_simulados.json'),
-            'usuario': os.path.join(HERE, 'historico', 'rede_usuario.json')}
+            'usuario': os.path.join(HERE, 'historico', 'rede_usuario_v2.json')}
 ARQ_BUF = {'simulados': os.path.join(HERE, 'historico', 'rede_simulados_dados.json'),
-           'usuario': os.path.join(HERE, 'historico', 'rede_usuario_dados.json')}
+           'usuario': os.path.join(HERE, 'historico', 'rede_usuario_v2_dados.json')}
 JANELA = 100
 COPAS = {23, 24, 25, 26, 27, 28, 31, 53, 54, 55, 59, 68, 123, 124, 125, 142}
 GRANDES = {3, 4, 8, 9, 10, 1, 15, 16}
@@ -75,9 +91,20 @@ def rede(arena):
     """A rede da arena: a desta carreira (historico) ou, na 1ª vez, o modelo inicial que vem no pacote (só para os
     jogos da IA, que não têm nada pessoal), ou uma rede nova que aprende do zero."""
     if arena not in _REDES:
-        _REDES[arena] = (R.Rede.carregar(ARQ_REDE[arena]) or R.Rede.carregar(os.path.join(HERE, 'modelos', f'rede_{arena}.json'))
-                         or R.Rede(N_IN[arena], 10, 2, semente=7))
+        r = R.Rede.carregar(ARQ_REDE[arena]) or R.Rede.carregar(os.path.join(HERE, 'modelos', f'rede_{arena}.json'))
+        _REDES[arena] = r if r is not None and r.n_in == N_IN[arena] else rede_nova(arena)
     return _REDES[arena]
+
+
+def rede_nova(arena):
+    """Rede do zero. Na arena do usuário, as entradas que os jogos antigos não têm (condição, desfalques, vestiário)
+    começam com peso ZERO: sem isso o peso sorteado ficaria sem treino e viraria ruído quando o dado chegasse."""
+    r = R.Rede(N_IN[arena], 10, 2, semente=7)
+    if arena == 'usuario':
+        for i in [EST_NOMES.index(k) for k in SO_NOVOS] + [len(EST_NOMES) + 3]:
+            for row in r.W1:
+                row[i] = 0.0
+    return r
 
 
 # ---------------------------------------------------------------- o que os modelos enxergam
@@ -100,12 +127,165 @@ def feat_sim(xa, xb, fa, fb, comp):
             cont, copa]
 
 
-def feat_usr(fu, fa, casa_user, forma_u, forma_a, grande, tags):
-    return ([(fu - 75) / 10, (fa - 75) / 10, (fu - fa) / 5, 1.0 if casa_user else 0.0, forma_u / 3, forma_a / 3,
-             1.0 if grande else 0.0] + [1.0 if t in tags else 0.0 for t in TAGS])
+# ---------------------------------------------------------------- arena do usuário v2 (13/10/2026)
+EST_NOMES = ['forca', 'casa', 'forma', 'carga', 'pesados', 'descanso', 'condicao', 'baixos', 'desfalques',
+             'espirito', 'moral', 'voce']
+# quanto cada coisa vale, em gols de saldo para o usuário, ANTES de haver dado (a estatística parte daqui):
+# força 0,13 gol por ponto de nota (medição de 12/10); cansaço pela análise de 13/10 (com 8 titulares no limite o
+# United sofria ~1,2 gol a mais); o resto é estimativa conservadora até os jogos mostrarem.
+PRIOR = {'const': 1.0, 'forca': 0.65, 'casa': 0.15, 'forma': 0.3, 'carga': 0.3, 'pesados': 0.8, 'descanso': 0.3,
+         'condicao': 0.5, 'baixos': 1.0, 'desfalques': 0.3, 'espirito': 0.3, 'moral': 0.2, 'voce': 0.6}
+SO_NOVOS = ('condicao', 'baixos', 'desfalques', 'espirito', 'moral')   # os jogos antigos não têm (o save não guarda)
+GRUPOS = {'força dos XI': ('forca',), 'mando': ('casa',), 'forma': ('forma',),
+          'cansaço': ('carga', 'pesados', 'descanso', 'condicao', 'baixos'), 'desfalques': ('desfalques',),
+          'vestiário': ('espirito', 'moral'), 'seu momento': ('voce',)}
+RIDGE = 25.0         # quanto a regressão "segura" cada peso perto do valor de partida (validado em 13/10: 4, 10 e 25 -> 25)
+RECENCIA = 0.97      # peso de um jogo cai 3% a cada jogo mais novo (o jogo muda, o usuário muda)
+ALFA_TOTAL = 0.12    # média de gols por jogo acompanha os recentes
+ALFA_RAPIDO, ALFA_LENTO = 0.25, 0.04
+GOL_POR_PONTO = 0.13
 
 
-N_IN = {'simulados': 15, 'usuario': 7 + len(TAGS)}
+def xe_de(ficha, casa_user, forma_u, forma_a, voce=0.0, f_nos=None, f_adv=None):
+    """Entradas da estatística (todas viradas para o usuário: positivo = bom para ele)."""
+    n, a = (ficha or {}).get('nos') or {}, (ficha or {}).get('adv') or {}
+    xn, xa = n.get('xi') or f_nos or 75, a.get('xi') or f_adv or 75
+    desc = lambda v: min(v, 7) if v is not None else 7
+    tem = lambda k: n.get(k) is not None and a.get(k) is not None
+    esp, mor = (ficha or {}).get('espirito'), (ficha or {}).get('moral')
+    return {'forca': (xn - xa) / 5, 'casa': 1.0 if casa_user else -1.0, 'forma': (forma_u - forma_a) / 3,
+            'carga': ((a.get('carga') or 0) - (n.get('carga') or 0)) / 90,
+            'pesados': ((a.get('pesados') or 0) - (n.get('pesados') or 0)) / 11,
+            'descanso': (desc(n.get('descanso')) - desc(a.get('descanso'))) / 7,
+            'condicao': (n['cond'] - a['cond']) / 10 if tem('cond') else 0.0,
+            'baixos': (a['baixos'] - n['baixos']) / 11 if tem('baixos') else 0.0,
+            'desfalques': (a['desfalques'] - n['desfalques']) / 3 if tem('desfalques') else 0.0,
+            'espirito': (esp - 75) / 25 if esp is not None else 0.0,
+            'moral': (mor - 60) / 40 if mor is not None else 0.0,
+            'voce': voce or 0.0}
+
+
+def x_rede(xe, xi_nos, xi_adv, grande, tags, ficha_nova):
+    return ([round(xe[k], 4) for k in EST_NOMES]
+            + [(xi_nos - 80) / 10, (xi_adv - 80) / 10, 1.0 if grande else 0.0, 1.0 if ficha_nova else 0.0]
+            + [1.0 if t in tags else 0.0 for t in TAGS])
+
+
+N_IN = {'simulados': 15, 'usuario': len(EST_NOMES) + 4 + len(TAGS)}
+
+
+def entradas_usr(ctx, tags, e=None):
+    """(entradas da rede, entradas da estatística) de um jogo do usuário. ctx = ia_adversaria.contexto + 'ficha'."""
+    e = e or estado()
+    fi = ctx.get('ficha') or {}
+    xe = xe_de(fi, not ctx.get('adv_em_casa'), forma_str(ctx.get('forma_nos')), forma_str(ctx.get('forma_adv')),
+               momento(e), ctx.get('forca_nos'), ctx.get('forca_adv'))
+    xn = (fi.get('nos') or {}).get('xi') or ctx.get('forca_nos') or 75
+    xa = (fi.get('adv') or {}).get('xi') or ctx.get('forca_adv') or 75
+    return x_rede(xe, xn, xa, ctx.get('grande'), tags, (fi.get('nos') or {}).get('cond') is not None), xe
+
+
+def momento(e):
+    v = e.get('voce') or {}
+    return round((v.get('rapido') or 0.0) - (v.get('lento') or 0.0), 3)
+
+
+def coefs(e):
+    c = dict(PRIOR)
+    c.update(e.get('coef_usr') or {})
+    return c
+
+
+def saldo_est(e, xe, extra=0.0):
+    c = coefs(e)
+    return c['const'] + sum(c[k] * xe.get(k, 0.0) for k in EST_NOMES) - (extra or 0.0)
+
+
+def est_usr(e, xe, extra=0.0):
+    """Gols esperados [usuário, adversário] pela estatística: saldo da regressão (ficha + você) menos o que a IA
+    adversária aprendeu sobre o plano escolhido (extra = saldo a mais para o adversário); total = média recente."""
+    t = e.get('total_usuario', 3.0)
+    s = saldo_est(e, xe, extra)
+    return [max(0.2, t / 2 + s / 2), max(0.2, t / 2 - s / 2)]
+
+
+def porque_est(e, xe, extra=0.0):
+    """[(fator, gols de saldo para o usuário)] da estatística, do que mais pesa para o que menos pesa."""
+    c = coefs(e)
+    out = [('você (média)', c['const'])] + [(g, sum(c[k] * xe.get(k, 0.0) for k in ks)) for g, ks in GRUPOS.items()]
+    if extra:
+        out.append(('plano do rival', -extra))
+    return sorted(((g, round(v, 2)) for g, v in out if abs(v) >= 0.05), key=lambda t: -abs(t[1]))
+
+
+def porque_rede(x):
+    """Mesma pergunta para a rede: quanto o saldo previsto muda se aquele grupo de dados ficar neutro."""
+    r = rede('usuario')
+    sd = lambda y: (lambda la, lb: la - lb)(*r.prever(y))
+    cheio, n, out = sd(x), len(EST_NOMES), []
+    for g, ks in GRUPOS.items():
+        y = list(x)
+        for k in ks:
+            y[EST_NOMES.index(k)] = 0.0
+        if g == 'força dos XI':
+            y[n] = y[n + 1] = (y[n] + y[n + 1]) / 2
+        out.append((g, cheio - sd(y)))
+    y = list(x[:n + 4]) + [0.0] * (len(x) - n - 4)
+    out.append(('plano do rival', cheio - sd(y)))
+    return sorted(((g, round(v, 2)) for g, v in out if abs(v) >= 0.05), key=lambda t: -abs(t[1]))
+
+
+def _resolver(A, b):
+    """Sistema linear pequeno (eliminação de Gauss com pivô)."""
+    n = len(b)
+    M = [list(A[i]) + [b[i]] for i in range(n)]
+    for c in range(n):
+        p = max(range(c, n), key=lambda i: abs(M[i][c]))
+        M[c], M[p] = M[p], M[c]
+        if abs(M[c][c]) < 1e-12:
+            continue
+        for i in range(n):
+            if i != c:
+                f = M[i][c] / M[c][c]
+                M[i] = [vi - f * vc for vi, vc in zip(M[i], M[c])]
+    return [M[i][n] / M[i][i] if abs(M[i][i]) > 1e-12 else 0.0 for i in range(n)]
+
+
+def ajustar_est(amostras):
+    """Regressão ridge do saldo do usuário puxada para o PRIOR, com peso maior nos jogos recentes.
+    amostras = [{'xe': {...}, 'saldo': gols usuário - adversário, 'extra': plano}] em ordem cronológica."""
+    nomes = ['const'] + EST_NOMES
+    k = len(nomes)
+    A = [[0.0] * k for _ in range(k)]
+    b = [0.0] * k
+    n = len(amostras)
+    for i, a in enumerate(amostras):
+        w = RECENCIA ** (n - 1 - i)
+        x = [1.0] + [a['xe'].get(nm, 0.0) for nm in EST_NOMES]
+        y = max(-4.0, min(4.0, a['saldo'] + (a.get('extra') or 0.0)))   # goleada fora da curva não puxa tudo
+        for p in range(k):
+            b[p] += w * x[p] * y
+            for q in range(k):
+                A[p][q] += w * x[p] * x[q]
+    for p, nm in enumerate(nomes):
+        lam = 0.05 if nm == 'const' else RIDGE
+        A[p][p] += lam
+        b[p] += lam * PRIOR[nm]
+    return {nm: round(v, 3) for nm, v in zip(nomes, _resolver(A, b))}
+
+
+def registrar_jogo_usr(e, xe, real, extra=0.0, data=None):
+    """Depois de um jogo do usuário: guarda a amostra, atualiza a média de gols e o momento, reajusta a estatística."""
+    saldo = real[0] - real[1]
+    e['total_usuario'] = round((1 - ALFA_TOTAL) * e.get('total_usuario', 3.0) + ALFA_TOTAL * (real[0] + real[1]), 3)
+    resid = saldo - GOL_POR_PONTO * 5 * xe.get('forca', 0.0)
+    v = e.setdefault('voce', {})
+    v['rapido'] = round((1 - ALFA_RAPIDO) * v.get('rapido', resid) + ALFA_RAPIDO * resid, 3)
+    v['lento'] = round((1 - ALFA_LENTO) * v.get('lento', resid) + ALFA_LENTO * resid, 3)
+    am = e.setdefault('amostras_est', [])
+    am.append({'xe': {k: round(x, 4) for k, x in xe.items()}, 'saldo': saldo, 'extra': extra or 0.0, 'data': data})
+    e['amostras_est'] = am[-400:]
+    e['coef_usr'] = ajustar_est(e['amostras_est'])
 
 
 def forma_str(s):
@@ -135,14 +315,6 @@ def est_sim(e, xa, xb):
     d = xa[0] - xb[0]
     b = e.get('base_gols', 1.3)
     return [max(0.15, b + COEF * d), max(0.15, b - COEF * d)]
-
-
-def est_usr(e, esperado_adv, extra_ia=0.0):
-    """Gols esperados [usuário, adversário] pela estatística: saldo esperado do adversário (prévia) + o que a IA
-    adversária aprendeu sobre o plano escolhido."""
-    t = e.get('total_usuario', 3.0)
-    s = (esperado_adv or 0.0) + (extra_ia or 0.0)
-    return [max(0.2, t / 2 - s / 2), max(0.2, t / 2 + s / 2)]
 
 
 # ---------------------------------------------------------------- previsões, pontuação, liderança
@@ -179,10 +351,12 @@ def resumo():
         pl = placar(A)
         out[a] = {'lider': A['lider'], 'placar': pl, 'total': len(A['hist']), 'pendentes': len(A['pend']),
                   'trocas': A['trocas'][-3:], 'rede_estudou': getattr(rede(a), 'vistos', 0)}
-    out['usuario']['ultimos'] = [{k: h.get(k) for k in ('data', 'adv', 'est', 'rede', 'real', 'p_est', 'p_rede', 'decidiu', 'plano')}
+    campos = ('data', 'adv', 'est', 'rede', 'decidiu', 'plano', 'porque', 'ficha_txt', 'fisico')
+    out['usuario']['ultimos'] = [{k: h.get(k) for k in campos + ('real', 'p_est', 'p_rede')}
                                  for h in e['arenas']['usuario']['hist'][-6:]][::-1]
-    out['usuario']['proximo'] = next(({k: p.get(k) for k in ('data', 'adv', 'est', 'rede', 'decidiu', 'plano')}
-                                      for p in e['arenas']['usuario']['pend'].values()), None)
+    out['usuario']['proximo'] = next(({k: p.get(k) for k in campos}
+                                      for p in sorted(e['arenas']['usuario']['pend'].values(), key=lambda p: p['data'])), None)
+    out['usuario']['voce'] = {'media': coefs(e)['const'], 'momento': momento(e), 'gols_por_jogo': e.get('total_usuario')}
     out['pretreino'] = e.get('pretreino')
     return out
 
@@ -204,7 +378,7 @@ def pontuar(e, arena, resultados, hoje=None):
     """resultados = {chave: [gols A, gols B]} -> pontua os pendentes e devolve as amostras para o treino.
     Palpite de jogo que passou há mais de 20 dias sem resultado (adiado, outra carreira) é descartado."""
     A = e['arenas'][arena]
-    amostras = []
+    amostras, pontuados = [], 0
     for chave, p in list(A['pend'].items()):
         real = resultados.get(chave)
         if real is not None and p.get('inverter'):
@@ -217,8 +391,12 @@ def pontuar(e, arena, resultados, hoje=None):
         h.pop('x', None)
         A['hist'].append(h)
         A['pend'].pop(chave)
-        amostras.append((p['x'], [float(real[0]), float(real[1])]))
-    if amostras:
+        pontuados += 1
+        if arena == 'usuario' and p.get('xe'):   # 13/10/2026: a estatística v2 se reajusta a cada jogo do usuário
+            registrar_jogo_usr(e, p['xe'], real, p.get('extra') or 0.0, p.get('data'))
+        if len(p.get('x') or []) == N_IN[arena]:   # palpites de antes da v2 não servem de treino para a rede nova
+            amostras.append((p['x'], [float(real[0]), float(real[1])]))
+    if pontuados:
         _liderança(A, arena)
     return amostras
 
@@ -282,9 +460,11 @@ def amostras_historicas(r, P, s, d=None):
     """Amostras das duas arenas a partir das súmulas do save (vestiario.analisar): os 11 de cada lado, notas pela foto
     da memória, forma antes do jogo, competição; contra o usuário, as características do plano original do clube."""
     import encaixe
+    import ficha_jogo
     n_clubes = __import__('selecoes').primeira(s, 625)
     todas = sorted(r.get('todas_partidas') or [], key=lambda p: tuple(p['data']))
     F = Formas(todas)
+    cargas = ficha_jogo.Cargas(todas)
     ti = r['ti']
 
     def xi(linhas):
@@ -308,12 +488,36 @@ def amostras_historicas(r, P, s, d=None):
             adv = p['time2'] if casa else p['time1']
             if adv not in tags_clube:
                 tags_clube[adv] = _tags_originais(d, adv)
-            xu, xa_ = (xa, xb) if casa else (xb, xa)
             fu, fa_ = (fa, fb) if casa else (fb, fa)
             y = [float(p['gols1']), float(p['gols2'])] if casa else [float(p['gols2']), float(p['gols1'])]
-            grande = p['comp'] in GRANDES
-            usr.append((feat_usr(xu[0], xa_[0], casa, fu[0], fa_[0], grande, tags_clube[adv]), y, tuple(p['data'])))
+            ln_u, ln_a = (p['linhas1'], p['linhas2']) if casa else (p['linhas2'], p['linhas1'])
+            ficha = {'nos': ficha_jogo.lado_sumula(cargas, ti, ln_u, p['data'], P),
+                     'adv': ficha_jogo.lado_sumula(cargas, adv, ln_a, p['data'], P)}
+            # 13/10/2026: v2 — amostra "crua"; o momento do usuário (voce) é encadeado depois, em ordem (encadear_usr)
+            usr.append({'ficha': ficha, 'casa': casa, 'forma': (fu[0], fa_[0]), 'grande': p['comp'] in GRANDES,
+                        'tags': tags_clube[adv], 'y': y, 'data': tuple(p['data'])})
     return sim, usr, (sum(gols) / len(gols) if gols else 1.3)
+
+
+def encadear_usr(amostras):
+    """Amostras do usuário em ordem de data -> [(x, y, data, xe)] com o momento (voce) de ANTES de cada jogo, e o
+    estado final (total de gols e momento) para o duelo seguir dali."""
+    e = {'total_usuario': None, 'voce': {}}
+    out = []
+    for a in sorted(amostras, key=lambda a: a['data']):
+        xe = xe_de(a['ficha'], a['casa'], a['forma'][0], a['forma'][1], momento(e))
+        x = x_rede(xe, a['ficha']['nos'].get('xi') or 75, a['ficha']['adv'].get('xi') or 75, a['grande'], a['tags'], False)
+        out.append((x, a['y'], a['data'], xe))
+        if e['total_usuario'] is None:
+            e['total_usuario'] = a['y'][0] + a['y'][1]
+        saldo = a['y'][0] - a['y'][1]
+        e['total_usuario'] = (1 - ALFA_TOTAL) * e['total_usuario'] + ALFA_TOTAL * (a['y'][0] + a['y'][1])
+        resid = saldo - GOL_POR_PONTO * 5 * xe['forca']
+        v = e['voce']
+        v['rapido'] = (1 - ALFA_RAPIDO) * v.get('rapido', resid) + ALFA_RAPIDO * resid
+        v['lento'] = (1 - ALFA_LENTO) * v.get('lento', resid) + ALFA_LENTO * resid
+    return out, {'total_usuario': round(e['total_usuario'] or 3.0, 3),
+                 'voce': {k: round(v, 3) for k, v in e['voce'].items()}}
 
 
 def _tags_originais(d, ti):

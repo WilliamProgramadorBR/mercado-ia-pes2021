@@ -3,6 +3,8 @@
 
 python pretreinar_rede.py            -> treina com 80% dos jogos (em ordem de data), testa nos 20% finais contra a
                                         estatística (mesmo bolão do duelo) e depois treina com tudo e grava.
+python pretreinar_rede.py --so-usuario  só a arena do usuário (13/10/2026: v2 com a ficha do jogo; a estatística
+                                        v2 também é ajustada aqui — regressão com os jogos do usuário).
 O placar oficial do duelo começa do zero: isto só dá à rede o "estudo" do que já aconteceu.
 """
 import glob
@@ -21,10 +23,12 @@ from save_ml import SaveML  # noqa: E402
 
 
 def teste(amostras, rede_, est):
+    """est recebe a amostra inteira (x, y, data[, xe])."""
     pe = pr = 0
-    for x, y, _ in amostras:
+    for am in amostras:
+        x, y = am[0], am[1]
         real = [int(y[0]), int(y[1])]
-        pe += R.pontos(R.palpite(*est(x)), real)
+        pe += R.pontos(R.palpite(*est(am)), real)
         pr += R.pontos(R.palpite(*rede_.prever(x)), real)
     return pe, pr
 
@@ -32,11 +36,12 @@ def teste(amostras, rede_, est):
 def main():
     dec = max(glob.glob(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat')), key=os.path.getmtime)
     # a temporada passada (o jogo apaga as súmulas na virada): cópia de fim de temporada guardada pela reunião
-    antigos = [a for a in sys.argv[1:] if os.path.exists(a)] or [
+    antigos = [a for a in sys.argv[1:] if not a.startswith('--') and os.path.exists(a)] or [
         os.path.join(HERE, '..', 'save_work', 'vestiario_20261011_074657', 'dec', 'data.dat')]
     d = open(dec, 'rb').read()
     P = dados.load_players(V.SNAP)
     t0 = time.time()
+    so_usuario = '--so-usuario' in sys.argv
     sim, usr, gols, vistos = [], [], [], set()
     for caminho in [dec] + [a for a in antigos if os.path.exists(a)]:
         dx = open(caminho, 'rb').read()
@@ -44,22 +49,32 @@ def main():
         sx = SaveML.__new__(SaveML)
         sx.path, sx.d, sx.base = None, bytearray(dx), dx.index(b'ARSENAL\x00')
         a_sim, a_usr, b_ = D.amostras_historicas(rx, P, sx, d)   # planos originais pelo save atual
-        for lst, dst in ((a_sim, sim), (a_usr, usr)):
-            for am in lst:
-                k = (am[2], tuple(round(v, 3) for v in am[0][:3]))
-                if k not in vistos:
-                    vistos.add(k)
-                    dst.append(am)
+        for am in a_sim:
+            k = (am[2], tuple(round(v, 3) for v in am[0][:3]))
+            if k not in vistos:
+                vistos.add(k)
+                sim.append(am)
+        for am in a_usr:   # v2: dicionários "crus" (ficha refeita da súmula)
+            k = ('u', am['data'], tuple(am['y']))
+            if k not in vistos:
+                vistos.add(k)
+                usr.append(am)
         gols.append(b_)
     base = sum(gols) / len(gols)
     print(f'amostras: {len(sim)} jogos simulados, {len(usr)} jogos do usuário; média de gols por time {base:.2f} ({time.time() - t0:.0f} s)')
     e = D.estado()
-    e['base_gols'] = round(base, 3)
-    if usr:
-        e['total_usuario'] = round(sum(y[0] + y[1] for _, y, _ in usr[-40:]) / len(usr[-40:]), 2)
-    out = {}
-    for arena, ams, est in (('simulados', sim, lambda x: [max(0.15, base + D.COEF * x[2] * 5), max(0.15, base - D.COEF * x[2] * 5)]),
-                            ('usuario', usr, lambda x: [e['total_usuario'] / 2 + D.COEF * x[2] * 5, max(0.2, e['total_usuario'] / 2 - D.COEF * x[2] * 5)])):
+    if not so_usuario:
+        e['base_gols'] = round(base, 3)
+    usr, fim = D.encadear_usr(usr)
+    out = dict(e.get('pretreino') or {})
+    corte_u = int(len(usr) * 0.8)
+    # estatística v2 do usuário: a do teste só conhece os 80% iniciais (como a rede)
+    est_teste = dict(e, coef_usr=D.ajustar_est([{'xe': xe, 'saldo': y[0] - y[1]} for _, y, _, xe in usr[:corte_u]]),
+                     total_usuario=sum(y[0] + y[1] for _, y, _, _ in usr[max(0, corte_u - 15):corte_u]) / max(1, min(15, corte_u)))
+    arenas = [('usuario', usr, lambda am: D.est_usr(est_teste, am[3]))]
+    if not so_usuario:
+        arenas.insert(0, ('simulados', sim, lambda am: [max(0.15, base + D.COEF * am[0][2] * 5), max(0.15, base - D.COEF * am[0][2] * 5)]))
+    for arena, ams, est in arenas:
         if len(ams) < 30:
             print(f'{arena}: poucos jogos ({len(ams)}), pulando')
             continue
@@ -67,19 +82,27 @@ def main():
         corte = int(len(ams) * 0.8)
         treino, prova = ams[:corte], ams[corte:]
         t0 = time.time()
-        rd = R.Rede(D.N_IN[arena], 10, 2, semente=7)
+        rd = D.rede_nova(arena)
         ep = 12 if arena == 'simulados' else 60
         for k in range(ep):
-            perda = rd.treinar([(x, y) for x, y, _ in treino], epocas=1, lr=0.01 if k < ep // 2 else 0.004, semente=k)
+            perda = rd.treinar([(am[0], am[1]) for am in treino], epocas=1, lr=0.01 if k < ep // 2 else 0.004, semente=k)
         pe, pr = teste(prova, rd, est)
         print(f'{arena}: teste em {len(prova)} jogos — estatística {pe} pts x rede {pr} pts (perda {perda:.3f}, {time.time() - t0:.0f} s)')
         out[arena] = {'teste_jogos': len(prova), 'estatistica': pe, 'rede': pr}
-        rd = R.Rede(D.N_IN[arena], 10, 2, semente=7)   # agora com tudo
+        rd = D.rede_nova(arena)   # agora com tudo
         for k in range(ep):
-            rd.treinar([(x, y) for x, y, _ in ams], epocas=1, lr=0.01 if k < ep // 2 else 0.004, semente=k)
+            rd.treinar([(am[0], am[1]) for am in ams], epocas=1, lr=0.01 if k < ep // 2 else 0.004, semente=k)
         rd.salvar(D.ARQ_REDE[arena], extra={'pretreino': out[arena], 'jogos': len(ams)})
         with open(D.ARQ_BUF[arena], 'w', encoding='utf-8') as f:
-            json.dump([[x, y] for x, y, _ in ams[-4000:]], f)
+            json.dump([[am[0], am[1]] for am in ams[-4000:]], f)
+        D._REDES.pop(arena, None)
+    if usr:   # a estatística v2 com todos os jogos do usuário, a média de gols recente e o momento
+        e['amostras_est'] = [{'xe': {k: round(v, 4) for k, v in xe.items()}, 'saldo': y[0] - y[1], 'extra': 0.0, 'data': list(dt_)}
+                             for _, y, dt_, xe in usr][-400:]
+        e['coef_usr'] = D.ajustar_est(e['amostras_est'])
+        e.update(fim)
+        print('estatística v2 (gols de saldo por unidade):', e['coef_usr'])
+        print('média de gols por jogo:', e['total_usuario'], '| momento:', D.momento(e))
     e['pretreino'] = out
     D.gravar(e)
     print('ok')

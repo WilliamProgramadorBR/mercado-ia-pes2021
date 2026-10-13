@@ -11,6 +11,9 @@ Como decide, antes de cada jogo contra o usuário:
   2. OLHEIRO (olheiro.py): o plano do usuário, quem faz os gols, velocidade e jogo aéreo do ataque, forma recente
      -> ajustes (linha baixa contra ataque rápido, pressão contra time de posse, marcação no artilheiro...);
   3. CANDIDATOS: o plano do especialista (1+2) e variações (mais pressão, bloco mais baixo, com/sem marcação);
+  1b. FÍSICO (13/10/2026, ficha_jogo.py): se o usuário chega no limite (titulares com muita carga, condição baixa) e
+     o clube está inteiro, ritmo alto — pressão na frente, linha um pouco mais alta, pressão ofensiva — para cobrar o
+     cansaço; se é o clube que chega cansado, guarda energia: pressão tradicional, bloco mais baixo e compacto.
   4. APRENDIZADO: cada jogo contra o usuário vira dado. A recompensa é o saldo do adversário MENOS o esperado pela
      prévia (perder de 1 para quem devia perder de 3 conta como acerto). Cada característica da tática (linha alta,
      bloco baixo, pressão na frente, gegenpress, marcação...) acumula a média de recompensa por faixa de força
@@ -100,8 +103,25 @@ def postura(base, ctx):
         p['pressao'] = 0
         p['compactacao'] = cmp_(p['compactacao'] + 1)
         motivo += ' | jogo grande: mais concentrado e agressivo'
+    fis = _fisico(ctx)
+    if fis.get('nos') and not fis.get('adv'):
+        # pressionar com a linha lá atrás não cobra nada: pelo menos a linha de costume do clube
+        p.update(pressao=0, estilo_defensivo=0, linha_defensiva=lin(max(p['linha_defensiva'] + 1, lin0)))
+        p['_ritmo'] = True
+        motivo += f' | o adversário chega no limite ({fis["nos"]}): ritmo alto e pressão para cobrar o cansaço'
+    elif fis.get('adv') and not fis.get('nos'):
+        p.update(pressao=1, linha_defensiva=lin(p['linha_defensiva'] - 1), compactacao=cmp_(p['compactacao'] + 1))
+        motivo += f' | chega cansado ({fis["adv"]}): guarda energia, bloco mais baixo e compacto'
     p['_lin'], p['_cmp'] = faixa_lin, faixa_cmp
     return p, motivo
+
+
+def _fisico(ctx):
+    try:
+        import ficha_jogo
+        return ficha_jogo.fisico(ctx.get('ficha')) if ctx.get('ficha') else {}
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 def personalidade(base, base_instr, rec, semente):
@@ -184,9 +204,10 @@ def instrucoes_para(p, base_instr, olho, atacante_rapido, rec=None, alvo_marcaca
             defs.append((14, a0['idx']))
             mot.append(f'marcação individual no {a0["nome"]} ({a0["gols"]} gols, {a0["assist"]} assistências)')
     pl = olho.get('plano') or {}
-    if p['estilo_defensivo'] == 0 and p['pressao'] == 0 and p['linha_defensiva'] >= 6 and pl.get('saida_de_bola', 1):
+    if p['estilo_defensivo'] == 0 and p['pressao'] == 0 and p['linha_defensiva'] >= 6 and (pl.get('saida_de_bola', 1) or p.get('_ritmo')):
         defs.append((13, 0))
-        mot.append('pressão ofensiva: o adversário sai jogando curto')
+        mot.append('pressão ofensiva: o adversário sai jogando curto' if pl.get('saida_de_bola', 1) else
+                   'pressão ofensiva: recuperar a bola no alto contra um time cansado')
     if p['linha_defensiva'] <= 4 or (olho.get('velocidade_ataque') or 0) >= 88:
         defs.append((12, 0))
         mot.append('defesa recuada: sem espaço nas costas')
@@ -489,6 +510,7 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
             'tecnico': T.tecnico(d, ti_adv), 'competicao': ctx.get('competicao'), 'faixa': faixa(ctx),
             'esperado': ctx.get('esperado'), 'escolha': esc['nome'], 'motivo': ' | '.join(esc['motivos']),
             'olheiro': (olho or {}).get('frases') or [], 'instrucoes': instr_txt, 'tags': esc['tags'], 'decidiu': decidiu,
+            'ficha': ctx.get('ficha'),
             'candidatos': [(c['nome'], c['nota']) for c in cands], 'original': e['originais'][k], 'plano': esc['plano']}]
         e['resumo'] = resumo_aprendizado(e)
     _gravar_estado(e)
@@ -497,8 +519,7 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
 
 def _x_usuario(ctx, tags_):
     import duelo
-    return duelo.feat_usr(ctx.get('forca_nos') or 75, ctx.get('forca_adv') or 75, not ctx.get('adv_em_casa'),
-                          duelo.forma_str(ctx.get('forma_nos')), duelo.forma_str(ctx.get('forma_adv')), ctx.get('grande'), tags_)
+    return duelo.entradas_usr(ctx, tags_)[0]
 
 
 def _escolher_pela_rede(cands, ctx, rnd=None):
@@ -530,9 +551,19 @@ def _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu):
     extra = sum(_media(apr, t, fx)[0] for t in esc['tags']) / max(1, len(esc['tags']))   # o que a IA aprendeu do plano
     with duelo.TRAVA:
         ed = duelo.estado()
-        duelo.prever(ed, 'usuario', duelo.chave(ctx['data'], casa, fora), ctx['data'], _x_usuario(ctx, esc['tags']),
-                     duelo.est_usr(ed, ctx.get('esperado'), extra),
-                     {'adv': clube_nome(nome_adv), 'inverter': bool(ctx.get('adv_em_casa')), 'decidiu': decidiu, 'plano': esc['nome']})
+        x, xe = duelo.entradas_usr(ctx, esc['tags'], ed)
+        info = {'adv': clube_nome(nome_adv), 'inverter': bool(ctx.get('adv_em_casa')), 'decidiu': decidiu, 'plano': esc['nome'],
+                # 13/10/2026: a ficha do jogo e o "por quê" de cada palpite (o Painel mostra)
+                'xe': {k: round(v, 4) for k, v in xe.items()}, 'extra': round(extra, 3),
+                'porque': {'estatistica': duelo.porque_est(ed, xe, extra), 'rede': duelo.porque_rede(x)}}
+        fi = ctx.get('ficha')
+        if fi:
+            import ficha_jogo
+            nos = clube_nome((ctx.get('nome_nos') or 'seu time'))
+            info.update(ficha=fi, ficha_txt=ficha_jogo.texto(fi, nos, clube_nome(nome_adv)), fisico=ficha_jogo.fisico(fi))
+        chave = duelo.chave(ctx['data'], casa, fora)
+        ed['arenas']['usuario']['pend'].pop(chave, None)   # mesmo jogo preparado de novo: palpite com a ficha atual
+        duelo.prever(ed, 'usuario', chave, ctx['data'], x, duelo.est_usr(ed, xe, extra), info)
         duelo.gravar(ed)
 
 

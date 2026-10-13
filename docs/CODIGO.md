@@ -159,7 +159,8 @@ Toda leitura ou escrita na **memória** do jogo usa ReadProcessMemory/WriteProce
 | `olheiro.py` | Estuda o usuário: plano de jogo, ameaças, velocidade, jogo aéreo e vulnerabilidades (lateral fraco, armador, zaga lenta, laterais que sobem). Ignora jogadores lesionados. |
 | `ia_adversaria.py` | **IA adversária**, em etapas: postura dentro da identidade do clube, personalidade do técnico, contra-olheiro, instruções avançadas, candidatos, escolha (amostragem de Thompson ou rede neural, conforme o duelo) e aprendizado. Os planos originais são devolvidos byte a byte. |
 | `rede.py` | Rede neural pequena em Python puro: camada tanh, saídas de Poisson e treino com Adam. Converte gols esperados em palpite de placar e calcula os pontos do bolão. |
-| `duelo.py` | **Duelo estatística × rede:** as duas arenas, palpites, pontuação, liderança em 100 jogos e aprendizado contínuo. |
+| `duelo.py` | **Duelo estatística × rede:** as duas arenas, palpites, pontuação, liderança em 100 jogos e aprendizado contínuo. Nos seus jogos (v2), a estatística é uma regressão que se ajusta aos jogos recentes, e os dois modelos enxergam a ficha do jogo e explicam o palpite (`porque_est`/`porque_rede`). |
+| `ficha_jogo.py` | **Ficha do jogo:** XI provável, condição física, carga de 14 dias, descanso, desfalques, espírito de equipe e moral dos dois lados antes de um jogo seu (só leitura). |
 | `pretreinar_rede.py` | Pré-treino da rede com o histórico de súmulas, com teste contra a estatística. |
 
 ### 4.6 Serviços e Central
