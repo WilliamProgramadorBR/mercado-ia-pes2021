@@ -1,4 +1,4 @@
-Mercado IA 0.9.1: funciona com patches em outros idiomas e ganha o diagnóstico da instalação.
-- Seleções reconhecidas pelos próprios dados do save (antes dependia do nome "ALBÂNIA", do banco em português): com um patch em inglês, o mercado podia deixar uma seleção comprar jogadores.
-- Novo: Configuração > Diagnóstico da instalação. Confere versões, save e, com o jogo aberto, os pontos da memória que dependem da versão do PES, e gera um relatório para mandar ao suporte.
-- Primeira atualização automática: quem tem a 0.9.0 recebe esta versão pelo Painel.
+Mercado IA 0.9.2: quadro de palpites da rede neural mais fácil de ler.
+- Painel > Rede neural > Palpites nos seus jogos: cada jogo mostra mandante x visitante, o resultado (você venceu, empatou ou perdeu) e os palpites da estatística e da rede no mesmo formato do placar.
+- Cada palpite vem colorido pelos pontos que fez, com o motivo (placar exato, saldo certo, vencedor certo ou errou), e uma coluna diz quem foi melhor naquele jogo.
+- Jogos futuros mostram o que cada um aposta e quem escolheu o plano do adversário.

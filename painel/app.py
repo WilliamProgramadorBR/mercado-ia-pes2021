@@ -66,6 +66,21 @@ QToolTip {{ background: {COR['painel']}; color: {COR['texto']}; border: 1px soli
 """
 
 
+def nosso_time():
+    """Nome do time do usuário (da última reunião), como título: 'Manchester United'."""
+    import glob
+    arqs = glob.glob(os.path.join(base.HIST, 'central_ML*.json'))
+    if arqs:
+        t = (ler_json(max(arqs, key=os.path.getmtime), {}) or {}).get('time')
+        if t:
+            try:
+                import clube
+                return clube.nome_time(t)
+            except Exception:  # noqa: BLE001
+                return t.title()
+    return 'seu time'
+
+
 def esc_html(t):
     return str(t).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
@@ -359,12 +374,15 @@ class PaginaRede(QWidget):
         self.vazio_p = rotulo('A curva aparece depois do primeiro treino com jogos novos.', 'sub')
         if self.perdas is not None:
             self.v.addWidget(cartao(rotulo('Aprendizado da rede (perda média a cada treino; quanto mais baixo, melhor ela explica os placares)', 'h2'), self.vazio_p, self.perdas))
-        self.tab = QTableWidget(0, 6)
-        self.tab.setHorizontalHeaderLabels(['Data', 'Adversário', 'Deu', 'Estatística', 'Rede', 'Plano escolhido por'])
+        self.tab = QTableWidget(0, 5)
+        self.tab.setHorizontalHeaderLabels(['Jogo', 'Resultado', '📊 Palpite da estatística', '🧠 Palpite da rede neural', 'Quem foi melhor'])
         self.tab.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tab.verticalHeader().hide()
-        self.tab.setMinimumHeight(220)
-        self.v.addWidget(cartao(rotulo('Palpites nos seus jogos', 'h2'), self.tab))
+        self.tab.setWordWrap(True)
+        self.tab.setMinimumHeight(300)
+        legenda = rotulo('Placares sempre no formato <b>mandante x visitante</b>. Cada palpite ganha: <b>3</b> pelo placar exato · '
+                         '<b>2</b> pelo saldo certo · <b>1</b> pelo vencedor (ou empate) certo · <b>0</b> se errar.', 'sub', rico=True)
+        self.v.addWidget(cartao(rotulo('Palpites nos seus jogos', 'h2'), legenda, self.tab))
         bar = QHBoxLayout()
         self.b_estudar = QPushButton('Estudar o histórico do save de novo')
         self.b_estudar.setToolTip('Reaprende do zero com todas as súmulas do save (leva ~1 minuto). O placar do duelo não muda.')
@@ -479,21 +497,67 @@ class PaginaRede(QWidget):
             self.vazio_p.setVisible(not ss)
             if ss:
                 self._series(self.perdas, ss, 'treinos', 'perda')
+        self._tabela_palpites(e)
+
+    # 13/10/2026: o quadro conta a história de cada jogo — quem jogou onde, o que cada um apostou e quanto fez
+    def _tabela_palpites(self, e):
+        nos = nosso_time()
         us = list(reversed(e['arenas']['usuario']['hist'][-15:]))
-        pend = list(e['arenas']['usuario']['pend'].values())
+        pend = sorted(e['arenas']['usuario']['pend'].values(), key=lambda p: p.get('data') or [])
         linhas = [(p, True) for p in pend] + [(h, False) for h in us]
         self.tab.setRowCount(len(linhas))
-        pc = lambda s: f'{s[0]} x {s[1]}' if s else '—'
+        COR_RES = {'vitória': COR['bom'], 'empate': COR['aviso'], 'derrota': COR['ruim']}
+        FEZ = {'vitória': 'você venceu', 'empate': 'empate', 'derrota': 'você perdeu'}
+        APOSTA = {'vitória': 'você vence', 'empate': 'empate', 'derrota': 'você perde'}
+        COR_PTS = {3: COR['bom'], 2: '#8fd14f', 1: COR['aviso'], 0: COR['ruim']}
+        MOTIVO = {3: 'placar exato', 2: 'saldo certo', 1: 'vencedor certo', 0: 'errou'}
+
+        def res(g):   # g = [gols do usuário, gols do adversário]
+            return 'vitória' if g[0] > g[1] else 'empate' if g[0] == g[1] else 'derrota'
+
+        def placar(g, fora):   # mandante x visitante
+            return f'{g[1]} x {g[0]}' if fora else f'{g[0]} x {g[1]}'
+
+        def item(txt, cor=None, negrito=False):
+            it = QTableWidgetItem(txt)
+            it.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            if cor:
+                it.setForeground(QColor(cor))
+            if negrito:
+                f = it.font()
+                f.setBold(True)
+                it.setFont(f)
+            return it
         for i, (h, futuro) in enumerate(linhas):
-            vals = ['/'.join(str(x) for x in (h.get('data') or [])[::-1]), h.get('adv') or '',
-                    'a jogar' if futuro else pc(h.get('real')),
-                    pc(h.get('est')) + ('' if futuro else f'  (+{h.get("p_est")})'),
-                    pc(h.get('rede')) + ('' if futuro else f'  (+{h.get("p_rede")})'),
-                    {'estatistica': 'Estatística', 'rede': 'Rede neural'}.get(h.get('decidiu'), '—')]
-            for c, v in enumerate(vals):
-                it = QTableWidgetItem(v)
-                it.setFlags(Qt.ItemFlag.ItemIsEnabled)
-                self.tab.setItem(i, c, it)
+            fora = bool(h.get('inverter'))            # o adversário é o mandante
+            adv = h.get('adv') or '?'
+            casa, visit = (adv, nos) if fora else (nos, adv)
+            data = '/'.join(str(x) for x in (h.get('data') or [])[::-1])
+            self.tab.setItem(i, 0, item(f'{data}\n{casa} x {visit}'))
+            if futuro:
+                self.tab.setItem(i, 1, item('a jogar', COR['mudo']))
+            else:
+                r = res(h['real'])
+                self.tab.setItem(i, 1, item(f'{placar(h["real"], fora)}\n{FEZ[r]}', COR_RES[r], True))
+            for col, (k, kp) in ((2, ('est', 'p_est')), (3, ('rede', 'p_rede'))):
+                g = h.get(k)
+                if not g:
+                    self.tab.setItem(i, col, item('—'))
+                    continue
+                aposta = res(g)
+                if futuro:
+                    self.tab.setItem(i, col, item(f'{placar(g, fora)}\naposta: {APOSTA[aposta]}', COR['texto']))
+                else:
+                    p = h.get(kp, 0)
+                    self.tab.setItem(i, col, item(f'{placar(g, fora)}\n+{p} · {MOTIVO.get(p, "")}', COR_PTS.get(p), p > 0))
+            if futuro:
+                quem = {'estatistica': '📊 Estatística', 'rede': '🧠 Rede neural'}.get(h.get('decidiu'), '—')
+                self.tab.setItem(i, 4, item(f'a decidir\nplano do rival por: {quem}', COR['mudo']))
+            else:
+                pe, pr = h.get('p_est', 0), h.get('p_rede', 0)
+                melhor = '📊 Estatística' if pe > pr else '🧠 Rede neural' if pr > pe else 'empate'
+                self.tab.setItem(i, 4, item(f'{melhor}\n{pe} x {pr} pontos', COR['ouro'] if pe != pr else COR['mudo'], pe != pr))
+        self.tab.resizeRowsToContents()
 
     def estudar(self):
         if self.proc is not None:
