@@ -70,6 +70,9 @@ def fatos_mundo(car, hoje):
 
 def manchete(f, tom, rnd):
     t = f['tipo']
+    if t == 'premio_mundo':   # 13/10/2026: a noite da Bola de Ouro (premiacao.py)
+        import premiacao
+        return premiacao.manchete(f, tom, rnd)
     if t == 'revelacao':
         x = f['x']
         conv = ' e já foi chamado para a seleção' if x['sel_jogos'] else ''
@@ -179,6 +182,9 @@ def _j(r, nome):
 def aspas(f, r, car, rnd):
     """{'quem', 'papel', 'texto'} ou None: a fala de um jogador ligada ao fato da manchete."""
     t = f['tipo']
+    if t == 'premio_mundo':
+        import premiacao
+        return premiacao.aspas(f, rnd)
     J = r['J']
     cap = next((j for j in J if j.get('capitao')), None)
     pj = car.get('proximo_jogo') or {}
@@ -345,6 +351,9 @@ def aspas(f, r, car, rnd):
 # ---------------------------------------------------------------- texto de abertura
 def texto(f, r, car):
     t = f['tipo']
+    if t == 'premio_mundo':
+        import premiacao
+        return premiacao.texto(f)
     tab = ((car.get('liga') or {}).get('classificacao') or [])
     eu = next((x for x in tab if x.get('eu')), None)
     if t in ('resultado', 'derrota'):

@@ -93,6 +93,7 @@ def _contexto_extra(X, fonte):
     X['momento'] = fonte.get('momento')
     X['analise'] = fonte.get('analise_porques') or []
     X['mundo'] = fonte.get('mundo') or {}
+    X['premiacao'] = fonte.get('premiacao_ultima') or fonte.get('premiacao')   # 13/10/2026: a Bola de Ouro (premiacao.py)
     try:
         arq = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'historico', 'ia_adversaria.json')
         reg = json.load(open(arq, encoding='utf-8')).get('registro') or []

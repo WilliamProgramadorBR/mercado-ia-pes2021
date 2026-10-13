@@ -643,6 +643,17 @@ def main():
                 noticias.append(('DEPARTAMENTO MÉDICO: ' if 'volta' not in m['chave'][:5] else 'DE VOLTA: ') + m['titulo'])
         except Exception as e:  # noqa: BLE001
             print('aviso: lesões não acompanhadas:', e)
+        try:   # 13/10/2026: a noite da Bola de Ouro (premiacao.py): capas, três vozes, vestiário, celular, redes, coletiva
+            import imprensa as _imp
+            import premiacao
+            ctx_p = _imp._contexto(car, r, d, snap)
+            ms_p, fs_p, nt_p, cs_p = premiacao.cerimonia(car, r, d, ctx_p['s'], ctx_p['P'], hoje)
+            car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + ms_p
+            extras_midia += fs_p
+            noticias += nt_p
+            car['casos'] = car.get('casos', []) + cs_p
+        except Exception as e:  # noqa: BLE001
+            print('aviso: premiação não coberta:', e)
         try:   # 12/10/2026: análise pós-jogo com o porquê, em três vozes (analise_jogo.py)
             import analise_jogo
             car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + analise_jogo.da_reuniao(car, r, snap, hoje)

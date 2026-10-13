@@ -20,15 +20,15 @@ JORNAIS = [
     {'id': 'diario', 'nome': 'Diário da Bola', 'tom': 'sensacionalista', 'slogan': 'O jornal que a arquibancada lê',
      'pesos': {'proximo': 2.0, 'liga': 1.6, 'disciplina': 3.4, 'conflito': 3.2, 'baixa': 2.6, 'eco': 2.8, 'derrota': 2.4, 'mercado': 1.6, 'resultado': 1.4,
                'contrato': 1.8, 'pressao': 2.6, 'apelido': 1.0, 'destaque': 1.0, 'sequencia': 1.6, 'tabela': 1.0,
-               'pre': 1.0, 'revelacao': 2.4, 'bola_ouro': 2.0, 'artilheiro_mundo': 1.6, 'selecao': 2.0, 'marco': 2.4, 'rodada': 1.4, 'data_fifa': 2.0, 'rumor': 2.6, 'obrigacao': 3.2, 'renovacao': 2.0, 'joia_base': 1.6}},
+               'pre': 1.0, 'revelacao': 2.4, 'bola_ouro': 2.0, 'artilheiro_mundo': 1.6, 'selecao': 2.0, 'marco': 2.4, 'rodada': 1.4, 'data_fifa': 2.0, 'rumor': 2.6, 'obrigacao': 3.2, 'renovacao': 2.0, 'joia_base': 1.6, 'premio_mundo': 3.0}},
     {'id': 'gazeta', 'nome': 'Gazeta Tática', 'tom': 'analítico', 'slogan': 'Futebol se explica com números',
      'pesos': {'proximo': 2.2, 'liga': 2.4, 'disciplina': 1.3, 'resultado': 3.0, 'derrota': 2.6, 'tabela': 2.8, 'sequencia': 2.6, 'destaque': 2.2, 'baixa': 1.4,
                'conflito': 1.2, 'eco': 1.4, 'pressao': 1.8, 'mercado': 1.2, 'contrato': 1.0, 'apelido': 0.6,
-               'pre': 2.0, 'revelacao': 2.0, 'bola_ouro': 2.6, 'artilheiro_mundo': 2.2, 'selecao': 2.4, 'marco': 2.0, 'rodada': 2.4, 'data_fifa': 1.8, 'rumor': 1.4, 'obrigacao': 2.4, 'renovacao': 1.8, 'joia_base': 1.8}},
+               'pre': 2.0, 'revelacao': 2.0, 'bola_ouro': 2.6, 'artilheiro_mundo': 2.2, 'selecao': 2.4, 'marco': 2.0, 'rodada': 2.4, 'data_fifa': 1.8, 'rumor': 1.4, 'obrigacao': 2.4, 'renovacao': 1.8, 'joia_base': 1.8, 'premio_mundo': 2.8}},
     {'id': 'voz', 'nome': 'A Voz de Old Trafford', 'tom': 'torcedor', 'slogan': 'A voz das arquibancadas de Manchester',
      'pesos': {'proximo': 2.6, 'liga': 1.2, 'disciplina': 1.7, 'destaque': 3.0, 'apelido': 3.2, 'resultado': 2.4, 'contrato': 2.4, 'mercado': 2.6, 'derrota': 1.8,
                'eco': 2.0, 'conflito': 1.6, 'baixa': 1.4, 'sequencia': 1.8, 'tabela': 1.4, 'pressao': 1.2,
-               'pre': 2.2, 'revelacao': 1.4, 'bola_ouro': 1.8, 'artilheiro_mundo': 0.8, 'selecao': 2.6, 'marco': 3.0, 'rodada': 1.2, 'data_fifa': 2.2, 'rumor': 2.4, 'obrigacao': 1.8, 'renovacao': 2.6, 'joia_base': 2.8}},
+               'pre': 2.2, 'revelacao': 1.4, 'bola_ouro': 1.8, 'artilheiro_mundo': 0.8, 'selecao': 2.6, 'marco': 3.0, 'rodada': 1.2, 'data_fifa': 2.2, 'rumor': 2.4, 'obrigacao': 1.8, 'renovacao': 2.6, 'joia_base': 2.8, 'premio_mundo': 3.4}},
 ]
 REPORTERES = {'diario': 'Marcão Teixeira', 'gazeta': 'Lúcia Brandão', 'voz': 'Tom Hadley'}
 PROGRAMA = {'nome': 'Bola na Mesa', 'apresentador': 'Rogério Lemos',
@@ -212,7 +212,7 @@ def _jogo_txt(g, time=None):
 def _manchete(f, tom, rnd):
     """(manchete, linha fina) do fato f no tom do jornal."""
     t = f['tipo']
-    if t in ('revelacao', 'bola_ouro', 'artilheiro_mundo', 'selecao', 'marco', 'rodada', 'data_fifa', 'rumor', 'obrigacao', 'renovacao', 'joia_base'):
+    if t in ('revelacao', 'bola_ouro', 'artilheiro_mundo', 'selecao', 'marco', 'rodada', 'data_fifa', 'rumor', 'obrigacao', 'renovacao', 'joia_base', 'premio_mundo'):
         import jornal_extra
         return jornal_extra.manchete(f, tom, rnd)
     if t == 'virada':   # virada histórica / vexame no mata-mata (viradas.py)

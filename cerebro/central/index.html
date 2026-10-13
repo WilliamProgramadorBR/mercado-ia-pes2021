@@ -798,7 +798,7 @@ section h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom:
 <main>
   <div class="tela" id="t-resumo">
     <div class="res-grade">
-      <div class="carrossel" id="carDestaque"><div class="car-cab"><h2>Em destaque</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Próximo jogo"><section id="proxJogo"></section></div><div class="car-slide" data-nome="Capa do jornal"><div id="resCapa"></div></div></div></div></div>
+      <div class="carrossel" id="carDestaque"><div class="car-cab"><h2>Em destaque</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Bola de Ouro"><section id="resPremio"></section></div><div class="car-slide" data-nome="Próximo jogo"><section id="proxJogo"></section></div><div class="car-slide" data-nome="Capa do jornal"><div id="resCapa"></div></div></div></div></div>
       <div class="carrossel" id="carClube"><div class="car-cab"><h2>O clube</h2><div class="car-chips" role="tablist"></div><div class="car-setas"><button data-passo="-1" aria-label="anterior">‹</button><button data-passo="1" aria-label="próximo">›</button></div><div class="car-auto"><i></i></div><div class="car-pausa"></div></div><div class="car-janela"><div class="car-trilho"><div class="car-slide" data-nome="Antes do próximo jogo"><section id="resCasos" class="pend-painel"></section></div><div class="car-slide" data-nome="Sala de reunião"><section id="secPedido"><h2>Sala de reunião</h2><div id="pedido"></div></section></div><div class="car-slide" data-nome="Coletiva"><section id="resColetiva"></section></div><div class="car-slide" data-nome="Arquibancada"><section id="arquibancada"></section></div><div class="car-slide" data-nome="Diretoria"><section><h2>Diretoria</h2><div id="resDir"></div></section></div></div></div></div>
     </div>
     <div class="res-grade baixo">
@@ -1022,6 +1022,17 @@ function renderResumo(d) {
     ? `<div class="chamar"><div>${faltam ? `<b>${faltam} pergunta(s)</b> esperando você.<div class="dica">Suas respostas mexem na moral, e a seta muda no jogo na hora.</div>` : 'Coletiva encerrada: todas respondidas.'}</div>
        ${faltam ? '<button class="btn" data-ir="coletiva">Entrar</button>' : ''}</div>`
     : '<div class="vazio">Sem coletiva nesta rodada.</div>');
+  // 13/10/2026: a noite da Bola de Ouro (premiacao.py) — slide próprio nos 12 dias depois da cerimônia
+  const pr = d.premiacao, hojeJ = d.data_jogo;
+  const diasPr = pr && hojeJ ? Math.round((Date.UTC(hojeJ[0], hojeJ[1] - 1, hojeJ[2]) - Date.UTC(pr.data[0], pr.data[1] - 1, pr.data[2])) / 864e5) : 99;
+  $('resPremio').innerHTML = pr && diasPr >= 0 && diasPr <= 12 ? (() => {
+    const a = pr.vencedor, vz = {2: 'bicampeão', 3: 'tricampeão', 4: 'tetracampeão', 5: 'pentacampeão', 6: 'hexacampeão', 7: 'heptacampeão', 8: 'octacampeão'}[pr.n] || '';
+    return `<h2>🏆 ${esc(pr.premio)} ${pr.ano} <span class="dica">${pr.nosso_venceu ? 'é nosso!' : 'a apuração'}</span></h2>
+      <div style="font:800 26px var(--f-score);color:var(--gold);margin:6px 0 2px">${esc(a.nome)}</div>
+      <div class="dica">${crest(a.clube, 16)} ${esc(a.clube)} · ${a.votos} votos${pr.dif ? ` · ${pr.dif} a mais que o 2º` : ''}${vz ? ` · <b>${vz}</b> (${(pr.anos || []).join(', ')})` : ''}</div>
+      ${(pr.top || []).map(x => `<div class="item"><b>${x.pos}º</b> ${esc(x.nome)} <span class="meta">${crest(x.clube, 14)} ${esc(x.clube)}</span><span style="float:right" class="dica">${x.votos} votos</span></div>`).join('')}
+      ${(pr.lendas || []).filter(l => l[0] !== 'superou').map(l => `<div class="dica">${l[0] === 'igual' ? 'Iguala' : 'Próximo alvo:'} ${esc(l[1])} — ${esc(l[2])}</div>`).join('')}
+      <div class="dica" style="margin-top:6px">Veja as capas, as redes e a coletiva: o mundo do futebol só fala disso.</div>`; })() : '';
   const capas = d.midia?.capas || [];
   const principal = capas[Math.floor(Date.now() / 60000) % Math.max(1, capas.length)];
   $('resCapa').innerHTML = principal ? `<div class="destaque-capa" data-ir="imprensa" title="ver todas as bancas">${capaHTML(principal)}</div>` : '';

@@ -497,3 +497,79 @@ def _d(X, a):
     """Dias desde a data registrada no fato (lesão/volta) até o dia da coletiva."""
     import datetime as dt
     return (dt.date(*X['hoje'][:3]) - dt.date(*tuple(a['data'])[:3])).days
+
+
+# ---------------------------------------------------------------- a noite da Bola de Ouro (premiacao.py, 13/10/2026)
+def _premio(X):
+    c = X.get('premiacao')
+    if not c or c.get('cat') != 'mundo' or not 0 <= _d(X, c) <= 10:
+        return None
+    return c
+
+
+@cen
+def bola_de_ouro_nossa(X, rnd):
+    c = _premio(X)
+    if not c or not c['nosso_venceu']:
+        return None
+    a = c['vencedor']
+    j = _jog_por_nome(X, a['nome'])
+    if not j:
+        return None
+    import premiacao
+    vz = premiacao.vezes_txt(c.get('n') or 1)
+    vaid = 'vaidoso' in set(((j.get('perfil') or {}).get('tracos')) or [])
+    p = _q(rnd, f'{a["nome"]} é {vz + " " if vz else "o melhor "}do mundo. Ele já é o maior jogador da história do clube?',
+           f'Com a Bola de Ouro de {a["nome"]}, o que muda no vestiário?',
+           f'{a["votos"]} votos para {a["nome"]}. O prêmio também é seu, professor?')
+    return 9, 'jogador', p, [
+        op('É o melhor do mundo e joga aqui. A história a gente escreve juntos, e ela está só começando.',
+           [E(j['kc'], 3, 3, 'o técnico o exaltou depois da Bola de Ouro'), G(1, 'o técnico dividiu o prêmio com o grupo')],
+           f'Técnico exalta {a["nome"]}: "a história está só começando"', 'Clima de festa no CT.'),
+        op('Ainda não. O maior da história é quem levanta taça. Ele sabe disso e quer isso.',
+           [E(j['kc'], -4 if vaid else 1, 2, 'o técnico disse que ele ainda precisa de títulos para ser o maior')],
+           f'Técnico cobra títulos de {a["nome"]}', 'Recado em plena semana de festa.' if vaid else 'Cobrança que o craque recebeu bem.'),
+        op('Prêmio individual não ganha jogo. Amanhã é treino como outro qualquer, para ele e para todo mundo.',
+           [E(j['kc'], -3 if vaid else 0, 2, 'o técnico tratou a Bola de Ouro como mais um dia'), G(1, 'o técnico tratou todos iguais')],
+           'Técnico esfria a festa: "amanhã é treino"', 'Pés no chão ou falta de reconhecimento?')]
+
+
+@cen
+def podio_todo_nosso(X, rnd):
+    c = _premio(X)
+    if not c or not c.get('podio_nosso'):
+        return None
+    js = [x for x in (_jog_por_nome(X, t['nome']) for t in c['top']) if x]
+    if len(js) < 3:
+        return None
+    nomes = ', '.join(t['nome'] for t in c['top'][:2]) + f' e {c["top"][2]["nome"]}'
+    return 8, 'jogador', f'Os três melhores do mundo jogam no seu time: {nomes}. Como administrar tanto ego no mesmo vestiário?', [
+        op('Aqui o ego fica na porta. Quem manda é o escudo.', [G(1, 'o técnico colocou o escudo acima dos prêmios')],
+           'Técnico: "aqui quem manda é o escudo"', 'Frase vira faixa na arquibancada.'),
+        op('Os três são indiscutíveis. Fazem a diferença e vão jogar sempre.',
+           [E(x['kc'], 2, 2, 'o técnico o chamou de indiscutível') for x in js] + [G(-1, 'os outros sentiram que há intocáveis')],
+           'Técnico garante: trio do pódio é intocável', 'Os reservas leram a entrevista.'),
+        op('Prêmio não dá vaga. Quem não render vai para o banco, com ou sem Bola de Ouro.',
+           [E(x['kc'], -2, 2, 'o técnico disse que prêmio não garante vaga') for x in js] + [G(2, 'o técnico deu a mesma chance a todos')],
+           'Técnico avisa os premiados: "prêmio não dá vaga"', 'O elenco gostou; os craques, nem tanto.')]
+
+
+@cen
+def vice_da_bola(X, rnd):
+    c = _premio(X)
+    if not c or c.get('podio_nosso'):
+        return None
+    v = next((t for t in c['top'][1:] if t['nosso']), None)
+    j = _jog_por_nome(X, v['nome']) if v else None
+    if not j:
+        return None
+    a = c['vencedor']
+    return 7, 'jogador', f'{v["nome"]} terminou em {v["pos"]}º na Bola de Ouro, com {v["votos"]} votos. Foi injustiça?', [
+        op(f'Foi. Ninguém jogou mais que o {v["nome"]} nesta temporada.',
+           [E(j['kc'], 4, 2, 'o técnico disse em público que ele merecia a Bola de Ouro')] + ([E(_jog_por_nome(X, a['nome'])['kc'], -2, 2, 'o técnico questionou o prêmio dele')]
+                                                                                              if a['nosso'] and _jog_por_nome(X, a['nome']) else []),
+           f'Técnico vê injustiça com {v["nome"]}', 'A declaração repercute no vestiário.'),
+        op(f'O {a["nome"]} mereceu. O {v["nome"]} vai chegar lá, tenho certeza.',
+           [E(j['kc'], 1, 2, 'o técnico disse que a vez dele vai chegar')], f'"A vez de {v["nome"]} vai chegar"', 'Palavras de incentivo.'),
+        op('Não ligo para prêmio individual. Me preocupo com o próximo jogo.',
+           [E(j['kc'], -2, 2, 'o técnico não deu importância ao pódio dele')], 'Técnico desdenha da Bola de Ouro', 'O pódio passou em branco no CT.')]

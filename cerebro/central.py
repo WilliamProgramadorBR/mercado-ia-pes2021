@@ -475,14 +475,34 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 pendente = bool(p) and os.path.exists(DECISAO)
             if not pendente or corpo.get('pedido') != p.get('id'):
                 return self._send(409, 'não há pedido pendente (ou ele mudou)'.encode('utf-8'), 'text/plain; charset=utf-8')
-            tmp = destino + '.tmp'
-            with open(tmp, 'w', encoding='utf-8') as f:
-                f.write(opcao + '\n')
-            os.replace(tmp, destino)
+            _gravar_resposta(destino, opcao)
             return self._send(200, json.dumps({'ok': True, 'opcao': opcao}).encode('utf-8'),
                               'application/json; charset=utf-8')
         except Exception as e:  # noqa: BLE001
             return self._send(500, str(e).encode('utf-8'), 'text/plain; charset=utf-8')
+
+
+def _gravar_resposta(destino, opcao):
+    """Grava a resposta (diretoria / pedido do vestiário) trocando o arquivo de uma vez.
+    13/10/2026: no Windows, os.replace falha com "Acesso negado" enquanto outro processo está com o arquivo aberto —
+    e a própria Central lê esse arquivo a cada atualização da tela (estado_projetado), o vigia também. Era o "internal
+    server error" ao confirmar a resposta ao presidente. Agora tenta de novo por até ~2 s e, se ainda estiver ocupado,
+    escreve direto no arquivo (abrir para escrita é permitido mesmo com outra leitura aberta)."""
+    tmp = destino + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write(opcao + '\n')
+    for _ in range(40):
+        try:
+            os.replace(tmp, destino)
+            return
+        except PermissionError:
+            time.sleep(0.05)
+    with open(destino, 'w', encoding='utf-8') as f:
+        f.write(opcao + '\n')
+    try:
+        os.remove(tmp)
+    except OSError:
+        pass
 
 
 def _preparar_adversario(slot, pr):

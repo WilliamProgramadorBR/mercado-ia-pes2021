@@ -160,6 +160,7 @@ Toda leitura ou escrita na **memória** do jogo usa ReadProcessMemory/WriteProce
 | `ia_adversaria.py` | **IA adversária**, em etapas: postura dentro da identidade do clube, personalidade do técnico, contra-olheiro, instruções avançadas, candidatos, escolha (amostragem de Thompson ou rede neural, conforme o duelo) e aprendizado. Os planos originais são devolvidos byte a byte. |
 | `rede.py` | Rede neural pequena em Python puro: camada tanh, saídas de Poisson e treino com Adam. Converte gols esperados em palpite de placar e calcula os pontos do bolão. |
 | `duelo.py` | **Duelo estatística × rede:** as duas arenas, palpites, pontuação, liderança em 100 jogos e aprendizado contínuo. Nos seus jogos (v2), a estatística é uma regressão que se ajusta aos jogos recentes, e os dois modelos enxergam a ficha do jogo e explicam o palpite (`porque_est`/`porque_rede`). |
+| `premiacao.py` | **A noite da Bola de Ouro:** quando o save traz uma edição nova do prêmio de melhor do mundo (ou um continental com alguém do clube no pódio), monta a cerimônia uma vez e espalha por capas, matérias em três vozes, vestiário (moral), celular, redes, coletiva e um slide na Central. |
 | `ficha_jogo.py` | **Ficha do jogo:** XI provável, condição física, carga de 14 dias, descanso, desfalques, espírito de equipe e moral dos dois lados antes de um jogo seu (só leitura). |
 | `pretreinar_rede.py` | Pré-treino da rede com o histórico de súmulas, com teste contra a estatística. |
 

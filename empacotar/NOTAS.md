@@ -1,6 +1,5 @@
-Mercado IA 0.9.3: as IAs passam a enxergar o cansaço e o momento do elenco.
-- Ficha do jogo: antes de cada partida sua, os dois times são avaliados por condição física, minutos jogados nos últimos 14 dias, descanso, desfalques, espírito de equipe e moral.
-- Estatística e rede neural usam a ficha nos palpites dos seus jogos. A estatística se reajusta a cada jogo, dando mais peso aos recentes, e mede o quanto você supera a força dos elencos.
-- A IA adversária olha o físico: contra um time no limite, joga com ritmo alto e pressão; quando é ela que chega cansada, guarda energia e fecha o bloco.
-- Painel > Rede neural: novo cartão "Próximo jogo: ficha e por quê", e o porquê de cada palpite ao passar o mouse. A Central mostra o resumo no card do próximo jogo.
-- Para a estatística nova aproveitar o histórico do seu save, use "Estudar o histórico do save de novo" na aba Rede neural.
+Mercado IA 0.9.4: a noite da Bola de Ouro e a correção da resposta à diretoria.
+- Bola de Ouro: quando o jogo anuncia o melhor do mundo, o prêmio vira o assunto de tudo. Capas dos jornais, matérias nas três vozes (Mesa Tática, Plantão do Esporte, Resenha Raiz), posts da conta oficial, do premiado e dos companheiros, memes e haters, hashtags no "Em alta", perguntas na coletiva, mensagens no celular e um slide na Central com o pódio e as comparações com as lendas.
+- O vestiário sente: o premiado ganha moral, o grupo festeja e o companheiro vaidoso que ficou atrás pode se incomodar.
+- Prêmios continentais também viram notícia quando alguém do clube vai ao pódio.
+- Correção: confirmar a resposta ao presidente às vezes dava "erro interno do servidor" (o arquivo estava aberto em outra leitura no Windows). Agora a gravação espera o arquivo ficar livre.

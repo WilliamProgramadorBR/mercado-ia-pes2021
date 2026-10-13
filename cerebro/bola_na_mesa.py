@@ -172,7 +172,8 @@ def mundo(car, r, d, snap, ctx=None):
             'conflitos': r.get('conflitos') or [], 'lideres': r.get('lideres') or [], 'esc': esc, 'sigla': _slug(nos),
             'perfis': perfis, 'hall': hall, 'premio_recente': recente, 'trave': trave, 'apelido': cat_ap,
             'selecao_de': selecao_de, 'dest': car.get('mundo') or {}, 'hist': car.get('historia') or {}, 'rd': car.get('rodada_destaque') or {}, 'fifa': car.get('data_fifa'), 'rumores': [x for x in car.get('rumores') or [] if x.get('ativo')], 'vit': car.get('vitoriosos') or {}, 'lesao': car.get('lesao_ultima'), 'lesao_volta': car.get('lesao_volta'),
-            'momento': car.get('momento'), 'analise': car.get('analise_porques') or [], 'analise_data': car.get('analise_data')}
+            'momento': car.get('momento'), 'analise': car.get('analise_porques') or [], 'analise_data': car.get('analise_data'),
+            'premiacao': car.get('premiacao_ultima')}
 
 
 def _media(e):

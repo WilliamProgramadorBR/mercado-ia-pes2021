@@ -20,7 +20,7 @@ HIST = os.path.join(CEREBRO, 'historico')
 ARQ_IA = os.path.join(CEREBRO, 'ia.json')
 ARQ_AUTOMACAO = os.path.join(CEREBRO, 'automacao.json')
 ARQ_REDE_LAN = os.path.join(HIST, 'central_rede.json')
-VERSAO = '0.9.3'
+VERSAO = '0.9.4'
 
 
 def _modulo_lua():

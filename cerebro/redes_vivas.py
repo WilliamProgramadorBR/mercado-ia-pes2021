@@ -121,6 +121,15 @@ RESP_CAT = {
 }
 
 
+try:   # 13/10/2026: a noite da Bola de Ouro (premiacao.py)
+    import premiacao as _pr
+    MODELOS += _pr.MODELOS_REDES
+    PESO.update(_pr.PESO_REDES)
+    RESP_CAT.update(_pr.RESP_REDES)
+except Exception as _e:  # noqa: BLE001
+    print('aviso: redes do prêmio:', _e)
+
+
 def _slug(t):
     import unicodedata
     t = unicodedata.normalize('NFKD', t or '').encode('ascii', 'ignore').decode().lower()
@@ -251,6 +260,11 @@ def contexto(M, fase, c, cats):
         if s.get('d', 0) >= 2:
             c['n_d_prox'] = ORD.get(s['d'] + 1, f'{s["d"] + 1}ª')
             cats.add('pressao_rival')
+    try:   # 13/10/2026: a noite da Bola de Ouro (premiacao.py)
+        import premiacao
+        premiacao.redes_contexto(M, c, cats)
+    except Exception as e:  # noqa: BLE001
+        print('aviso: redes do prêmio (contexto):', e)
     return c, cats
 
 
@@ -315,6 +329,11 @@ def especiais(M, fase, rnd, c, cats):
                        '"Sabemos onde machucar o {nos}. Estudamos muito."'])
             out.append({'autor': f'@{c["prox_slug"]}_oficial', 'verificado': True, 'tipo': 'oficial', 'pauta': 'redes|tec_rival', 'tom': 'riv',
                         'texto': f'🎙️ {c["tec_rival"]} na coletiva: ' + rnd.choice(frases).format(nos=nos)})
+    try:   # 13/10/2026: conta oficial e jogadores na noite da Bola de Ouro (premiacao.py)
+        import premiacao
+        out += premiacao.redes_especiais(M, c, cats, rnd)
+    except Exception as e:  # noqa: BLE001
+        print('aviso: redes do prêmio (especiais):', e)
     return out
 
 
@@ -371,6 +390,11 @@ def em_alta(M, fase, c, cats, rnd):
         ts.append((camel(f'Fora {c["pior"]}') if 'seq_derrotas' in cats else camel(c['pior']), 1.3))
     if 'analise' in cats:
         ts.append(('#MesaTática', 1.1))
+    try:   # 13/10/2026: hashtags da Bola de Ouro
+        import premiacao
+        ts += premiacao.redes_em_alta(M, c, cats)
+    except Exception:  # noqa: BLE001
+        pass
     ts.append((camel(ap), 1.5))
     vistos, out = set(), []
     for t, w in sorted(ts, key=lambda x: -x[1] * rnd.uniform(0.8, 1.2)):

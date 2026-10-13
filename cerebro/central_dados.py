@@ -121,6 +121,7 @@ def exportar(r, car=None, noticias_rodada=None, setas=None):
         'proximos': car.get('proximos') or [],
         'corrida': car.get('corrida'),   # 12/10/2026: disputa do usuário na liga (disputa.py)
         'lesao': car.get('lesao_ultima'), 'lesao_volta': car.get('lesao_volta'),   # departamento médico (lesoes.py)
+        'premiacao': car.get('premiacao_ultima'),   # 13/10/2026: a noite da Bola de Ouro (premiacao.py)
         'momento': car.get('momento'), 'analise_porques': car.get('analise_porques'), 'analise_data': car.get('analise_data'),
         'temporada_jogos': _jogos_temporada(r),   # 12/10/2026: o calendário de jogos da Central (mês a mês)
         'movimentos': [{k: v for k, v in m.items() if k != 'pos'} for m in r.get('movimentos') or []],   # saídas/chegadas   # prévias dos próximos 3 jogos (a Central troca pelo pulso)
