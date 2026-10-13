@@ -190,6 +190,25 @@ def zip_portatil(v):
     return destino
 
 
+def zip_atualizacao(v):
+    """MercadoIA-app-<versão>.zip: só o código (painel, cerebro, sider, docs, pesXdecrypter), para a atualização leve
+    do Painel (painel/atualizar.py). Nada de dados: historico/, ia.json, automacao.json e config.json ficam de fora."""
+    sys.path.insert(0, FERRAMENTAS)
+    from painel import atualizar as A
+    app = os.path.join(PACOTE, 'app')
+    destino = os.path.join(DIST, f'MercadoIA-app-{v}.zip')
+    with zipfile.ZipFile(destino, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        for pasta in A.PASTAS_CODIGO:
+            for raiz, _, arqs in os.walk(os.path.join(app, pasta)):
+                for n in arqs:
+                    c = os.path.join(raiz, n)
+                    rel = os.path.relpath(c, app).replace(os.sep, '/')
+                    if '__pycache__' in rel or A._protegido(rel):
+                        continue
+                    z.write(c, rel)
+    return destino
+
+
 def iscc():
     for c in (os.path.expandvars(r'%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe'), r'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
               r'C:\Program Files\Inno Setup 6\ISCC.exe'):
@@ -229,6 +248,8 @@ def main():
     log(f'pacote: {PACOTE} ({tamanho(PACOTE):.0f} MB)')
     z = zip_portatil(v)
     log(f'portátil: {z} ({os.path.getsize(z) / 1e6:.0f} MB)')
+    za = zip_atualizacao(v)
+    log(f'atualização leve: {za} ({os.path.getsize(za) / 1e6:.1f} MB)')
     s = instalador(v)
     if s:
         log(f'instalador: {s} ({os.path.getsize(s) / 1e6:.0f} MB)')

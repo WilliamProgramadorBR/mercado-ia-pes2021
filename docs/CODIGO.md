@@ -146,6 +146,7 @@ Toda leitura ou escrita na **memória** do jogo usa ReadProcessMemory/WriteProce
 | `pautas_momento.py` | Pautas do momento no programa. |
 | `redes_falas.py` | Banco de posts e comentários das redes sociais. |
 | `redes_vivas.py` | Redes ligadas ao momento: contas oficiais, jogadores, threads, citações, "Em alta" e o ritmo do feed. |
+| `segredos.py` | Chave do Gemini no `.env`, criptografada pela conta do Windows (DPAPI); ordem de leitura: variável de ambiente → `.env` → `ia.json` antigo. |
 | `redator.py` | IA de texto **opcional** (Google Gemini, com a chave do próprio usuário) que reescreve no estilo de cada veículo. |
 
 ### 4.5 As IAs de jogo
@@ -208,7 +209,7 @@ Gera a versão portátil (`.zip`) e o instalador (`MercadoIA.iss`, Inno Setup), 
 | `vigia_erros.txt` | erros do vigia |
 | `central_rede.json` | PIN (segredo) |
 
-Na pasta `cerebro/` (fora do `historico/`) fica ainda o `ia.json`, com a chave do Gemini. **Nunca compartilhe este arquivo.**
+A chave do Gemini fica no `.env` da pasta da ferramenta, criptografada pelo Windows (`segredos.py`). **Nunca compartilhe esse arquivo.** O `cerebro/ia.json` guarda só o modelo e o liga/desliga.
 
 ## 8. Regras do projeto
 

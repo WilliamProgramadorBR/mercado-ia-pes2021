@@ -5,7 +5,7 @@ Pega a edição da rodada (capas dos 3 jornais, programa "Bola na Mesa", pergunt
 REESCREVER os textos com mais variedade e personalidade, mantendo fatos, nomes, placares e números. Só texto: os
 efeitos das respostas (moral, orçamento, setas) não passam pela IA.
 
-Configuração em cerebro/ia.json (não compartilhe a chave):
+Configuração em cerebro/ia.json (modelo e liga/desliga) + a chave no .env (segredos.py; não compartilhe):
   {"provedor": "gemini", "modelo": "<nome do modelo>", "chave": "<sua API key>", "ligado": true}
 Sem configuração, desligado ou com erro/timeout: ficam os textos originais (nunca trava a reunião).
 """
@@ -39,6 +39,8 @@ def config():
     try:
         with open(CONFIG, encoding='utf-8') as f:
             c = json.load(f)
+        import segredos   # 13/10/2026: a chave mora no .env (criptografada pelo Windows), não mais no ia.json
+        c['chave'] = segredos.chave_gemini()
         return c if c.get('ligado') and c.get('chave') and c.get('modelo') else None
     except (OSError, ValueError):
         return None

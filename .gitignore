@@ -36,3 +36,6 @@ dist/
 empacotar/_cache/
 empacotar/ultima_montagem.log
 config.json
+
+# Segredos locais (chave do Gemini)
+.env

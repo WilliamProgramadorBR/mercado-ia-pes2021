@@ -188,17 +188,22 @@ def baixar_decrypter(log=print):
 
 # ---------------------------------------------------------------- IA (Gemini)
 def ia_config():
+    import segredos
     try:
         with open(base.ARQ_IA, encoding='utf-8') as f:
-            return json.load(f)
+            c = json.load(f)
     except (OSError, ValueError):
-        return {'provedor': 'gemini', 'modelo': 'gemini-2.5-flash', 'chave': '', 'ligado': False}
+        c = {'provedor': 'gemini', 'modelo': 'gemini-2.5-flash', 'ligado': False}
+    c['chave'] = segredos.chave_gemini()     # 13/10/2026: a chave vem do .env (criptografada pelo Windows)
+    return c
 
 
 def gravar_ia(chave=None, ligado=None, modelo=None):
+    import segredos
     c = ia_config()
     if chave is not None:
-        c['chave'] = chave.strip()
+        segredos.gravar_chave_gemini(chave)   # .env, nunca no ia.json
+    c.pop('chave', None)
     if ligado is not None:
         c['ligado'] = bool(ligado)
     if modelo:

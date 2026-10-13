@@ -88,7 +88,7 @@ O Mercado IA pode usar o **Google Gemini** para reescrever os textos da imprensa
 1. Pegue uma chave gratuita no **Google AI Studio**: https://aistudio.google.com/apikey
 2. Em **Configuração → IA de texto**, cole a chave, clique em **Testar a chave**, marque **Usar a IA do Google Gemini** e salve.
 
-A chave fica **só no seu PC**, no arquivo `app\cerebro\ia.json`, e só é enviada ao Google. **Nunca compartilhe esse arquivo.** Sem chave, tudo funciona com os textos prontos.
+A chave fica **só no seu PC**, no arquivo `app\.env`, criptografada pela sua conta do Windows (DPAPI), e só é enviada ao Google. **Nunca compartilhe esse arquivo.** Sem chave, tudo funciona com os textos prontos.
 
 ## 9. O duelo: estatística × rede neural
 
@@ -114,7 +114,7 @@ Fica tudo no seu PC:
 |---|---|
 | dados da carreira | `app\cerebro\historico` |
 | configuração | `app\config.json` |
-| chave da IA | `app\cerebro\ia.json` |
+| chave da IA | `app\.env` (criptografada pelo Windows) |
 | backups dos saves | `app\Backups` |
 
 Atualizar o Mercado IA (reinstalar uma versão nova) **não apaga** esses dados. Só são enviados para fora do PC os textos que o Gemini reescreve, e só se você ligar a IA de texto.

@@ -55,7 +55,7 @@ Tudo é controlado pelo **Painel**, um aplicativo Qt6 (PySide6) para Windows:
 
 O pacote leva o Python oficial embutido: o jogador **não instala Python**. Baixe o instalador (`MercadoIA-Setup-<versão>.exe`) ou a versão portátil (`.zip`) na página de releases e siga o [Manual](docs/MANUAL.md).
 
-Para desenvolver: `python -m painel` na pasta que contém `painel/` e `cerebro/` (requer `pip install PySide6`). Para gerar o instalador, veja [Empacotar](docs/EMPACOTAR.md). Os `.bat` antigos continuam funcionando. A chave da IA vai em `cerebro/ia.json` (modelo em `cerebro/ia.json.exemplo`) e **nunca deve ser publicada**.
+Para desenvolver: `python -m painel` na pasta que contém `painel/` e `cerebro/` (requer `pip install PySide6`). Para gerar o instalador, veja [Empacotar](docs/EMPACOTAR.md). Os `.bat` antigos continuam funcionando. A chave da IA é configurada no Painel e fica no `.env`, criptografada pelo Windows (modelo em `.env.exemplo`); **nunca deve ser publicada**.
 
 ## Como funciona
 
@@ -76,7 +76,7 @@ PES 2021 + Sider
              └─ substitui o save e mantém o backup
 ```
 
-Mais detalhes em [Arquitetura](docs/ARQUITETURA.md) e no [guia completo do código](docs/CODIGO.md).
+Mais detalhes em [Arquitetura](docs/ARQUITETURA.md), no [guia completo do código](docs/CODIGO.md) e na [documentação do sistema](docs/SISTEMA.md) (processos, fluxos, API, dados, atualização automática e Python para quem vem do C#).
 
 ## Requisitos
 

@@ -19,7 +19,7 @@ import sys
 import time
 import webbrowser
 
-from PySide6.QtCore import QSize, Qt, QTimer, QUrl
+from PySide6.QtCore import QObject, QSize, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QAction, QColor, QFont, QIcon, QPainter, QPixmap, QBrush, QPen
 from PySide6.QtNetwork import QLocalServer, QLocalSocket, QNetworkAccessManager, QNetworkRequest
 from PySide6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QLabel,
@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QFrame, QGr
                                QPushButton, QScrollArea, QStackedWidget, QSystemTrayIcon, QTabWidget, QTableWidget,
                                QTableWidgetItem, QTextBrowser, QVBoxLayout, QWidget, QHeaderView, QComboBox)
 
-from painel import base, servicos, sistema, verificar
+from painel import atualizar, base, servicos, sistema, verificar
 
 import caminhos  # noqa: E402  (base.py põe o cerebro no sys.path)
 
@@ -64,6 +64,10 @@ QScrollBar::add-line, QScrollBar::sub-line {{ width: 0; height: 0; }}
 QScrollBar::add-page, QScrollBar::sub-page {{ background: none; }}
 QToolTip {{ background: {COR['painel']}; color: {COR['texto']}; border: 1px solid {COR['linha']}; padding: 4px; }}
 """
+
+
+def esc_html(t):
+    return str(t).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
 def icone_app():
@@ -122,6 +126,14 @@ def mtime_txt(arq):
     return seg, quando
 
 
+class Sinais(QObject):
+    """Resultados que chegam de threads de fundo (verificação e download da atualização) para a janela."""
+    achou = Signal(object)          # info da atualização ou None
+    erro = Signal(str)
+    progresso = Signal(int, int)
+    baixou = Signal(str)
+
+
 # ====================================================================== Início
 class PaginaInicio(QWidget):
     def __init__(self, janela):
@@ -146,6 +158,20 @@ class PaginaInicio(QWidget):
         self.aviso = rotulo('', rico=True)
         self.aviso.hide()
         v.addWidget(self.aviso)
+        # faixa "nova versão disponível" (atualizacao.py)
+        self.faixa_att = QFrame()
+        self.faixa_att.setStyleSheet(f'QFrame {{ background: #13283f; border: 1px solid {COR["azul"]}; border-radius: 8px; }}')
+        fh = QHBoxLayout(self.faixa_att)
+        fh.setContentsMargins(14, 10, 14, 10)
+        self.att_txt = rotulo('')
+        self.att_txt.setTextFormat(Qt.TextFormat.RichText)
+        fh.addWidget(self.att_txt, 1)
+        self.b_att = QPushButton('Atualizar agora')
+        self.b_att.setObjectName('principal')
+        self.b_att.clicked.connect(lambda: self.j.instalar_atualizacao())
+        fh.addWidget(self.b_att)
+        self.faixa_att.hide()
+        v.addWidget(self.faixa_att)
         g = QGridLayout()
         g.setSpacing(12)
         self.cards = {}
@@ -160,6 +186,17 @@ class PaginaInicio(QWidget):
         v.addLayout(g)
         v.addWidget(rotulo('Dica: feche a janela à vontade — o Painel fica na bandeja (perto do relógio) e os serviços continuam.', 'sub'))
         v.addStretch(1)
+
+    def mostrar_atualizacao(self, info):
+        if not info:
+            self.faixa_att.hide()
+            return
+        tipo = 'rápida, só o código (alguns segundos)' if info['tipo'] == 'leve' else 'completa, pelo instalador (alguns minutos)'
+        notas = (info.get('notas') or '').strip().replace('\n', '<br>')
+        self.att_txt.setText(f'<b style="font-size:12pt">⬆ Nova versão {esc_html(info["versao"])} disponível</b> '
+                             f'<span style="color:{COR["mudo"]}">(você tem a {base.VERSAO}) · atualização {tipo}</span>'
+                             + (f'<br><span style="color:{COR["mudo"]}">{notas[:600]}</span>' if notas else ''))
+        self.faixa_att.show()
 
     def alternar(self):
         if any(s.querer for s in self.j.serv.s.values()):
@@ -629,7 +666,7 @@ class PaginaConfig(QWidget):
         v.addWidget(cartao(rotulo('IA de texto — Google Gemini (opcional)', 'h2'), self.ia_ligada, h,
                            rotulo(f'É o <b>Google Gemini</b>. A chave é sua e gratuita para uso pessoal: '
                                   f'<a style="color:{COR["ouro"]}" href="{verificar.GEMINI_CHAVES}">pegar uma chave no Google AI Studio</a>. '
-                                  'Ela fica só neste PC (cerebro\\ia.json) e só é enviada ao Google. Sem chave, tudo funciona com os textos prontos.',
+                                  'Ela fica só neste PC, no arquivo .env, criptografada pela sua conta do Windows, e só é enviada ao Google. Sem chave, tudo funciona com os textos prontos.',
                                   'sub', rico=True)))
 
         # automações
@@ -650,6 +687,19 @@ class PaginaConfig(QWidget):
         self.lan.setChecked(bool(lan.get('rede')))
         caixas.append(self.lan)
         v.addWidget(cartao(rotulo('Automações', 'h2'), *caixas))
+
+        # atualizações (OTA pelo GitHub Releases)
+        self.att_auto = QCheckBox('Procurar atualização sozinho ao abrir o Painel')
+        self.att_auto.setChecked(cfg.get('atualizacao_auto', True) is not False)
+        ba = QPushButton('Procurar atualização agora')
+        ba.clicked.connect(lambda: self.j.procurar_atualizacao(manual=True))
+        ha = QHBoxLayout()
+        ha.addWidget(ba)
+        ha.addStretch(1)
+        modo = ('pacote instalado: as atualizações vêm dos releases do GitHub' if atualizar.empacotado()
+                else 'modo desenvolvimento: o código vem do git, a atualização automática fica desligada')
+        v.addWidget(cartao(rotulo('Atualizações', 'h2'), rotulo(f'Versão instalada: <b>{base.VERSAO}</b> · {modo}', 'sub', rico=True),
+                           self.att_auto, ha))
 
         sv = QPushButton('Salvar configuração')
         sv.setObjectName('principal')
@@ -735,6 +785,7 @@ class PaginaConfig(QWidget):
 
     def salvar(self):
         c = self._cfg()
+        c['atualizacao_auto'] = self.att_auto.isChecked()
         caminhos.gravar_config(c)
         verificar.gravar_ia(chave=self.ia_chave.text(), ligado=self.ia_ligada.isChecked(), modelo=self.ia_modelo.currentText().strip())
         aut = ler_json(base.ARQ_AUTOMACAO, {}) or {}
@@ -862,10 +913,96 @@ class Janela(QMainWindow):
         self.timer.start(4000)
         self._bandeja()
         self.pag['config'].verificar()
+        self.sinais = Sinais()
+        self.sinais.achou.connect(self._achou_atualizacao)
+        self.sinais.erro.connect(lambda m: self._prog_fechar() or (self._att_manual and QMessageBox.warning(self, 'Atualização', m)))
+        self.sinais.progresso.connect(self._prog)
+        self.sinais.baixou.connect(self._baixou)
+        self.att_info, self._att_manual, self._dlg = None, False, None
+        if caminhos.config().get('atualizacao_auto', True) is not False:
+            QTimer.singleShot(6000, self.procurar_atualizacao)            # um pouco depois de abrir
+        self._t_att = QTimer(self)
+        self._t_att.timeout.connect(self.procurar_atualizacao)
+        self._t_att.start(6 * 3600 * 1000)                                 # e a cada 6 horas
         self.ir('config' if any(i.estado == 'erro' for i in self.verificacao) or not os.path.isfile(caminhos.ARQ_CONFIG) else 'inicio')
         if not any(i.estado == 'erro' for i in self.verificacao) and '--captura' not in sys.argv and '--sem-servicos' not in sys.argv:
             self.serv.ligar_tudo()
         self.tique()
+
+    # ---------------------------------------------------------------- atualização (atualizar.py)
+    def procurar_atualizacao(self, manual=False):
+        import threading
+        self._att_manual = manual
+        if not atualizar.empacotado() and not os.environ.get('MERCADO_IA_ATUALIZACAO_URL'):
+            if manual:
+                QMessageBox.information(self, 'Atualização', 'Modo desenvolvimento: aqui o código vem do git. A atualização automática vale no pacote instalado.')
+            return
+
+        def tarefa():
+            try:
+                self.sinais.achou.emit(atualizar.verificar())
+            except Exception as e:  # noqa: BLE001 - sem internet, GitHub fora: tenta de novo mais tarde
+                self.sinais.erro.emit(f'Não consegui procurar atualização: {e}')
+        threading.Thread(target=tarefa, daemon=True).start()
+
+    def _achou_atualizacao(self, info):
+        self.att_info = info
+        self.pag['inicio'].mostrar_atualizacao(info)
+        if info:
+            self.bandeja.showMessage('Mercado IA', f'Nova versão {info["versao"]} disponível. Abra o Painel para atualizar.', icone_app(), 6000)
+        elif self._att_manual:
+            QMessageBox.information(self, 'Atualização', f'Você já está na versão mais nova ({base.VERSAO}).')
+
+    def instalar_atualizacao(self):
+        import threading
+        info = self.att_info
+        if not info:
+            return
+        if QMessageBox.question(self, 'Atualizar', f'Atualizar para a versão {info["versao"]}?\n\n'
+                                + ('O código é trocado em segundos e o Painel reinicia. ' if info['tipo'] == 'leve'
+                                   else 'O instalador roda em segundo plano e o Painel abre de novo no fim. ')
+                                + 'Seus dados da carreira não são tocados. O vigia e a Central reiniciam junto.') != QMessageBox.StandardButton.Yes:
+            return
+        from PySide6.QtWidgets import QProgressDialog
+        self._dlg = QProgressDialog('Baixando a atualização...', None, 0, 100, self)
+        self._dlg.setWindowTitle('Atualização')
+        self._dlg.setMinimumDuration(0)
+        self._dlg.setValue(0)
+
+        def tarefa():
+            try:
+                self.sinais.baixou.emit(atualizar.baixar(info, lambda f, t: self.sinais.progresso.emit(f, t)))
+            except Exception as e:  # noqa: BLE001
+                self._att_manual = True
+                self.sinais.erro.emit(str(e))
+        threading.Thread(target=tarefa, daemon=True).start()
+
+    def _prog(self, feito, total):
+        if self._dlg:
+            self._dlg.setValue(int(100 * feito / total) if total else 50)
+
+    def _prog_fechar(self):
+        if self._dlg:
+            self._dlg.close()
+            self._dlg = None
+
+    def _baixou(self, caminho):
+        self._prog_fechar()
+        info = self.att_info
+        try:
+            if info['tipo'] == 'leve':
+                self.serv.desligar_tudo()
+                atualizar.aplicar_leve(caminho)
+                atualizar.limpar_backups()
+                atualizar.reiniciar_painel()
+            else:
+                self.serv.desligar_tudo()
+                atualizar.aplicar_completa(caminho)
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self, 'Atualização', f'A atualização não foi aplicada (a versão atual continua): {e}')
+            self.serv.ligar_tudo()
+            return
+        self.sair()
 
     def ir(self, k):
         self.menu.setCurrentRow([p[0] for p in self.PAGINAS].index(k))

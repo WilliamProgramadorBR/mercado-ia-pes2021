@@ -55,3 +55,29 @@ winget install JRSoftware.InnoSetup
 Saída em `dist\`: `MercadoIA\` (pasta pronta), `MercadoIA-portatil-<versão>.zip` e `MercadoIA-Setup-<versão>.exe`.
 
 A versão do pacote vem de `painel\base.py` (`VERSAO`).
+
+## Publicar uma versão (atualização automática)
+
+O Painel instalado procura atualizações nos **releases do GitHub** deste repositório ao abrir e a cada 6 horas (`painel/atualizar.py`). Para soltar uma versão:
+
+1. Suba a versão em `painel/base.py`, por exemplo `VERSAO = '0.9.1'`.
+2. Escreva o que mudou em `empacotar/NOTAS.md`. O texto aparece no release e na faixa "Nova versão" do Painel.
+3. Rode:
+   ```powershell
+   python empacotar\publicar.py --ensaio   # confere tudo sem publicar
+   python empacotar\publicar.py            # monta e publica o release v0.9.1
+   ```
+
+O release leva:
+- o instalador;
+- a versão portátil;
+- o zip leve só com o código (`MercadoIA-app-<versão>.zip`, menos de 1 MB);
+- o `atualizacao.json`, com as impressões digitais SHA-256.
+
+O Painel escolhe entre dois tipos de atualização:
+- **Leve:** quando o Python embutido e o Qt são os mesmos (`runtime`/`pyside` do manifesto). Troca só `painel/`, `cerebro/`, `sider/`, `docs/` e `pesXdecrypter/`, guarda backup em `app/_backup/` e reinicia. Os dados da carreira, `ia.json`, `automacao.json` e `config.json` nunca são tocados.
+- **Completa:** quando mudou o Python ou o Qt. Baixa o instalador e roda em modo silencioso.
+
+O Painel só aplica o que conferir com a impressão digital. É preciso o GitHub CLI (`gh`) logado na conta dona do repositório.
+
+Para testar sem publicar, sirva uma pasta com o zip e o manifesto (`python -m http.server`) e defina `MERCADO_IA_ATUALIZACAO_URL=http://127.0.0.1:8000/atualizacao.json`.
