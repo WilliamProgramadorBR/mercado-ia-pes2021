@@ -148,6 +148,21 @@ def escalar(team, sq_ids, jogos7, importancia, semente=0, max_desc=MAX_DESCANSOS
     return lista, [p.name for _, p, _ in xi], [p.name for p in descansam]
 
 
+_TIMES = {}
+
+
+def _times(s, P, n_cl, d):
+    """19/10/2026 (desempenho): os 625 times montados (aplicar.build_teams, ~9 s de CPU) só mudam com um save novo
+    ou uma foto nova dos jogadores — antes eram remontados a cada mudança de data do jogo (a cada ~30 s com o
+    calendário andando), travando a Central. escalar() só lê os times, então o mesmo objeto pode ser reaproveitado."""
+    import zlib
+    import aplicar
+    chave = (len(d), zlib.crc32(d), id(P), len(P), n_cl)
+    if _TIMES.get('chave') != chave:
+        _TIMES.update(chave=chave, times={t.idx: t for t in aplicar.build_teams(s, P, n_cl)})
+    return _TIMES['times']
+
+
 def _jogos_recentes(jogos, ti, data_jogo, dias=7):
     """{pid: nº de jogos nos últimos `dias` dias} pelas súmulas da memória (registros do pulso com _x/_o)."""
     import struct
@@ -266,7 +281,7 @@ def preparar(h, d, P, jogos, user_ti, b0, log=print, dias=4):
                 pend.append((j, ti, chave))
     if not pend:
         return 0
-    teams = {t.idx: t for t in aplicar.build_teams(s, P, n_cl)}
+    teams = _times(s, P, n_cl, d)
     forca, nomes = {}, {}
     for ti in {ti for j, ti, _ in pend} | {j['time1'] for j, _, _ in pend} | {j['time2'] for j, _, _ in pend}:
         t = teams.get(ti)

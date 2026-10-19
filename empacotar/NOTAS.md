@@ -1,5 +1,4 @@
-Mercado IA 0.9.4: a noite da Bola de Ouro e a correção da resposta à diretoria.
-- Bola de Ouro: quando o jogo anuncia o melhor do mundo, o prêmio vira o assunto de tudo. Capas dos jornais, matérias nas três vozes (Mesa Tática, Plantão do Esporte, Resenha Raiz), posts da conta oficial, do premiado e dos companheiros, memes e haters, hashtags no "Em alta", perguntas na coletiva, mensagens no celular e um slide na Central com o pódio e as comparações com as lendas.
-- O vestiário sente: o premiado ganha moral, o grupo festeja e o companheiro vaidoso que ficou atrás pode se incomodar.
-- Prêmios continentais também viram notícia quando alguém do clube vai ao pódio.
-- Correção: confirmar a resposta ao presidente às vezes dava "erro interno do servidor" (o arquivo estava aberto em outra leitura no Windows). Agora a gravação espera o arquivo ficar livre.
+Mercado IA 0.9.5: Central muito mais rápida para confirmar decisões.
+- Celular, calendário, coletiva e casos agora confirmam na hora. Antes, a leitura da memória do jogo a cada 4 segundos ocupava quase um núcleo do processador e os cliques ficavam na fila (às vezes mais de um minuto).
+- Leitura da memória do jogo cerca de 15 vezes mais leve, com o mesmo resultado; o técnico da IA não remonta mais os 625 times a cada dia do calendário; as telas abertas (Painel, navegador, celular) param de reler os arquivos inteiros a cada segundo.
+- Correção: a aba Imprensa quebrava quando a matéria mais nova do pós-jogo não era de uma partida (Bola de Ouro, análise, departamento médico). Agora essas matérias aparecem em "Mais do pós-jogo".

@@ -9,11 +9,22 @@ mesmas estruturas, atualizadas na hora:
   - bloco de finanças (orçamento de transferências e verba de salários).
 O pulso grava historico/pulso_<slot>.json; a Central mistura isso por cima da última reunião (central.py).
 Data atual = data do jogo mais recente já disputado no mundo (sempre há rodada em alguma liga).
+
+DESEMPENHO (19/10/2026): a varredura dos ~24 MB era um laço Python byte a byte (~4 s de CPU) repetido a cada 4 s —
+a Central ficava com ~80% de um núcleo ocupado e, como o Python só roda uma thread por vez (GIL), cada clique do
+usuário (celular, calendário, coletiva) esperava a vez: uma requisição de 0,3 s levava mais de 1 minuto. Agora:
+  1. só reprocessa uma região se os bytes mudaram (crc32: 3 ms para 24 MB) — parado no menu ou entre jogos, o ciclo
+     custa ~0,05 s;
+  2. quando muda, os candidatos vêm de uma expressão regular (em C) ancorada no ano/mês/dia do registro, e só eles
+     passam pelas conferências de sempre — resultado idêntico ao do laço antigo (conferido na memória e no save:
+     10.089 e 10.087 jogos iguais), ~7,5x mais rápido.
 """
 import json
 import os
+import re
 import struct
 import time
+import zlib
 
 import liga_save as LS
 import memoria as M
@@ -65,12 +76,23 @@ def _regioes(h):
     return [(b, s) for b, s in M.regioes(h) if s <= 96 * 2**20]
 
 
+# +9 = byte alto do ano (2015..2080 = 0x07DF..0x0820), +10 mês, +11 dia, +12..15 u32 <= 3: toda condição que o
+# _cabecalho_ok exige. Lookahead (largura zero) para não pular registros que se sobrepõem a um falso candidato.
+_ANCORA = re.compile(rb'(?=[\x07\x08][\x01-\x0c][\x01-\x1f][\x00-\x03]\x00\x00\x00)')
+_FLAGS = frozenset((0x20, 0x40, 0x50, 0x60, 0x00, 0x10))
+_PARSE = {}   # (base, tamanho) -> (crc32, jogos): região igual à do ciclo anterior não é reprocessada
+
+
 def _jogos_da_regiao(x):
     out = []
-    for o in range(0, len(x) - REC, 4):
+    lim = len(x) - REC
+    for m in _ANCORA.finditer(x, 9):
+        o = m.start() - 9
+        if o & 3 or o >= lim:
+            continue
         # +7: jogado 0x60 (liga/grupos), 0x40 ida e 0x50 volta do mata-mata; agendado 0x20, 0x00 ida e 0x10 volta
         f = x[o + 7]
-        if f in (0x20, 0x40, 0x50, 0x60, 0x00, 0x10) and x[o + 13:o + 16] == bytes(3) and x[o + 12] <= 3 and ps._cabecalho_ok(x, o):
+        if f in _FLAGS and ps._cabecalho_ok(x, o):
             if f in (0x00, 0x10) and (x[o + 28] or x[o + 31]):
                 continue
             t1, t2 = struct.unpack_from('<II', x, o + 20)
@@ -118,7 +140,7 @@ def jogos(h):
         for b, s in _cache['jogos']:
             x = M.ler(h, b, s)
             if x:
-                out += _jogos_da_regiao(x)
+                out += _jogos_cache(b, s, x)
         if len(out) > 500:
             return out
     regs, out = [], []
@@ -142,6 +164,19 @@ def jogos(h):
         ano = max(j['data'] for j in out if j['jogado'])[0] if any(j['jogado'] for j in out) else out[0]['data'][0]
         _cache['anos'] = [ano - 1, ano, ano + 1]
     return out
+
+
+def _jogos_cache(b, s, x):
+    """Jogos de uma região, reaproveitando os do ciclo anterior se os bytes não mudaram."""
+    crc = zlib.crc32(x)
+    c = _PARSE.get((b, s))
+    if c and c[0] == crc:
+        return c[1]
+    j = _jogos_da_regiao(x)
+    if len(_PARSE) > 32:
+        _PARSE.clear()
+    _PARSE[(b, s)] = (crc, j)
+    return j
 
 
 def tabela(h, ti, times):

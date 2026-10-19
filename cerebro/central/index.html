@@ -849,7 +849,7 @@ section h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom:
       <section><h2>Em alta</h2><div id="redesAlta" class="alta"></div><h2>Enquetes</h2><div id="redesEnq"></div></section></div></div>
     <div class="sub" data-sub="pre"><div id="impPre"></div></div>
     <div class="sub" data-sub="x4"><div id="impX4"></div><section><h2>Os quatro de cada lado</h2><div id="duelo1"></div></section></div>
-    <div class="sub" data-sub="pos"><div class="hist-materias"><select id="selPos" aria-label="jogo" class="seletor"></select></div><div id="impPos"></div></div>
+    <div class="sub" data-sub="pos"><div class="hist-materias"><select id="selPos" aria-label="jogo" class="seletor"></select></div><div id="impPos"></div><div id="impPosExtra"></div></div>
     <div class="sub" data-sub="temp"><div id="impTemp"></div><div id="hallFama"></div><div class="grid3" id="rodada" style="margin-bottom:16px"></div></div>
     <div class="sub" data-sub="mundo"><div id="impRodada"></div><div id="impPremios"></div><div id="oficiais"></div><div id="mundoPainel"></div><div id="impRevel"></div></div>
     <div class="sub" data-sub="merc"><div id="impMerc"></div></div>
@@ -1210,7 +1210,7 @@ function escalHTML(e, nome) {
     `<div class="lin"><span><b>${esc(j.pos)}</b>${esc(j.nome)}</span><span>${j.nota ?? ''}</span></div>`).join('')}</div>`;
 }
 function notasHTML(js, nome) {
-  return `<div><h4>${crest(nome, 16)} ${esc(nome)}</h4><table class="notas">${js.map(j => {
+  return `<div><h4>${crest(nome, 16)} ${esc(nome)}</h4><table class="notas">${(js || []).map(j => {
     const n = j.numeros, extra = n ? [n.passes ? `${n.passes_ok}/${n.passes} passes` : '', n.chutes ? `${n.chutes} chutes` : '',
       (n.desarmes + n.interceptacoes) ? `${n.desarmes + n.interceptacoes} rec.` : ''].filter(Boolean).join(' · ') : '';
     return `<tr><td>${esc(j.pos)}</td><td>${esc(j.nome)}${j.gols ? ' ⚽'.repeat(j.gols) : ''}${j.assist ? ` <span title="assistências">🅰${j.assist > 1 ? j.assist : ''}</span>` : ''}
@@ -1528,7 +1528,13 @@ function renderFrentes(d) {
     || (I.jogo_da_rodada || [])[0];
   $('impX4').innerHTML = x4 ? materiaHTML(x4) : vazio('O 4 x 4 sai na próxima reunião.');
   // pós-jogo (com histórico)
-  const pos = I.pos_jogo || [], sel = $('selPos'), atual = sel.value;
+  // 19/10/2026: a frente "pós-jogo" também recebe análise (três vozes), departamento médico e premiação — sem placar
+  // nem notas. O seletor fica só com os relatos de partida; as outras matérias vão num bloco abaixo.
+  const todasPos = I.pos_jogo || [];
+  const pos = todasPos.filter(m => m.dados && m.dados.casa && m.dados.fora && (m.dados.nos || m.dados.eles));
+  const extrasPos = todasPos.filter(m => !pos.includes(m)).slice(0, 6);
+  $('impPosExtra').innerHTML = extrasPos.length ? `<h3 style="margin:16px 0 8px">Mais do pós-jogo</h3>` + extrasPos.map(m => materiaHTML(m)).join('') : '';
+  const sel = $('selPos'), atual = sel.value;
   sel.innerHTML = pos.map((m, i) => `<option value="${i}">${dataBR(m.data)} · ${esc(m.dados.casa)} ${m.dados.g1} x ${m.dados.g2} ${esc(m.dados.fora)}</option>`).join('');
   if (atual && +atual < pos.length) sel.value = atual;
   sel.hidden = pos.length < 2;

@@ -101,21 +101,55 @@ def _migrar():
         shutil.copy2(velho, novo)
 
 
+# 19/10/2026 (desempenho): cada tela aberta pergunta "mudou algo?" a cada 0,7 s, e a pergunta passava por aqui —
+# relendo o JSON inteiro (~500 KB) de cada carreira e varrendo a pasta de saves (OneDrive). Agora o JSON só é relido
+# quando a data do arquivo muda, e as listagens de pasta valem por 3 s.
+_CARR = {'arq': {}, 'lista': None, 'quando': 0.0}
+_CARR_TRAVA = threading.Lock()
+VALIDADE_LISTAGEM = 3.0
+
+
+def _glob_cache(padrao, validade=VALIDADE_LISTAGEM):
+    import glob
+    c = _CARR.setdefault('glob', {}).get(padrao)
+    if c and time.time() - c[0] < validade:
+        return c[1]
+    r = glob.glob(padrao)
+    _CARR['glob'][padrao] = (time.time(), r)
+    return r
+
+
 def carreiras():
     """[{slot, arquivo, time, laboratorio, save_mtime}] das carreiras que já têm dados para a Central."""
-    import glob
     if DADOS_FIXO:
         d = _ler_json(DADOS_FIXO, {})
         return [{'slot': d.get('slot', 'ML00000000'), 'arquivo': DADOS_FIXO, 'time': d.get('time'),
                  'laboratorio': d.get('laboratorio', False), 'save_mtime': 0}]
-    saves = {os.path.basename(f): os.path.getmtime(f) for f in glob.glob(os.path.join(SAVES, '*', 'save', 'ML0000000?'))}
-    out = []
-    for f in glob.glob(os.path.join(HIST, 'central_ML*.json')):
-        slot = os.path.basename(f)[len('central_'):-len('.json')]
-        d = _ler_json(f, {})
-        out.append({'slot': slot, 'arquivo': f, 'time': d.get('time'), 'laboratorio': d.get('laboratorio', False),
-                    'tecnico': d.get('tecnico'), 'save_mtime': saves.get(slot, 0)})
-    return sorted(out, key=lambda c: -c['save_mtime'])
+    with _CARR_TRAVA:
+        if _CARR['lista'] is not None and time.time() - _CARR['quando'] < 1.0:
+            return [dict(c) for c in _CARR['lista']]
+        saves = {}
+        for f in _glob_cache(os.path.join(SAVES, '*', 'save', 'ML0000000?')):
+            try:
+                saves[os.path.basename(f)] = os.path.getmtime(f)
+            except OSError:
+                pass
+        out = []
+        for f in _glob_cache(os.path.join(HIST, 'central_ML*.json')):
+            slot = os.path.basename(f)[len('central_'):-len('.json')]
+            try:
+                mt = os.path.getmtime(f)
+            except OSError:
+                continue
+            info = _CARR['arq'].get(f)
+            if not info or info[0] != mt:
+                d = _ler_json(f, {})
+                info = (mt, {'time': d.get('time'), 'laboratorio': d.get('laboratorio', False), 'tecnico': d.get('tecnico')})
+                _CARR['arq'][f] = info
+            out.append({'slot': slot, 'arquivo': f, **info[1], 'save_mtime': saves.get(slot, 0)})
+        out.sort(key=lambda c: -c['save_mtime'])
+        _CARR.update(lista=out, quando=time.time())
+        return [dict(c) for c in out]
 
 
 def escolher(slot=None):
@@ -189,8 +223,7 @@ def _familiaridade(d):
     """12/10/2026: familiaridade tática do elenco (familiaridade.py), do save da última reunião; refeita só quando
     sai um save novo."""
     try:
-        import glob
-        decs = glob.glob(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'))
+        decs = _glob_cache(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'), 10.0)
         if not decs or not d.get('jogadores'):
             return None
         f = max(decs, key=os.path.getmtime)
@@ -203,6 +236,26 @@ def _familiaridade(d):
     except Exception as e:  # noqa: BLE001
         print('aviso: familiaridade:', e, flush=True)
         return None
+
+
+_EST = {}
+_EST_TRAVA = threading.Lock()
+VALIDADE_ESTADO = 20.0
+
+
+def estado_json(slot=None):
+    """19/10/2026 (desempenho): o estado projetado em JSON, reaproveitado enquanto a versão (datas/tamanhos das
+    fontes) não muda. Antes, cada tela aberta e cada clique (/api/acao) refaziam a projeção inteira (~0,3-0,6 s de
+    CPU, 574 KB) — com 2-3 telas e as threads de fundo disputando o Python, um clique chegava a esperar mais de 1 min."""
+    v = versao(slot)
+    with _EST_TRAVA:
+        c = _EST.get(slot)
+        if c and c['v'] == v and time.time() - c['quando'] < VALIDADE_ESTADO:
+            return c['json']
+    js = json.dumps(estado_projetado(slot), ensure_ascii=False)
+    with _EST_TRAVA:
+        _EST[slot] = {'v': v, 'quando': time.time(), 'json': js}
+    return js
 
 
 def _pulso_arq(slot):
@@ -334,7 +387,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 with open(os.path.join(WEB, 'index.html'), 'rb') as f:
                     return self._send(200, f.read(), 'text/html; charset=utf-8')
             if path == '/api/estado':
-                return self._send(200, json.dumps(estado_projetado(self._slot()), ensure_ascii=False).encode('utf-8'),
+                return self._send(200, estado_json(self._slot()).encode('utf-8'),
                                   'application/json; charset=utf-8')
             if path == '/api/eventos':
                 return self._eventos()
@@ -378,7 +431,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             while True:
                 v = versao(slot)
                 if v != ultima:
-                    corpo = json.dumps(estado_projetado(slot), ensure_ascii=False)
+                    corpo = estado_json(slot)
                     self.wfile.write(f'event: estado\ndata: {corpo}\n\n'.encode('utf-8'))
                     self.wfile.flush()
                     ultima, pulso = v, time.time()
@@ -438,7 +491,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return self._send(400, 'ação desconhecida'.encode('utf-8'), 'text/plain; charset=utf-8')
             c = escolher(corpo.get('slot'))
             # o mesmo estado que a página mostra (inclui a coletiva ao vivo do pulso e a data real do jogo)
-            d = estado_projetado(c['slot']) if c else {}
+            d = json.loads(estado_json(c['slot'])) if c else {}   # cópia própria: a ação pode mexer nela
             if d.get('laboratorio'):
                 raise acoes.Recusada('carreira de laboratório (teste): a Central só mostra, não escreve nada no jogo')
             ev = f(corpo, d)
@@ -605,10 +658,26 @@ def _tecnico_ia_thread():
             e = ia_adversaria._ler_estado()
             b0 = ia_adversaria._base_memoria(sessao['h'], d, e, log)
             ia_adversaria._gravar_estado(e)
-            P = _dados.load_players(caminhos.SNAP)
+            P = _jogadores()
             escalacao_ia.preparar(sessao['h'], d, P, jogos, user_ti, b0, log=log)
         except Exception as ex:  # noqa: BLE001 - nunca derruba a Central
             print('aviso: técnico da IA:', ex, flush=True)
+
+
+_JOG = {}
+
+
+def _jogadores():
+    """19/10/2026 (desempenho): a foto dos jogadores (dados.load_players, ~1,5 s) só é relida quando o arquivo muda.
+    O mesmo objeto deixa o técnico da IA reaproveitar os times montados (escalacao_ia._times)."""
+    import dados as _dados
+    try:
+        mt = os.path.getmtime(caminhos.SNAP)
+    except OSError:
+        mt = None
+    if _JOG.get('mt') != mt or 'P' not in _JOG:
+        _JOG.update(mt=mt, P=_dados.load_players(caminhos.SNAP))
+    return _JOG['P']
 
 
 def _imprensa_viva_thread():
