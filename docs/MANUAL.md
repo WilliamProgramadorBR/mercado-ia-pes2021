@@ -26,6 +26,10 @@ Você **não precisa instalar o Python**: ele já vem dentro do pacote.
 
 1. **Instale o Sider** no seu PES 2021, se ainda não tiver. Muitos patches já trazem o Sider instalado. Na pasta do jogo devem existir o `sider.exe`, o `sider.dll` e o `sider.ini`.
 2. **Faça backup dos saves.** Copie para outro lugar a pasta `Documentos\KONAMI\eFootball PES 2021 SEASON UPDATE`. Se o seu Documentos estiver no OneDrive, ela fica dentro do OneDrive.
+3. **Windows Defender: permita o `encrypter21.exe`.** O Defender pode acusar o `encrypter21.exe` (às vezes como `Trojan:Win32/Pomal!rfn`) e apagá-lo ou colocá-lo em quarentena. É um **falso positivo**: o arquivo é o oficial do pesXdecrypter (domínio público), o mesmo que a comunidade de PES usa há anos para abrir e fechar a criptografia dos saves, e o Painel confere a impressão digital (SHA-256) dele. Sem esse arquivo o Mercado IA não consegue gravar as transferências no save. Para permitir:
+   1. abra **Segurança do Windows → Proteção contra vírus e ameaças → Histórico de proteção**;
+   2. clique no aviso do `encrypter21.exe` → **Ações** → **Permitir no dispositivo** (ou **Restaurar**, se ele estiver em quarentena);
+   3. no Painel, em **Configuração**, clique em **Verificar de novo**. Se o arquivo tiver sumido, use **Restaurar a versão oficial** no item do pesXdecrypter.
 
 ## 3. Instalação
 

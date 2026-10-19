@@ -55,6 +55,8 @@ Tudo é controlado pelo **Painel**, um aplicativo Qt6 (PySide6) para Windows:
 
 O pacote leva o Python oficial embutido: o jogador **não instala Python**. Baixe o instalador (`MercadoIA-Setup-<versão>.exe`) ou a versão portátil (`.zip`) na página de releases e siga o [Manual](docs/MANUAL.md).
 
+> **Windows Defender:** ele pode acusar o `encrypter21.exe` do pesXdecrypter (ex.: `Trojan:Win32/Pomal!rfn`). É falso positivo: é o arquivo oficial, de domínio público, e o Painel confere o SHA-256 dele. **Permita o arquivo** em Segurança do Windows → Proteção contra vírus e ameaças → Histórico de proteção → Ações → **Permitir no dispositivo**. Sem ele, as transferências não são gravadas no save. Passo a passo no [Manual](docs/MANUAL.md#2-antes-de-instalar).
+
 Para desenvolver: `python -m painel` na pasta que contém `painel/` e `cerebro/` (requer `pip install PySide6`). Para gerar o instalador, veja [Empacotar](docs/EMPACOTAR.md). Os `.bat` antigos continuam funcionando. A chave da IA é configurada no Painel e fica no `.env`, criptografada pelo Windows (modelo em `.env.exemplo`); **nunca deve ser publicada**.
 
 ## Como funciona

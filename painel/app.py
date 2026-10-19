@@ -25,7 +25,7 @@ from PySide6.QtNetwork import QLocalServer, QLocalSocket, QNetworkAccessManager,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QLabel,
                                QLineEdit, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QPlainTextEdit,
                                QPushButton, QScrollArea, QStackedWidget, QSystemTrayIcon, QTabWidget, QTableWidget,
-                               QTableWidgetItem, QTextBrowser, QVBoxLayout, QWidget, QHeaderView, QComboBox)
+                               QTableWidgetItem, QTextBrowser, QVBoxLayout, QWidget, QHeaderView, QComboBox, QProgressBar)
 
 from painel import atualizar, base, servicos, sistema, verificar
 
@@ -199,11 +199,25 @@ class PaginaInicio(QWidget):
         fh.addWidget(self.b_att)
         self.faixa_att.hide()
         v.addWidget(self.faixa_att)
+        # 19/10/2026: o mercado gravou no save e o jogo ainda não carregou (mercado_fluxo.recarga)
+        self.faixa_rec = QFrame()
+        self.faixa_rec.setObjectName('faixaRec')
+        self.faixa_rec.setStyleSheet(f'QFrame#faixaRec {{ background: #3a1512; border: 1px solid {COR["ruim"]}; border-radius: 8px; }}')
+        fr = QHBoxLayout(self.faixa_rec)
+        fr.setContentsMargins(14, 10, 14, 10)
+        self.rec_txt = rotulo('', rico=True)
+        fr.addWidget(self.rec_txt, 1)
+        b_rec = QPushButton('Ver o Mercado IA')
+        b_rec.clicked.connect(lambda: self.j.ir('mercado'))
+        fr.addWidget(b_rec)
+        self.faixa_rec.hide()
+        v.addWidget(self.faixa_rec)
         g = QGridLayout()
         g.setSpacing(12)
         self.cards = {}
         for i, (k, t) in enumerate([('jogo', 'Jogo'), ('vigia', 'Vigia'), ('central', 'Central do Técnico'),
-                                    ('reuniao', 'Última reunião'), ('tecnico', 'Técnico da IA'), ('duelo', 'Duelo estatística x rede')]):
+                                    ('reuniao', 'Última reunião'), ('tecnico', 'Técnico da IA'), ('duelo', 'Duelo estatística x rede'),
+                                    ('plano', 'Plano do próximo adversário')]):
             tit = rotulo(t, 'sub')
             val = rotulo('—')
             val.setStyleSheet('font-size: 13pt; font-weight: 600;')
@@ -224,6 +238,15 @@ class PaginaInicio(QWidget):
                              f'<span style="color:{COR["mudo"]}">(você tem a {base.VERSAO}) · atualização {tipo}</span>'
                              + (f'<br><span style="color:{COR["mudo"]}">{notas[:600]}</span>' if notas else ''))
         self.faixa_att.show()
+
+    def mostrar_recarga(self, rc):
+        if not rc:
+            self.faixa_rec.hide()
+            return
+        self.rec_txt.setText(f'<b style="font-size:12pt;color:{COR["ruim"]}">⚠ Volte ao menu do jogo e CARREGUE a carreira</b><br>'
+                             f'<span style="color:{COR["texto"]}">{esc_html(rc.get("motivo") or "")} gravada(s) no save às '
+                             f'{esc_html((rc.get("quando") or "")[11:16])}. Se o jogo salvar antes, grava por cima.</span>')
+        self.faixa_rec.show()
 
     def alternar(self):
         if any(s.querer for s in self.j.serv.s.values()):
@@ -267,6 +290,18 @@ class PaginaInicio(QWidget):
                         f'jogos da IA: {ps_["estatistica"]} x {ps_["rede"]} ({ps_["jogos"]}/100) · seus jogos: {pu["estatistica"]} x {pu["rede"]} ({pu["jogos"]}/100)')
         except Exception as e:  # noqa: BLE001
             self.marcar('duelo', '—', str(e)[:80])
+        # 19/10/2026: o plano do adversário já está escrito no jogo? (o próximo e, com antecedência, o seguinte)
+        ia = ler_json(os.path.join(base.HIST, 'ia_adversaria.json'), {}) or {}
+        ats = sorted(ia.get('ativos') or ([ia['ativo']] if ia.get('ativo') else []), key=lambda a: a.get('data') or [])
+        if ats:
+            a0 = ats[0]
+            dm = lambda d: f'{d[2]:02d}/{d[1]:02d}' if d else '?'
+            seg = f' · seguinte: {ats[1]["nome"].title()} ({dm(ats[1].get("data"))}) já preparado' if len(ats) > 1 else ''
+            self.marcar('plano', f'{a0["nome"].title()} ({dm(a0.get("data"))}) ✓',
+                        (f'pronto às {(a0.get("quando") or "")[11:16]} · {a0.get("plano") or ""}' if a0.get('quando') else 'pronto') + seg,
+                        COR['bom'])
+        else:
+            self.marcar('plano', '—', 'a IA prepara o adversário segundos depois de cada jogo seu (com o jogo e a Central abertos)')
         erros = [i for i in self.j.verificacao if i.estado == 'erro']
         if erros:
             self.aviso.setText(f'<span style="color:{COR["ruim"]}">⚠ Falta configurar: {", ".join(i.titulo for i in erros)}.</span> '
@@ -418,6 +453,16 @@ class PaginaRede(QWidget):
         out.addWidget(area)
         self.proc = None
 
+    @staticmethod
+    def _calib(c):
+        """19/10/2026: calibração além do bolão (menor = melhor): RPS = erro no resultado, NLL = erro nos gols."""
+        if not c or not c.get('estatistica') or not c.get('rede'):
+            return ''
+        e, r = c['estatistica'], c['rede']
+        f = lambda v, d: f'{v:.{d}f}'.replace('.', ',')
+        return (f' · Calibração nos últimos {e["jogos"]} jogos (menor = melhor) — resultado (RPS): estatística {f(e["rps"], 3)} x '
+                f'{f(r["rps"], 3)} rede · gols (NLL): {f(e["nll"], 2)} x {f(r["nll"], 2)}')
+
     def _grafico(self, altura=260):
         try:
             from PySide6.QtCharts import QChart, QChartView
@@ -487,7 +532,8 @@ class PaginaRede(QWidget):
             det.setText(f'{pl["jogos"]} de 100 jogos pontuados · placares exatos {pl["exatos"]["estatistica"]} x {pl["exatos"]["rede"]} · '
                         f'vencedor certo {pl["vencedor"]["estatistica"]} x {pl["vencedor"]["rede"]} · '
                         f'{x["pendentes"]} palpite(s) esperando o jogo'
-                        + (''.join(f' · {t["lider"]} assumiu em {"/".join(map(str, t["data"][::-1]))}' for t in x['trocas']) if x['trocas'] else ''))
+                        + (''.join(f' · {t["lider"]} assumiu em {"/".join(map(str, t["data"][::-1]))}' for t in x['trocas']) if x['trocas'] else '')
+                        + self._calib(pl.get('calibracao')))
         hs = e['arenas']['simulados']['hist']
         if self.grafico is not None:
             self.grafico.setVisible(bool(hs))
@@ -673,6 +719,247 @@ class PaginaIA(QWidget):
                 it.setFlags(Qt.ItemFlag.ItemIsEnabled)
                 it.setToolTip(x.get('motivo') or '')
                 self.tab.setItem(i, c, it)
+
+
+# ====================================================================== Mercado IA (19/10/2026)
+NIVEL_COR = {'ok': COR['bom'], 'aviso': COR['aviso'], 'erro': COR['ruim'], 'recarga': COR['ouro'], 'info': COR['texto']}
+ETAPA_TXT = {'save': '💾 Save', 'foto': '📸 Foto da memória', 'mercado': '🔁 Mercado', 'vestiario': '👥 Vestiário',
+             'recarga': '⚠ Recarga'}
+
+
+def _dmy(d):
+    return f'{d[2]:02d}/{d[1]:02d}/{d[0]}' if d else '—'
+
+
+def _celula(txt, cor=None, negrito=False, dica=None):
+    it = QTableWidgetItem(str(txt))
+    it.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+    if cor:
+        it.setForeground(QColor(cor))
+    if negrito:
+        f = it.font()
+        f.setBold(True)
+        it.setFont(f)
+    if dica:
+        it.setToolTip(dica)
+    return it
+
+
+class PaginaMercado(QWidget):
+    """O fluxo da IA de transferências (vigia -> aplicar.py), o alerta de recarregar a carreira, os relatórios de
+    cada rodada e todas as movimentações (mercado_fluxo.estado)."""
+    def __init__(self, janela):
+        super().__init__()
+        self.j = janela
+        self._assin = None
+        area = QScrollArea()
+        area.setWidgetResizable(True)
+        dentro = QWidget()
+        v = QVBoxLayout(dentro)
+        v.setContentsMargins(24, 20, 24, 20)
+        v.setSpacing(14)
+        v.addWidget(rotulo('Mercado IA', 'titulo'))
+        v.addWidget(rotulo('A cada save do jogo, o vigia tira a foto da memória e, dentro da janela de transferências, os clubes '
+                           'da IA negociam e o resultado é gravado no SAVE. O jogo só enxerga os negócios depois que você volta '
+                           'ao menu e carrega a carreira — esta tela avisa quando for a hora.', 'sub'))
+        self.faixa = QFrame()
+        self.faixa.setObjectName('faixaRecM')
+        self.faixa.setStyleSheet(f'QFrame#faixaRecM {{ background: #3a1512; border: 1px solid {COR["ruim"]}; border-radius: 8px; }}')
+        fh = QHBoxLayout(self.faixa)
+        fh.setContentsMargins(14, 12, 14, 12)
+        self.faixa_txt = rotulo('', rico=True)
+        fh.addWidget(self.faixa_txt, 1)
+        b = QPushButton('Já carreguei a carreira')
+        b.clicked.connect(self.ja_carreguei)
+        fh.addWidget(b)
+        self.faixa.hide()
+        v.addWidget(self.faixa)
+        g = QGridLayout()
+        g.setSpacing(12)
+        self.cards = {}
+        for i, (k, t) in enumerate([('janela', 'Janela de transferências'), ('rodada', 'Rodadas automáticas'),
+                                    ('auto', 'Automação'), ('vigia', 'Vigia')]):
+            val = rotulo('—')
+            val.setStyleSheet('font-size: 13pt; font-weight: 600;')
+            det = rotulo('', 'sub')
+            extra = []
+            if k == 'janela':
+                self.barra = QProgressBar()
+                self.barra.setTextVisible(False)
+                self.barra.setFixedHeight(8)
+                extra = [self.barra]
+            self.cards[k] = (val, det)
+            g.addWidget(cartao(rotulo(t, 'sub'), val, *extra, det), 0, i)
+        v.addLayout(g)
+        self.fluxo = QTableWidget(0, 3)
+        self.fluxo.setHorizontalHeaderLabels(['Quando', 'Etapa', 'O que aconteceu'])
+        self.fluxo.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.fluxo.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.fluxo.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.fluxo.verticalHeader().hide()
+        self.fluxo.setMinimumHeight(240)
+        v.addWidget(cartao(rotulo('Fluxo ao vivo', 'h2'), rotulo('Cada etapa que o vigia fez nos últimos saves, a mais nova em cima.', 'sub'), self.fluxo))
+        hr = QHBoxLayout()
+        self.lista_rod = QListWidget()
+        self.lista_rod.setFixedWidth(290)
+        self.lista_rod.currentRowChanged.connect(self._mostrar_rodada)
+        hr.addWidget(self.lista_rod)
+        self.tab_rod = QTableWidget(0, 7)
+        self.tab_rod.setHorizontalHeaderLabels(['Jogador', 'Idade', 'Pos', 'De', 'Para', 'Valor (mi)', 'Motivo'])
+        self.tab_rod.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tab_rod.horizontalHeader().setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
+        self.tab_rod.verticalHeader().hide()
+        self.tab_rod.setMinimumHeight(300)
+        hr.addWidget(self.tab_rod, 1)
+        self.rod_txt = rotulo('', 'sub')
+        v.addWidget(cartao(rotulo('Relatórios das rodadas', 'h2'), self.rod_txt, hr))
+        fl = QHBoxLayout()
+        self.f_janela = QComboBox()
+        self.f_janela.currentIndexChanged.connect(self._filtrar)
+        self.f_busca = QLineEdit()
+        self.f_busca.setPlaceholderText('buscar jogador ou clube...')
+        self.f_busca.textChanged.connect(self._filtrar)
+        fl.addWidget(rotulo('Janela:'))
+        fl.addWidget(self.f_janela)
+        fl.addWidget(self.f_busca, 1)
+        self.tab_mov = QTableWidget(0, 9)
+        self.tab_mov.setHorizontalHeaderLabels(['Data', 'Janela', 'Jogador', 'Idade', 'Pos', 'De', 'Para', 'Valor (mi)', 'Motivo'])
+        self.tab_mov.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tab_mov.horizontalHeader().setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch)
+        self.tab_mov.verticalHeader().hide()
+        self.tab_mov.setMinimumHeight(360)
+        self.mov_txt = rotulo('', 'sub')
+        v.addWidget(cartao(rotulo('Movimentações', 'h2'), self.mov_txt, fl, self.tab_mov))
+        v.addStretch(1)
+        area.setWidget(dentro)
+        out = QVBoxLayout(self)
+        out.setContentsMargins(0, 0, 0, 0)
+        out.addWidget(area)
+        self.e = {}
+
+    def ja_carreguei(self):
+        import mercado_fluxo
+        mercado_fluxo.limpar_recarga('Você confirmou no Painel que carregou a carreira.', 'ok')
+        self.j.checar_recarga()
+        self.atualizar()
+
+    def atualizar(self):
+        try:
+            import mercado_fluxo
+            e = mercado_fluxo.estado()
+        except Exception as ex:  # noqa: BLE001
+            self.cards['janela'][0].setText(f'indisponível: {ex}')
+            return
+        self.e = e
+        rc = e.get('recarga')
+        if rc:
+            self.faixa_txt.setText(f'<b style="font-size:12pt;color:{COR["ruim"]}">⚠ Volte ao menu do jogo e CARREGUE a carreira (Continuar)</b><br>'
+                                   f'{esc_html(rc.get("motivo") or "")} gravada(s) no save {esc_html(rc.get("save") or "")} às '
+                                   f'{esc_html((rc.get("quando") or "")[11:16])}. Até carregar, o jogo não vê as mudanças — e se ele salvar '
+                                   f'antes, grava por cima (o vigia percebe e refaz o mercado).')
+            self.faixa.show()
+        else:
+            self.faixa.hide()
+        jn = e.get('janela') or {}
+        val, det = self.cards['janela']
+        nome = {'verao': 'Verão', 'inverno': 'Inverno'}.get(jn.get('tipo'))
+        if nome:
+            tot, lim = jn.get('total', 0), jn.get('limite', 0)
+            val.setText(f'{nome} {(jn.get("chave") or "")[:4]} · {tot}/{lim}')
+            val.setStyleSheet(f'font-size: 13pt; font-weight: 600; color: {COR["aviso"] if tot >= lim else COR["bom"]};')
+            self.barra.setMaximum(max(1, lim))
+            self.barra.setValue(min(tot, lim))
+            det.setText(('janela CHEIA: o mercado só volta na próxima janela' if tot >= lim else f'{lim - tot} negócio(s) ainda possíveis')
+                        + f' · {jn.get("rodadas", 0)} rodada(s)')
+        else:
+            val.setText('Fora da janela')
+            val.setStyleSheet(f'font-size: 13pt; font-weight: 600; color: {COR["mudo"]};')
+            self.barra.setValue(0)
+            det.setText(f'próxima: {jn.get("proxima_nome")} em {_dmy(jn.get("proxima"))}' if jn.get('proxima') else 'janelas: jun-set e dez-fev')
+        val, det = self.cards['rodada']
+        val.setText(f'Última: {_dmy(e.get("ultima"))}')
+        det.setText(f'data do jogo: {_dmy(e.get("data_jogo"))} · próxima possível: {_dmy(e.get("proxima_rodada"))} '
+                    f'(no máximo 1 a cada {e.get("intervalo")} dias)')
+        val, det = self.cards['auto']
+        lig = e.get('automatico') and e.get('ligado')
+        val.setText('ligado' if lig else 'desligado')
+        val.setStyleSheet(f'font-size: 13pt; font-weight: 600; color: {COR["bom"] if lig else COR["ruim"]};')
+        det.setText('roda sozinho a cada save do jogo' if lig else 'ligue em Configuração → Automações')
+        val, det = self.cards['vigia']
+        seg = e.get('vigia_seg')
+        vivo = seg is not None and seg < 60
+        val.setText('rodando' if vivo else 'parado')
+        val.setStyleSheet(f'font-size: 13pt; font-weight: 600; color: {COR["bom"] if vivo else COR["ruim"]};')
+        st = e.get('status') or {}
+        det.setText(st.get('texto') or 'sem mensagem')
+        assin = json.dumps([e['eventos'][:1], len(e['rodadas']), len(e['negocios']), bool(rc)], default=str)
+        if assin == self._assin:
+            return
+        self._assin = assin
+        self.fluxo.setRowCount(len(e['eventos']))
+        for i, ev in enumerate(e['eventos']):
+            cor = NIVEL_COR.get(ev.get('nivel'), COR['texto'])
+            q = ev.get('quando') or ''
+            self.fluxo.setItem(i, 0, _celula(f'{q[8:10]}/{q[5:7]} {q[11:16]}' if len(q) >= 16 else q, COR['mudo']))
+            self.fluxo.setItem(i, 1, _celula(ETAPA_TXT.get(ev.get('etapa'), ev.get('etapa')), cor))
+            self.fluxo.setItem(i, 2, _celula(ev.get('texto') or '', cor, ev.get('nivel') in ('erro', 'recarga'), ev.get('texto')))
+        if not e['eventos']:
+            self.fluxo.setRowCount(1)
+            self.fluxo.setItem(0, 2, _celula('O fluxo aparece a partir do próximo save do jogo (com o Painel e o vigia atualizados).', COR['mudo']))
+        atual = self.lista_rod.currentRow()
+        self.lista_rod.blockSignals(True)
+        self.lista_rod.clear()
+        for r in e['rodadas']:
+            st = r.get('stamp') or ''
+            quando = f'{st[6:8]}/{st[4:6]} {st[9:11]}:{st[11:13]}' if len(st) >= 13 else st
+            extra = f' · jogo {_dmy(r.get("data_jogo"))}' if r.get('data_jogo') else ''
+            self.lista_rod.addItem(f'{quando} · {len(r.get("negocios") or [])} negócio(s){extra}')
+        self.lista_rod.blockSignals(False)
+        self.lista_rod.setCurrentRow(atual if 0 <= atual < len(e['rodadas']) else 0)
+        self._mostrar_rodada(self.lista_rod.currentRow())
+        jans = sorted({x.get('janela') or '—' for x in e['negocios']}, reverse=True)
+        sel = self.f_janela.currentText()
+        self.f_janela.blockSignals(True)
+        self.f_janela.clear()
+        self.f_janela.addItems(['todas'] + jans)
+        if sel in jans:
+            self.f_janela.setCurrentText(sel)
+        self.f_janela.blockSignals(False)
+        self._filtrar()
+
+    def _mostrar_rodada(self, i):
+        rs = (self.e or {}).get('rodadas') or []
+        if not 0 <= i < len(rs):
+            self.tab_rod.setRowCount(0)
+            self.rod_txt.setText('Nenhuma rodada com negócios ainda.')
+            return
+        r = rs[i]
+        ns = r.get('negocios') or []
+        self.rod_txt.setText((f'Janela {r.get("janela")} · ' if r.get('janela') else '')
+                             + (f'uso da janela depois desta rodada: {r.get("uso")}/{r.get("limite")} · ' if r.get('limite') else '')
+                             + f'{len(ns)} negócio(s) · soma {sum(float(x.get("valor") or 0) for x in ns):.1f} mi'
+                             + (' · (relatório antigo, do arquivo da rodada)' if r.get('fonte') == 'csv' else ''))
+        self.tab_rod.setRowCount(len(ns))
+        for k, m in enumerate(ns):
+            vals = [m.get('jogador'), m.get('idade'), m.get('pos'), (m.get('de') or '').title(), (m.get('para') or '').title(),
+                    m.get('valor'), m.get('motivo')]
+            for c, x in enumerate(vals):
+                self.tab_rod.setItem(k, c, _celula('' if x is None else x, COR['ouro'] if c == 4 else None, c == 0, m.get('motivo')))
+
+    def _filtrar(self):
+        ns = (self.e or {}).get('negocios') or []
+        jan = self.f_janela.currentText()
+        q = self.f_busca.text().strip().lower()
+        fs = [m for m in ns if (jan in ('', 'todas') or (m.get('janela') or '—') == jan)
+              and (not q or q in f'{m.get("jogador")} {m.get("de")} {m.get("para")}'.lower())]
+        self.mov_txt.setText(f'{len(fs)} de {len(ns)} movimentação(ões) registradas nesta carreira.')
+        self.tab_mov.setRowCount(len(fs))
+        for k, m in enumerate(fs):
+            d = (m.get('data') or '')
+            vals = ['/'.join(d.split('-')[::-1]) if d else '—', m.get('janela'), m.get('jogador'), m.get('idade'), m.get('pos'),
+                    (m.get('de') or '').title(), (m.get('para') or '').title(), m.get('valor'), m.get('motivo')]
+            for c, x in enumerate(vals):
+                self.tab_mov.setItem(k, c, _celula('' if x is None else x, COR['ouro'] if c == 6 else None, c == 2, m.get('motivo')))
 
 
 # ====================================================================== Configuração
@@ -998,7 +1285,7 @@ class PaginaManual(QWidget):
 # ====================================================================== janela
 class Janela(QMainWindow):
     PAGINAS = [('inicio', '🏠  Início', PaginaInicio), ('central', '📋  Central', PaginaCentral), ('rede', '🧠  Rede neural', PaginaRede),
-               ('ia', '♟  IA adversária', PaginaIA), ('config', '⚙  Configuração', PaginaConfig),
+               ('ia', '♟  IA adversária', PaginaIA), ('mercado', '🔁  Mercado IA', PaginaMercado), ('config', '⚙  Configuração', PaginaConfig),
                ('registros', '📜  Registros', PaginaRegistros), ('manual', '📖  Manual', PaginaManual)]
 
     def __init__(self):
@@ -1043,6 +1330,7 @@ class Janela(QMainWindow):
         self.sinais.baixou.connect(self._baixou)
         self.sinais.diagnostico.connect(self._mostrar_diagnostico)
         self.att_info, self._att_manual, self._dlg = None, False, None
+        self._rc_avisado = None
         if caminhos.config().get('atualizacao_auto', True) is not False:
             QTimer.singleShot(6000, self.procurar_atualizacao)            # um pouco depois de abrir
         self._t_att = QTimer(self)
@@ -1196,8 +1484,28 @@ class Janela(QMainWindow):
                 self.pag['central'].carregar()
         r.finished.connect(resposta)
         atual = self.PAGINAS[self.menu.currentRow()][0]
-        if atual in ('inicio', 'rede', 'ia', 'registros'):
+        if atual in ('inicio', 'rede', 'ia', 'mercado', 'registros'):
             self.pag[atual].atualizar()
+        self.checar_recarga()
+
+    def checar_recarga(self):
+        """19/10/2026: o mercado gravou no save e o jogo ainda não carregou: ⚠ no menu, faixa no Início e aviso na bandeja."""
+        try:
+            import mercado_fluxo
+            rc = mercado_fluxo.recarga()
+        except Exception:  # noqa: BLE001
+            rc = None
+        i = [p[0] for p in self.PAGINAS].index('mercado')
+        self.menu.item(i).setText('🔁  Mercado IA' + ('   ⚠' if rc else ''))
+        self.pag['inicio'].mostrar_recarga(rc)
+        if rc and rc.get('ts') != self._rc_avisado:
+            self._rc_avisado = rc.get('ts')
+            try:
+                self.bandeja.showMessage('Mercado IA: carregue a carreira',
+                                         f'{rc.get("motivo")} gravada(s) no save. Volte ao menu do jogo e carregue a carreira '
+                                         '(Continuar) antes de jogar ou salvar de novo.', QSystemTrayIcon.MessageIcon.Warning, 15000)
+            except Exception:  # noqa: BLE001
+                pass
 
     def jogar(self):
         if any(i.estado == 'erro' for i in self.verificacao):

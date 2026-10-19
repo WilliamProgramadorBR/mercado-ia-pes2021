@@ -124,7 +124,15 @@ O diário funciona como *event sourcing* simples: cada ação vira um evento num
 - **Troca de comando:** depois de 100 jogos pontuados numa arena, quem somar mais nos últimos 100 assume:
   - nos simulados, o rodízio (`_rodizio_pelo_lider`);
   - contra você, o plano (`_escolher_pela_rede`).
-- **A rede** (`rede.py`): MLP em Python puro, 15 (simulados) ou 28 (seus jogos) entradas → 10 tanh → 2 saídas softplus (gols esperados), perda de Poisson, Adam. O palpite é o resultado mais provável e, dentro dele, o placar mais provável.
+- **A rede dos jogos da IA** (`rede.py`): MLP em Python puro, 15 entradas → 10 tanh → 2 saídas softplus (gols esperados), perda de Poisson, Adam. O palpite é o resultado mais provável e, dentro dele, o placar mais provável.
+- **A rede dos seus jogos (v3, `rede_v3.py`, desde 19/10/2026).** Com ~90 jogos, uma MLP comum decora: no teste andando no tempo, a NLL dela foi 3,81 contra 3,23 da estatística. A v3 funciona assim:
+  - **comitê de 5 redes residuais** (4 tanh, L2 0,1): λ_nós = λ_est·e^δ e λ_eles = λ_est·e^−δ, com δ limitado a ±1. Ela corrige o saldo da estatística e mantém o total de gols;
+  - **51 entradas:** as 28 da v2 + 23 de jogador por jogador, calculadas por `ficha_jogo.jogadores` e `contexto_jogo`;
+  - **colunas sem variação** no treino ficam neutras;
+  - **resultado no estudo** (45 jogos): bolão 57 × 49 e vencedor 34 × 32;
+  - **treino:** do zero a cada jogo, em processo separado (`python rede_v3.py treinar 51`), para não travar a Central;
+  - **"por quê":** neutraliza grupos de entradas e mede o efeito no saldo;
+  - **placar:** traz também a calibração (`duelo.calibracao`: NLL e RPS).
 - **Ficha do jogo** (`ficha_jogo.py`, desde a 0.9.3). Antes de cada jogo seu, `central._preparar_adversario` monta, para os dois lados:
   - o XI provável (o seu vem do bloco 730; o do rival, da escalação do técnico da IA) e a nota média;
   - a condição física (registro de 156 B, +120) e quantos titulares estão abaixo de 75;

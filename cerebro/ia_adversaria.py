@@ -15,7 +15,9 @@ Como decide, antes de cada jogo contra o usuário:
      o clube está inteiro, ritmo alto — pressão na frente, linha um pouco mais alta, pressão ofensiva — para cobrar o
      cansaço; se é o clube que chega cansado, guarda energia: pressão tradicional, bloco mais baixo e compacto.
   4. APRENDIZADO: cada jogo contra o usuário vira dado. A recompensa é o saldo do adversário MENOS o esperado pela
-     prévia (perder de 1 para quem devia perder de 3 conta como acerto). Cada característica da tática (linha alta,
+     prévia (perder de 1 para quem devia perder de 3 conta como acerto). 19/10/2026: descontado o quanto a prévia vem
+     errando nos jogos recentes (ela subestima a IA no Lenda: esperava -0,89 de saldo, a IA fez -0,42) e com teto de
+     ±2 — senão o erro da prévia virava mérito de toda tática e uma goleada pesava como três jogos. Cada característica da tática (linha alta,
      bloco baixo, pressão na frente, gegenpress, marcação...) acumula a média de recompensa por faixa de força
      (mais fraco / equilibrado / mais forte), com recuo para a média geral quando há pouco dado. A escolha entre os
      candidatos usa amostragem de Thompson: o que funcionou contra ESTE usuário ganha mais chance, e de vez em quando
@@ -46,6 +48,10 @@ FRENTE = {'CF', 'SS', 'LWF', 'RWF'}
 PRIOR_N, BONUS_ESPECIALISTA, SIGMA = 3.0, 0.3, 1.0
 CURIOSIDADE = 0.10   # chance de testar outro candidato mesmo quando um já se provou
 ESQUECIMENTO = 0.97  # a cada jogo novo, o peso do que foi aprendido antes cai 3% (o usuário também aprende)
+TETO_RECOMPENSA = 2.0   # um jogo vale no máximo ±2 gols de mérito (goleada não pesa como três jogos)
+ALFA_VIES = 0.15        # o quanto a prévia erra, em média, nos jogos recentes (média móvel)
+GERAL = '_geral'        # média de todos os planos jogados: o "plano típico"
+MIN_RESUMO = 4          # o resumo só cita característica com 4+ jogos (antes: 2 — vitória de sorte virava "o melhor")
 
 
 # ---------------------------------------------------------------- estado
@@ -312,8 +318,33 @@ def escolher(cands, e, ctx, rnd=None):
     return melhor
 
 
+def _nota(bruto, vies):
+    """Mérito do plano num jogo: o saldo acima do esperado, descontado o erro recente da prévia, com teto."""
+    return round(max(-TETO_RECOMPENSA, min(TETO_RECOMPENSA, bruto - vies)), 2)
+
+
+def _acumular(apr, r):
+    """Soma a recompensa do jogo nas características do plano (e no plano típico); o passado pesa um pouco menos."""
+    for a in apr.values():
+        a['n'] = round(a['n'] * ESQUECIMENTO, 3)
+        a['s'] = round(a['s'] * ESQUECIMENTO, 3)
+    for chave in [GERAL] + [c for t in r['tags'] for c in (t, f'{t}|{r.get("faixa")}')]:
+        a = apr.setdefault(chave, {'n': 0, 's': 0.0})
+        a['n'] += 1
+        a['s'] = round(a['s'] + r['recompensa'], 3)
+
+
+def extra_plano(apr, tags, fx):
+    """O que a IA aprendeu de um plano, em gols de saldo a mais para ela, COMPARADO ao plano típico (o duelo soma isso
+    à previsão; o desvio geral — o usuário pior ou melhor que a prévia — fica na estatística, não aqui)."""
+    if not tags:
+        return 0.0
+    g = apr.get(GERAL) or {'n': 0, 's': 0.0}
+    return sum(_media(apr, t, fx)[0] for t in tags) / len(tags) - g['s'] / (g['n'] + PRIOR_N)
+
+
 def aprender(e, resultados):
-    """Fecha os jogos já disputados do registro: recompensa = saldo do adversário - esperado."""
+    """Fecha os jogos já disputados do registro: recompensa = saldo do adversário - esperado - erro recente da prévia."""
     feitos = []
     apr = e.setdefault('aprendizado', {})
     for r in e.get('registro') or []:
@@ -323,24 +354,22 @@ def aprender(e, resultados):
                   and (x.get('adversario') or '').upper() == r['adversario'].upper()), None)
         if not j:
             continue
-        saldo = j['contra'] - j['pro']
-        rec = round(saldo - (r.get('esperado') or 0), 2)
+        bruto = round(j['contra'] - j['pro'] - (r.get('esperado') or 0), 2)
+        vies = e.get('vies_previa') or 0.0
         r['resultado'] = f'{j["pro"]} x {j["contra"]}'
-        r['recompensa'] = rec
-        for a in apr.values():   # o que foi aprendido antes pesa um pouco menos
-            a['n'] = round(a['n'] * ESQUECIMENTO, 3)
-            a['s'] = round(a['s'] * ESQUECIMENTO, 3)
-        for t in r['tags']:
-            for chave in (t, f'{t}|{r.get("faixa")}'):
-                a = apr.setdefault(chave, {'n': 0, 's': 0.0})
-                a['n'] += 1
-                a['s'] = round(a['s'] + rec, 3)
+        r['recompensa_bruta'], r['vies'], r['recompensa'] = bruto, round(vies, 2), _nota(bruto, vies)
+        e['vies_previa'] = round((1 - ALFA_VIES) * vies + ALFA_VIES * bruto, 3)
+        _acumular(apr, r)
         feitos.append(r)
+    if feitos:   # preparação que nunca fechou e já ficou para trás (ex.: "próximo jogo" falso da tela de carregamento)
+        ult = max(list(r.get('data') or []) for r in e['registro'] if 'recompensa' in r)
+        e['registro'] = [r for r in e['registro'] if 'recompensa' in r or list(r.get('data') or []) > ult]
     return feitos
 
 
 def limpar_registro(e):
-    """Remove preparações repetidas do mesmo jogo (fica a última) e refaz o aprendizado do zero, em ordem."""
+    """Remove preparações repetidas do mesmo jogo (fica a última) e as que ficaram para trás sem fechar, e refaz o
+    aprendizado do zero, em ordem (devolve {(data, adversário): extra do plano naquele momento} para o duelo)."""
     vistos, limpo = set(), []
     for x in reversed(e.get('registro') or []):
         k = (tuple(x.get('data') or ()), (x.get('adversario') or '').upper())
@@ -349,28 +378,30 @@ def limpar_registro(e):
         vistos.add(k)
         limpo.append(x)
     limpo.reverse()
+    fech = [list(r.get('data') or []) for r in limpo if 'recompensa' in r]
+    ult = max(fech) if fech else []
+    limpo = [r for r in limpo if 'recompensa' in r or list(r.get('data') or []) > ult]
     e['registro'] = limpo
-    apr = {}
+    apr, vies, extras = {}, 0.0, {}
     for r in limpo:
         if 'recompensa' not in r or not r.get('tags'):
             continue
-        for a in apr.values():
-            a['n'] = round(a['n'] * ESQUECIMENTO, 3)
-            a['s'] = round(a['s'] * ESQUECIMENTO, 3)
-        for t in r['tags']:
-            for chave in (t, f'{t}|{r.get("faixa")}'):
-                a = apr.setdefault(chave, {'n': 0, 's': 0.0})
-                a['n'] += 1
-                a['s'] = round(a['s'] + r['recompensa'], 3)
+        extras[(tuple(r.get('data') or ()), r['adversario'].upper())] = round(extra_plano(apr, r['tags'], r.get('faixa')), 3)
+        bruto = r.setdefault('recompensa_bruta', r['recompensa'])   # registros antigos guardavam a bruta
+        r['vies'], r['recompensa'] = round(vies, 2), _nota(bruto, vies)
+        vies = (1 - ALFA_VIES) * vies + ALFA_VIES * bruto
+        _acumular(apr, r)
     e['aprendizado'] = apr
+    e['vies_previa'] = round(vies, 3)
     e['resumo'] = resumo_aprendizado(e)
-    return e
+    return extras
 
 
 def resumo_aprendizado(e, n=4):
-    """O que mais funcionou e o que menos funcionou contra o usuário (só características com 2+ jogos)."""
+    """O que mais funcionou e o que menos funcionou contra o usuário (só características com MIN_RESUMO+ jogos)."""
     apr = e.get('aprendizado') or {}
-    gerais = [(k, v['s'] / v['n'], v['n']) for k, v in apr.items() if '|' not in k and v['n'] >= 2]
+    gerais = [(k, v['s'] / v['n'], v['n']) for k, v in apr.items()
+              if '|' not in k and not k.startswith('_') and v['n'] >= MIN_RESUMO]
     gerais.sort(key=lambda x: -x[1])
     nome = lambda k: T.INSTRUCOES.get(int(k[5:]), k) if k.startswith('inst_') else k.replace('_', ' ')
     return {'jogos': sum(1 for r in e.get('registro') or [] if 'recompensa' in r),
@@ -437,7 +468,8 @@ def _atacante_rapido(d, s, ti, P):
     return melhor[:2] if melhor else None
 
 
-def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escrever_de_verdade=False, log=print,
+def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escrever_de_verdade=False, log=print, manter=(),
+             antecedencia=False,
              rnd=None):
     """Fecha o aprendizado do jogo anterior, devolve o adversário anterior ao original e prepara este."""
     import ao_vivo as A
@@ -456,13 +488,18 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
             raise RuntimeError(f'bloco do time {ti} não confere na memória')
         return a
 
-    ativo = e.get('ativo')
-    if ativo and ativo['ti'] != ti_adv:         # o jogo anterior já foi: o clube volta aos planos dele (A, B e C)
-        ka = str(ativo['ti'])
+    # 19/10/2026: até DOIS clubes ficam preparados (o próximo jogo e o seguinte, com antecedência); os demais voltam
+    # aos planos deles (A, B e C), byte a byte
+    ativos = e.get('ativos') or ([e['ativo']] if e.get('ativo') else [])
+    fica = set(manter or ()) | {ti_adv}
+    for at in [a for a in ativos if a['ti'] not in fica]:
+        ka = str(at['ti'])
         cru = bytes.fromhex(e['originais_cru'][ka]) if ka in e.get('originais_cru', {}) else None
-        _escrever_plano(h, addr(ativo['ti']), e['originais'][ka], escrever_de_verdade, cru=cru)
-        log(f'IA adversária: {ativo["nome"]} voltou ao plano original')
-        e['ativo'] = None
+        _escrever_plano(h, addr(at['ti']), e['originais'][ka], escrever_de_verdade, cru=cru)
+        log(f'IA adversária: {at["nome"]} voltou ao plano original')
+    if escrever_de_verdade:
+        e['ativos'] = [a for a in ativos if a['ti'] in fica and a['ti'] != ti_adv]
+        e.pop('ativo', None)
     k = str(ti_adv)
     o = T.bloco(d, ti_adv)
     if k not in e['originais']:   # 1ª vez contra esse clube: guarda o original (o save é de antes de mexermos nele)
@@ -479,7 +516,7 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
     try:   # 12/10/2026: duelo estatística x rede — quem lidera a arena "usuario" escolhe o plano
         import duelo
         if duelo.lider('usuario') == 'rede':
-            esc, decidiu = _escolher_pela_rede(cands, ctx, rnd), 'rede'
+            esc, decidiu = _escolher_pela_rede(cands, ctx, rnd, e), 'rede'
         else:
             esc = escolher(cands, e, ctx, rnd)
     except Exception as ex:  # noqa: BLE001
@@ -499,7 +536,8 @@ def preparar(d, ti_adv, nome_adv, ctx, olho=None, P=None, resultados=None, escre
             _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu)
         except Exception as ex:  # noqa: BLE001
             log(f'duelo (palpite): {ex}')
-        e['ativo'] = {'ti': ti_adv, 'nome': nome_adv, 'data': ctx.get('data')}
+        e['ativos'] = (e.get('ativos') or []) + [{'ti': ti_adv, 'nome': nome_adv, 'data': ctx.get('data'), 'plano': esc['nome'],
+                                                 'quando': time.strftime('%Y-%m-%d %H:%M:%S'), 'antecedencia': bool(antecedencia)}]
         # 12/10/2026: o mesmo jogo preparado de novo (Central reiniciada) substitui o registro em vez de duplicar —
         # duplicado, o resultado contava várias vezes no aprendizado (o Ipswich entrou 8 vezes)
         e['registro'] = [x for x in (e.get('registro') or [])[-120:]
@@ -522,14 +560,19 @@ def _x_usuario(ctx, tags_):
     return duelo.entradas_usr(ctx, tags_)[0]
 
 
-def _escolher_pela_rede(cands, ctx, rnd=None):
-    """A rede prevê os gols de cada lado com cada plano candidato e fica com o melhor saldo para o adversário."""
+def _escolher_pela_rede(cands, ctx, rnd=None, e=None):
+    """A rede prevê os gols de cada lado com cada plano candidato e fica com o melhor saldo para o adversário.
+    19/10/2026 (rede v3): ela corrige a estatística, então cada candidato parte da previsão da estatística com o que a
+    IA adversária aprendeu daquele plano."""
     import duelo
     rnd = rnd or random.Random()
     r = duelo.rede('usuario')
+    ed = duelo.estado()
+    apr, fx = (e or {}).get('aprendizado') or {}, faixa(ctx)
     melhor = None
     for c in cands:
-        lu, la = r.prever(_x_usuario(ctx, c['tags']))
+        x, xe = duelo.entradas_usr(ctx, c['tags'], ed)
+        lu, la = r.prever(x, duelo.est_usr(ed, xe, extra_plano(apr, c['tags'], fx)))
         c['nota'] = round(la - lu, 2)
         if melhor is None or c['nota'] > melhor['nota']:
             melhor = c
@@ -548,14 +591,15 @@ def _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu):
     casa = ti_adv if ctx.get('adv_em_casa') else user_ti
     fora = user_ti if ctx.get('adv_em_casa') else ti_adv
     apr, fx = e.get('aprendizado') or {}, faixa(ctx)
-    extra = sum(_media(apr, t, fx)[0] for t in esc['tags']) / max(1, len(esc['tags']))   # o que a IA aprendeu do plano
+    extra = extra_plano(apr, esc['tags'], fx)   # o que a IA aprendeu do plano, comparado ao plano típico
     with duelo.TRAVA:
         ed = duelo.estado()
         x, xe = duelo.entradas_usr(ctx, esc['tags'], ed)
+        lam_est = duelo.est_usr(ed, xe, extra)
         info = {'adv': clube_nome(nome_adv), 'inverter': bool(ctx.get('adv_em_casa')), 'decidiu': decidiu, 'plano': esc['nome'],
                 # 13/10/2026: a ficha do jogo e o "por quê" de cada palpite (o Painel mostra)
                 'xe': {k: round(v, 4) for k, v in xe.items()}, 'extra': round(extra, 3),
-                'porque': {'estatistica': duelo.porque_est(ed, xe, extra), 'rede': duelo.porque_rede(x)}}
+                'porque': {'estatistica': duelo.porque_est(ed, xe, extra), 'rede': duelo.porque_rede(x, lam_est)}}
         fi = ctx.get('ficha')
         if fi:
             import ficha_jogo
@@ -563,7 +607,7 @@ def _palpite_usuario(d, ti_adv, nome_adv, ctx, esc, e, decidiu):
             info.update(ficha=fi, ficha_txt=ficha_jogo.texto(fi, nos, clube_nome(nome_adv)), fisico=ficha_jogo.fisico(fi))
         chave = duelo.chave(ctx['data'], casa, fora)
         ed['arenas']['usuario']['pend'].pop(chave, None)   # mesmo jogo preparado de novo: palpite com a ficha atual
-        duelo.prever(ed, 'usuario', chave, ctx['data'], x, duelo.est_usr(ed, xe, extra), info)
+        duelo.prever(ed, 'usuario', chave, ctx['data'], x, lam_est, info)
         duelo.gravar(ed)
 
 

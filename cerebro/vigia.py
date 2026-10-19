@@ -30,6 +30,7 @@ import traceback
 import caminhos
 import janela
 import memoria
+import mercado_fluxo as FX
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GAME_DIR = caminhos.GAME_DIR                # 12/10/2026: caminhos.py (config.json do Painel)
@@ -195,27 +196,85 @@ def guardar_laboratorio(ml):
     status(f'Laboratório: save da carreira de teste guardado ({os.path.basename(ml)}, {n} cópia(s)). Nada foi alterado.')
 
 
+def _decriptar(ml):
+    """data.dat de uma CÓPIA do save (para a conferência da recarga; o save do jogo não é tocado)."""
+    import shutil
+    import tempfile
+    import troca_save
+    pasta = tempfile.mkdtemp(prefix='mercado_conferencia_')
+    try:
+        enc = os.path.join(pasta, 'original')
+        troca_save.copiar_compartilhado(ml, enc)
+        r = subprocess.run([caminhos.DECRYPT, enc, os.path.join(pasta, 'dec')], capture_output=True, text=True,
+                           creationflags=0x08000000)
+        if r.returncode != 0:
+            raise RuntimeError(r.stderr or r.stdout)
+        with open(os.path.join(pasta, 'dec', 'data.dat'), 'rb') as f:
+            return f.read()
+    finally:
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
+def _por_que_nao(cfg, ml, data_jogo):
+    """Texto para a tela do Painel: por que o mercado não rodou neste save."""
+    if not cfg.get('mercado'):
+        return 'mercado desligado nas automações'
+    if not data_jogo:
+        return 'data da carreira não encontrada na foto'
+    _, tipo = janela.window_of(data_jogo)
+    if tipo == 'fora':
+        return f'fora da janela de transferências ({data_jogo[2]:02d}/{data_jogo[1]:02d})'
+    ult = _estado_auto().get('mercado', {}).get(os.path.basename(ml))
+    if ult:
+        prox = dt.date(*ult) + dt.timedelta(days=cfg.get('mercado_intervalo_dias', 7))
+        return f'última rodada em {ult[2]:02d}/{ult[1]:02d}; a próxima pode rodar a partir de {prox:%d/%m}'
+    return 'sem motivo conhecido'
+
+
 def processar_automatico(cfg, ml):
     status('Novo save: atualizando o mundo (foto da memória, mercado, vestiário)...')
+    FX.evento('save', f'Novo save detectado ({os.path.basename(ml)}).')
     wait_stable(ml)
+    try:   # 19/10/2026: o save anterior tinha mudanças a carregar? confere se o jogo carregou antes de salvar
+        res = FX.conferir(ml, _decriptar, log=lambda m: print(m, flush=True))
+        if res == 'perdida':
+            status('ATENÇÃO: o jogo salvou sem recarregar a carreira; as transferências se perderam. Refazendo o mercado...')
+    except Exception as e:  # noqa: BLE001 - a conferência nunca impede o processamento
+        FX.evento('recarga', f'Conferência da recarga falhou: {e}', 'aviso')
     alterou, avisos = False, []
+    alterou_mercado, n_neg, stamp = False, 0, None
     n = tirar_foto()
     if n is None:
         avisos.append('foto da memória falhou (mercado pulado)')
+        FX.evento('foto', 'Foto da memória falhou: mercado pulado neste save.', 'erro')
+    else:
+        FX.evento('foto', f'Foto da memória: {n} jogadores.')
     data_jogo = janela.career_date(SNAP) if n else None
     if n and mercado_na_vez(cfg, ml, data_jogo):
         status('Mercado IA: clubes negociando (1-3 minutos)...')
+        FX.evento('mercado', f'Mercado rodando ({data_jogo[2]:02d}/{data_jogo[1]:02d}/{data_jogo[0]}): clubes negociando...')
         r = rodar('aplicar.py', ml)
         if r.returncode == 0:
             e = _estado_auto()
             e.setdefault('mercado', {})[os.path.basename(ml)] = list(data_jogo)
             _gravar_estado_auto(e)
-            alterou |= 'SAVE ATUALIZADO' in r.stdout
+            alterou_mercado = 'SAVE ATUALIZADO' in r.stdout
+            alterou |= alterou_mercado
+            linha = next((l for l in r.stdout.splitlines() if l.startswith('aplicadas no save:')), '')
+            n_neg = int(linha.split(':')[1]) if linha else 0
+            stamp = next((l.split()[1] for l in r.stdout.splitlines() if l.startswith('RODADA ')), None)
+            motivo = next((l for l in r.stdout.splitlines() if 'nada feito' in l), None)
+            FX.evento('mercado', f'{n_neg} negócio(s) gravados no save.' if alterou_mercado else (motivo or 'Nenhum negócio nesta rodada.'),
+                      'ok' if alterou_mercado else 'info', negocios=n_neg, stamp=stamp)
         elif 'SaveMudou' in r.stderr or 'o save mudou' in r.stderr:
             avisos.append('o jogo salvou de novo durante o mercado; tenta de novo no próximo save')
+            FX.evento('mercado', 'O jogo salvou de novo durante o mercado: tenta no próximo save (nada gravado).', 'aviso')
         else:
             erro('mercado automático', r.stdout + r.stderr)
             avisos.append('mercado com erro (save não alterado)')
+            FX.evento('mercado', 'Mercado com erro: save não alterado (detalhes em Registros / vigia_erros.txt).', 'erro')
+    elif n:
+        FX.evento('mercado', 'Mercado não rodou: ' + _por_que_nao(cfg, ml, data_jogo) + '.')
     vivo = False
     if cfg.get('vestiario'):
         # modo híbrido (fase 4): se o mercado NÃO mexeu no save, a reunião escreve direto na memória do jogo.
@@ -236,10 +295,14 @@ def processar_automatico(cfg, ml):
     extra = (' | ' + '; '.join(avisos)) if avisos else ''
     if alterou:
         status('PRONTO! Volte ao menu e CARREGUE a carreira (Continuar) para valer.' + extra)
+        FX.marcar_recarga(ml, f'{n_neg} transferência(s) do mercado' if alterou_mercado else 'reunião do vestiário gravada no save',
+                          n_neg, stamp, data_jogo)
     elif vivo:
         status('Vestiário atualizado AO VIVO: setas/mensagens já no jogo, não precisa recarregar.' + extra)
+        FX.evento('vestiario', 'Vestiário atualizado ao vivo (memória do jogo): não precisa recarregar.', 'ok')
     else:
         status('Mundo atualizado: nada a recarregar.' + extra)
+        FX.evento('vestiario', 'Mundo atualizado: nada a recarregar.', 'ok')
     return alterou
 
 
@@ -277,6 +340,9 @@ def pedido_manual(req, script, rotulo):
     r = rodar(script, ml)
     if r.returncode == 0 and 'SAVE ATUALIZADO' in r.stdout:
         status('PRONTO! Volte ao menu e CARREGUE a carreira (sem salvar antes).')
+        linha = next((l for l in r.stdout.splitlines() if l.startswith('aplicadas no save:')), '')
+        stamp = next((l.split()[1] for l in r.stdout.splitlines() if l.startswith('RODADA ')), None)
+        FX.marcar_recarga(ml, f'{rotulo} pela tecla do overlay', int(linha.split(':')[1]) if linha else 0, stamp)
     elif r.returncode == 0:
         status(f'{rotulo}: nada a gravar (não precisa recarregar).')
     else:

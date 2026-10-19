@@ -35,6 +35,11 @@ descanso, desfalques, espírito de equipe, moral) e o usuário como "fora da cur
                (média rápida - média lenta do quanto superou o esperado).
   por quê      porque_est / porque_rede: quanto cada grupo (força, mando, forma, cansaço, desfalques, vestiário,
                você, plano do rival) mexe no saldo previsto — o Painel mostra.
+
+REDE v3 (19/10/2026, rede_v3.py): na arena do usuário a rede virou um COMITÊ de 5 redes residuais sobre a estatística
+(mexe só no saldo) com +23 entradas de jogador por jogador (NOVAS). No estudo andando no tempo (45 jogos) ganhou da
+estatística: bolão 57 x 49, vencedor 34 x 32, RPS 0,167 x 0,171. Treina do zero a cada jogo, em processo separado.
+O placar mostra também NLL (gols) e RPS (resultado) — calibração, não só pontos.
 """
 import collections
 import datetime as dt
@@ -88,8 +93,21 @@ def gravar(e):
 
 
 def rede(arena):
-    """A rede da arena: a desta carreira (historico) ou, na 1ª vez, o modelo inicial que vem no pacote (só para os
-    jogos da IA, que não têm nada pessoal), ou uma rede nova que aprende do zero."""
+    """A rede da arena. Jogos da IA: a desta carreira (historico), ou o modelo inicial do pacote, ou uma do zero.
+    Jogos do usuário (v3): o comitê residual (rede_v3.py) — relido quando o treino em fundo grava um modelo novo."""
+    if arena == 'usuario':
+        import rede_v3
+        try:
+            mt = os.path.getmtime(rede_v3.ARQ)
+        except OSError:
+            mt = None
+        c = _REDES.get('usuario')
+        if c is None or _REDES.get('usuario_mt') != mt:
+            c = rede_v3.Comite.carregar() if mt else None
+            if c is None or c.n_in != N_IN['usuario']:
+                c = rede_v3.Comite(N_IN['usuario'])
+            _REDES['usuario'], _REDES['usuario_mt'] = c, mt
+        return c
     if arena not in _REDES:
         r = R.Rede.carregar(ARQ_REDE[arena]) or R.Rede.carregar(os.path.join(HERE, 'modelos', f'rede_{arena}.json'))
         _REDES[arena] = r if r is not None and r.n_in == N_IN[arena] else rede_nova(arena)
@@ -97,14 +115,11 @@ def rede(arena):
 
 
 def rede_nova(arena):
-    """Rede do zero. Na arena do usuário, as entradas que os jogos antigos não têm (condição, desfalques, vestiário)
-    começam com peso ZERO: sem isso o peso sorteado ficaria sem treino e viraria ruído quando o dado chegasse."""
-    r = R.Rede(N_IN[arena], 10, 2, semente=7)
+    """Rede do zero (jogos da IA). Na arena do usuário, o comitê v3 vazio (prevê igual à estatística até treinar)."""
     if arena == 'usuario':
-        for i in [EST_NOMES.index(k) for k in SO_NOVOS] + [len(EST_NOMES) + 3]:
-            for row in r.W1:
-                row[i] = 0.0
-    return r
+        import rede_v3
+        return rede_v3.Comite(N_IN['usuario'])
+    return R.Rede(N_IN[arena], 10, 2, semente=7)
 
 
 # ---------------------------------------------------------------- o que os modelos enxergam
@@ -171,7 +186,39 @@ def x_rede(xe, xi_nos, xi_adv, grande, tags, ficha_nova):
             + [1.0 if t in tags else 0.0 for t in TAGS])
 
 
-N_IN = {'simulados': 15, 'usuario': len(EST_NOMES) + 4 + len(TAGS)}
+# 19/10/2026 (rede v3): jogador por jogador e contexto — a mesma conta do estudo (ficha_jogo.jogadores/contexto_jogo)
+NOVAS = ['ataque nosso x defesa deles', 'ataque deles x defesa nossa', 'goleiros', 'velocidade do ataque deles x nossos zagueiros',
+         'velocidade do nosso ataque x zagueiros deles', 'jogo aéreo deles x nossos zagueiros', 'nosso jogo aéreo x zagueiros deles',
+         'drible dos ataques', 'finalização dos ataques', 'craque quente deles', 'gols e assistências recentes deles',
+         'quentes deles', 'craque quente nosso', 'gols e assistências recentes nossos', 'dependência do artilheiro deles',
+         'nossa dependência do artilheiro', 'nossos gols recentes', 'nossos sofridos recentes', 'gols recentes deles',
+         'sofridos recentes deles', 'confronto direto', 'continental', 'copa']
+GRUPOS_V3 = {'duelos individuais (velocidade, jogo aéreo, drible)': (3, 4, 5, 6, 7, 8),
+             'qualidade do ataque x defesa': (0, 1, 2), 'quem está quente': (9, 10, 11, 12, 13),
+             'dependência do artilheiro': (14, 15), 'gols recentes (forma)': (16, 17, 18, 19),
+             'confronto direto': (20,), 'tipo de competição': (21, 22)}
+
+
+def xn_de(ficha):
+    """As 23 entradas novas a partir da ficha (valores neutros quando falta dado)."""
+    fi = ficha or {}
+    n = (fi.get('nos') or {}).get('jog') or {}
+    e = (fi.get('adv') or {}).get('jog') or {}
+    g = lambda d, k, p=0.0: p if d.get(k) is None else d[k]
+    fg = fi.get('forma_gols') or [[1.4, 1.3, 1.3], [1.4, 1.3, 1.3]]
+    fu, fa = fg[0], fg[1]
+    h2h = fi.get('h2h') or []
+    return [round(v, 4) for v in [
+        (g(n, 'atq') - g(e, 'def')) / 5, (g(e, 'atq') - g(n, 'def')) / 5, (g(n, 'gk', 80) - g(e, 'gk', 80)) / 5,
+        (g(e, 'vel_atq', 80) - g(n, 'vel_cb', 80)) / 5, (g(n, 'vel_atq', 80) - g(e, 'vel_cb', 80)) / 5,
+        (g(e, 'aereo_cf', 75) - g(n, 'aereo_cb', 75)) / 5, (g(n, 'aereo_cf', 75) - g(e, 'aereo_cb', 75)) / 5,
+        (g(n, 'drib_atq', 80) - g(e, 'drib_atq', 80)) / 5, (g(n, 'fin_atq', 80) - g(e, 'fin_atq', 80)) / 5,
+        g(e, 'hot_max'), g(e, 'hot_soma') / 5, g(e, 'hot_n'), g(n, 'hot_max'), g(n, 'hot_soma') / 5,
+        g(e, 'dep', 0.3), g(n, 'dep', 0.3), fu[1], fu[2], fa[1], fa[2], (sum(h2h) / len(h2h)) if h2h else 0.0,
+        1.0 if fi.get('tipo') == 'cont' else 0.0, 1.0 if fi.get('tipo') == 'copa' else 0.0]]
+
+
+N_IN = {'simulados': 15, 'usuario': len(EST_NOMES) + 4 + len(TAGS) + len(NOVAS)}
 
 
 def entradas_usr(ctx, tags, e=None):
@@ -182,7 +229,7 @@ def entradas_usr(ctx, tags, e=None):
                momento(e), ctx.get('forca_nos'), ctx.get('forca_adv'))
     xn = (fi.get('nos') or {}).get('xi') or ctx.get('forca_nos') or 75
     xa = (fi.get('adv') or {}).get('xi') or ctx.get('forca_adv') or 75
-    return x_rede(xe, xn, xa, ctx.get('grande'), tags, (fi.get('nos') or {}).get('cond') is not None), xe
+    return x_rede(xe, xn, xa, ctx.get('grande'), tags, (fi.get('nos') or {}).get('cond') is not None) + xn_de(fi), xe
 
 
 def momento(e):
@@ -218,20 +265,20 @@ def porque_est(e, xe, extra=0.0):
     return sorted(((g, round(v, 2)) for g, v in out if abs(v) >= 0.05), key=lambda t: -abs(t[1]))
 
 
-def porque_rede(x):
-    """Mesma pergunta para a rede: quanto o saldo previsto muda se aquele grupo de dados ficar neutro."""
+def porque_rede(x, base):
+    """Mesma pergunta para a rede v3: a base é a estatística; cada grupo mostra quanto a CORREÇÃO da rede muda o saldo
+    se aquele grupo de dados ficar neutro (no valor médio dos jogos). A linha "estatística" é o ponto de partida."""
     r = rede('usuario')
-    sd = lambda y: (lambda la, lb: la - lb)(*r.prever(y))
-    cheio, n, out = sd(x), len(EST_NOMES), []
-    for g, ks in GRUPOS.items():
-        y = list(x)
-        for k in ks:
-            y[EST_NOMES.index(k)] = 0.0
-        if g == 'força dos XI':
-            y[n] = y[n + 1] = (y[n] + y[n + 1]) / 2
-        out.append((g, cheio - sd(y)))
-    y = list(x[:n + 4]) + [0.0] * (len(x) - n - 4)
-    out.append(('plano do rival', cheio - sd(y)))
+    a, b = r.prever(x, base)
+    cheio, n = a - b, len(EST_NOMES)
+    out = [('estatística (ponto de partida)', base[0] - base[1])]
+    grupos = {g: [EST_NOMES.index(k) for k in ks] for g, ks in GRUPOS.items()}
+    grupos['força dos XI'] = grupos['força dos XI'] + [n, n + 1]
+    grupos['plano do rival'] = list(range(n + 4, n + 4 + len(TAGS)))
+    for g, idx in GRUPOS_V3.items():
+        grupos[g] = [n + 4 + len(TAGS) + i for i in idx]
+    for g, idx in grupos.items():
+        out.append((g, cheio - r.saldo_sem(x, base, idx)))
     return sorted(((g, round(v, 2)) for g, v in out if abs(v) >= 0.05), key=lambda t: -abs(t[1]))
 
 
@@ -366,7 +413,7 @@ def prever(e, arena, chave, data, x, lam_est, info=None):
     A = e['arenas'][arena]
     if chave in A['pend'] or any(h['chave'] == chave for h in A['hist'][-300:]):
         return A['pend'].get(chave)
-    lam_r = rede(arena).prever(x)
+    lam_r = rede(arena).prever(x, lam_est) if arena == 'usuario' else rede(arena).prever(x)
     p = {'chave': chave, 'data': list(data), 'x': [round(v, 4) for v in x],
          'est': R.palpite(*lam_est), 'rede': R.palpite(*lam_r),
          'lam_est': [round(v, 2) for v in lam_est], 'lam_rede': [round(v, 2) for v in lam_r], **(info or {})}
@@ -394,8 +441,8 @@ def pontuar(e, arena, resultados, hoje=None):
         pontuados += 1
         if arena == 'usuario' and p.get('xe'):   # 13/10/2026: a estatística v2 se reajusta a cada jogo do usuário
             registrar_jogo_usr(e, p['xe'], real, p.get('extra') or 0.0, p.get('data'))
-        if len(p.get('x') or []) == N_IN[arena]:   # palpites de antes da v2 não servem de treino para a rede nova
-            amostras.append((p['x'], [float(real[0]), float(real[1])]))
+        if len(p.get('x') or []) == N_IN[arena]:   # palpites de versões antigas não servem de treino para a rede nova
+            amostras.append((p['x'], [float(real[0]), float(real[1])]) + ((p.get('lam_est'),) if arena == 'usuario' else ()))
     if pontuados:
         _liderança(A, arena)
     return amostras
@@ -407,7 +454,40 @@ def placar(A, n=JANELA):
     conta = lambda k, v: sum(1 for h in ult if h[k] == v)
     return {'jogos': len(ult), 'estatistica': soma('p_est'), 'rede': soma('p_rede'),
             'exatos': {'estatistica': conta('p_est', 3), 'rede': conta('p_rede', 3)},
-            'vencedor': {'estatistica': sum(1 for h in ult if h['p_est'] >= 1), 'rede': sum(1 for h in ult if h['p_rede'] >= 1)}}
+            'vencedor': {'estatistica': sum(1 for h in ult if h['p_est'] >= 1), 'rede': sum(1 for h in ult if h['p_rede'] >= 1)},
+            'calibracao': calibracao(ult)}
+
+
+def _probs(lam, m=10):
+    import math
+    pa = [math.exp(-lam[0]) * lam[0] ** k / math.factorial(k) for k in range(m + 1)]
+    pb = [math.exp(-lam[1]) * lam[1] ** k / math.factorial(k) for k in range(m + 1)]
+    v = sum(pa[i] * pb[j] for i in range(m + 1) for j in range(m + 1) if i > j)
+    e = sum(pa[i] * pb[i] for i in range(m + 1))
+    return [v, e, max(0.0, 1 - v - e)]
+
+
+def calibracao(hist):
+    """19/10/2026: além do bolão, quão bem cada modelo dá as probabilidades. NLL = erro nos gols (Poisson);
+    RPS = erro no resultado (vitória/empate/derrota). Menor é melhor."""
+    import math
+    out = {}
+    for m, k in (('estatistica', 'lam_est'), ('rede', 'lam_rede')):
+        nll = rps = 0.0
+        n = 0
+        for h in hist:
+            lam, y = h.get(k), h.get('real')
+            if not lam or not y:
+                continue
+            lam = [max(0.05, v) for v in lam]
+            nll += sum(l - yi * math.log(l) + math.lgamma(yi + 1) for l, yi in zip(lam, y))
+            p = _probs(lam)
+            o = [1.0 if y[0] > y[1] else 0.0, 1.0 if y[0] == y[1] else 0.0]
+            c1, c2 = p[0] - o[0], p[0] + p[1] - o[0] - o[1]
+            rps += (c1 * c1 + c2 * c2) / 2
+            n += 1
+        out[m] = {'nll': round(nll / n, 3), 'rps': round(rps / n, 4), 'jogos': n} if n else None
+    return out
 
 
 def _liderança(A, arena):
@@ -426,8 +506,16 @@ def lider(arena):
 
 
 def treinar(arena, amostras, epocas=3):
-    """Aprendizado contínuo: os jogos novos + uma amostra do que já viu (para não esquecer)."""
+    """Aprendizado contínuo: os jogos novos + uma amostra do que já viu (para não esquecer).
+    Jogos do usuário (v3): guarda (entradas, base da estatística, placar) e retreina o comitê do zero em processo separado."""
     if not amostras:
+        return
+    if arena == 'usuario':
+        import rede_v3
+        buf = rede_v3.ler_buffer()
+        buf += [{'c': list(a[0]), 'y': list(a[1]), 'base': list(a[2])} for a in amostras if len(a) >= 3 and a[2]]
+        rede_v3.gravar_buffer(buf)
+        rede_v3.treinar_em_fundo(N_IN['usuario'])
         return
     try:
         with open(ARQ_BUF[arena], encoding='utf-8') as f:
@@ -465,6 +553,8 @@ def amostras_historicas(r, P, s, d=None):
     todas = sorted(r.get('todas_partidas') or [], key=lambda p: tuple(p['data']))
     F = Formas(todas)
     cargas = ficha_jogo.Cargas(todas)
+    of = ficha_jogo.oficiais(todas)
+    pt_of = ficha_jogo.por_time(of)
     ti = r['ti']
 
     def xi(linhas):
@@ -493,6 +583,11 @@ def amostras_historicas(r, P, s, d=None):
             ln_u, ln_a = (p['linhas1'], p['linhas2']) if casa else (p['linhas2'], p['linhas1'])
             ficha = {'nos': ficha_jogo.lado_sumula(cargas, ti, ln_u, p['data'], P),
                      'adv': ficha_jogo.lado_sumula(cargas, adv, ln_a, p['data'], P)}
+            # 19/10/2026 (rede v3): jogador por jogador com o XI da súmula e o contexto (forma em gols, confronto direto)
+            xi_su = lambda ln: [(x['reg'], x['pid']) for x in sorted((x for x in ln if x['minutos'] > 0), key=lambda x: -x['minutos'])[:11]]
+            ficha['nos']['jog'] = ficha_jogo.jogadores(xi_su(ln_u), ti, p['data'], pt_of, P)
+            ficha['adv']['jog'] = ficha_jogo.jogadores(xi_su(ln_a), adv, p['data'], pt_of, P)
+            ficha.update(ficha_jogo.contexto_jogo(of, ti, adv, p['data'], p['comp']))
             # 13/10/2026: v2 — amostra "crua"; o momento do usuário (voce) é encadeado depois, em ordem (encadear_usr)
             usr.append({'ficha': ficha, 'casa': casa, 'forma': (fu[0], fa_[0]), 'grande': p['comp'] in GRANDES,
                         'tags': tags_clube[adv], 'y': y, 'data': tuple(p['data'])})
@@ -506,7 +601,8 @@ def encadear_usr(amostras):
     out = []
     for a in sorted(amostras, key=lambda a: a['data']):
         xe = xe_de(a['ficha'], a['casa'], a['forma'][0], a['forma'][1], momento(e))
-        x = x_rede(xe, a['ficha']['nos'].get('xi') or 75, a['ficha']['adv'].get('xi') or 75, a['grande'], a['tags'], False)
+        x = x_rede(xe, a['ficha']['nos'].get('xi') or 75, a['ficha']['adv'].get('xi') or 75, a['grande'], a['tags'], False) \
+            + xn_de(a['ficha'])
         out.append((x, a['y'], a['data'], xe))
         if e['total_usuario'] is None:
             e['total_usuario'] = a['y'][0] + a['y'][1]

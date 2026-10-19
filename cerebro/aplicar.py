@@ -240,6 +240,18 @@ def main():
         if win_key:
             janela.record(entry, [(m.de, m.para) for m, _ in applied])
             janela.save(ledger)
+        try:   # 19/10/2026: tela "Mercado IA" do Painel + conferência da recarga no save seguinte (mercado_fluxo.py)
+            import mercado_fluxo
+            mercado_fluxo.registrar_rodada({
+                'stamp': stamp, 'save': os.path.basename(ml_path), 'carreira': career_key, 'janela': win_key,
+                'data_jogo': list(date) if date else None, 'uso': entry['total'], 'limite': cap,
+                'quando': dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'negocios': [{'jogador': m.jogador.strip(), 'reg': m.reg, 'pid': m.pid, 'src': m.src_idx, 'dst': m.dst_idx,
+                              'de': m.de, 'para': m.para, 'idade': m.idade, 'pos': m.pos, 'estilo': m.estilo, 'nota': m.nota,
+                              'valor': m.valor, 'motivo': m.motivo, 'perfil': m.perfil, 'camisa': shirt} for m, shirt in applied]})
+            print(f'RODADA {stamp}')
+        except Exception as e:  # noqa: BLE001
+            say(f'aviso: rodada não registrada para o Painel: {e}')
         try:   # imprensa: a reunião seguinte transforma os negócios em matéria (frente "mercado")
             import imprensa_db
             imprensa_db.registrar_negocios(career_key, date, win_key, [

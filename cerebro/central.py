@@ -558,6 +558,15 @@ def _gravar_resposta(destino, opcao):
         pass
 
 
+def _proximo_valido(p, pr):
+    """19/10/2026: na tela de carregamento a memória mostra um "próximo jogo" falso (ex.: Arsenal em 31/12/2019). Só vale
+    jogo na data da carreira ou depois, no mesmo ano ou no seguinte."""
+    hoje, dj = p.get('data_jogo'), pr.get('data')
+    if not hoje or not dj:
+        return False
+    return tuple(dj[:3]) >= tuple(hoje[:3]) and 0 <= dj[0] - hoje[0] <= 1
+
+
 def _preparar_adversario(slot, pr):
     """12/10/2026: o técnico da IA prepara o próximo adversário (ia_adversaria.py): escreve o plano de jogo dele na
     memória e devolve o anterior ao plano original. Desliga com "ia_adversaria": false no automacao.json."""
@@ -596,12 +605,29 @@ def _preparar_adversario(slot, pr):
         try:   # 13/10/2026: ficha do jogo (condição, carga, descanso, desfalques, espírito) para as IAs
             import ficha_jogo
             if ctx.get('data'):
-                ctx['ficha'] = ficha_jogo.montar(d, s, s.find_team(nome), ti, ctx['data'], P, dados)
+                ctx['ficha'] = ficha_jogo.montar(d, s, s.find_team(nome), ti, ctx['data'], P, dados, comp=pr.get('comp'))
         except Exception as e:  # noqa: BLE001
             print('aviso: ficha do jogo:', e, flush=True)
-        ia_adversaria.preparar(d, ti, adv, ctx, olho=olho, P=P,
-                               resultados=dados.get('ultimos_jogos'), escrever_de_verdade=True,
-                               log=lambda m: print(time.strftime('%H:%M:%S'), m, flush=True))
+        # 19/10/2026: o jogo SEGUINTE também fica pronto com antecedência (sem corrida se você entrar rápido na
+        # próxima partida); quando este jogo acabar, ele é refeito com o cansaço e os quentes atualizados
+        log = lambda m: print(time.strftime('%H:%M:%S'), m, flush=True)
+        seg = next((x for x in sorted(dados.get('proximos') or [], key=lambda x: x.get('data') or [])
+                    if (x.get('data') or []) > (pr.get('data') or []) and nome in (x.get('casa'), x.get('fora'))), None)
+        ti_seg = s.find_team(seg['fora'] if seg['casa'] == nome else seg['casa']) if seg else None
+        ia_adversaria.preparar(d, ti, adv, ctx, olho=olho, P=P, resultados=dados.get('ultimos_jogos'),
+                               escrever_de_verdade=True, log=log, manter={ti_seg} if ti_seg is not None else ())
+        if ti_seg is not None and ti_seg != ti:
+            adv2 = seg['fora'] if seg['casa'] == nome else seg['casa']
+            pr2 = {'data': seg['data'], 'casa': seg['casa'], 'fora': seg['fora'], 'comp': None}
+            ctx2 = ia_adversaria.contexto(dados, pr2)
+            ctx2['nome_nos'] = nome
+            try:
+                import ficha_jogo
+                ctx2['ficha'] = ficha_jogo.montar(d, s, s.find_team(nome), ti_seg, ctx2['data'], P, dados)
+            except Exception as e:  # noqa: BLE001
+                print('aviso: ficha do jogo seguinte:', e, flush=True)
+            ia_adversaria.preparar(d, ti_seg, adv2, ctx2, olho=olho, P=P, resultados=None, escrever_de_verdade=True,
+                                   log=log, manter={ti}, antecedencia=True)
     except Exception as e:  # noqa: BLE001 - nunca derruba a Central
         print('aviso: IA adversária:', e, flush=True)
 
@@ -703,14 +729,14 @@ def _imprensa_viva_thread():
                         imprensa.pos_jogo_vivo(d, p, aux, snap, log=log)
                         import bola_na_mesa   # Bola na Mesa + redes do PÓS-JOGO, sem esperar o save
                         bola_na_mesa.vivo(d, p, snap, 'pos', log=log)
-                if pr and marca_pre != feito_pre:   # o próximo jogo mudou: edição PRÉ-JOGO
+                if pr and marca_pre != feito_pre and _proximo_valido(p, pr):   # o próximo jogo mudou: edição PRÉ-JOGO
                     feito_pre = marca_pre
                     threading.Thread(target=_preparar_adversario, args=(c['slot'], pr), daemon=True).start()
                     import bola_na_mesa
                     bola_na_mesa.vivo(estado_projetado(c['slot']), p, snap, 'pre', log=log)
         except Exception as e:  # noqa: BLE001 - nunca derruba a Central
             print('aviso: imprensa ao vivo:', e, flush=True)
-        time.sleep(10)
+        time.sleep(2)   # 19/10/2026: era 10 s — o adversário começa a ser preparado até 2 s depois do jogo anterior acabar
 
 
 VIGIA_PARADO = 180   # s sem batimento com o jogo aberto = vigia travado ou fechado (a foto da memória leva ~5 s)

@@ -22,6 +22,51 @@ import vestiario as V  # noqa: E402
 from save_ml import SaveML  # noqa: E402
 
 
+def bases_andando(usr):
+    """19/10/2026 (rede v3): λ da estatística de cada jogo usando só os jogos anteriores — o mesmo que acontece ao
+    vivo (a rede aprende a corrigir a previsão que a estatística fez NA HORA)."""
+    out = []
+    for i, (_, y, _, xe) in enumerate(usr):
+        ant = usr[:i] or usr[:1]
+        co = D.ajustar_est([{'xe': a[3], 'saldo': a[1][0] - a[1][1]} for a in ant])
+        tot = ant[0][1][0] + ant[0][1][1]
+        for a in ant[1:]:
+            tot = (1 - D.ALFA_TOTAL) * tot + D.ALFA_TOTAL * (a[1][0] + a[1][1])
+        out.append(D.est_usr({'coef_usr': co, 'total_usuario': tot}, xe))
+    return out
+
+
+def treinar_usuario_v3(usr, out):
+    """Comitê v3: teste nos 20% finais (bolão e RPS contra a estatística) e depois treino com tudo."""
+    import rede_v3
+    bases = bases_andando(usr)
+    ams = [{'c': list(x), 'base': [round(b[0], 3), round(b[1], 3)], 'y': [float(y[0]), float(y[1])]}
+           for (x, y, _, _), b in zip(usr, bases)]
+    corte = int(len(ams) * 0.8)
+    t0 = time.time()
+    c = rede_v3.Comite(D.N_IN['usuario'])
+    c.treinar(ams[:corte])
+    pe = pr = 0
+    re_ = rr = 0.0
+    for a in ams[corte:]:
+        real = [int(a['y'][0]), int(a['y'][1])]
+        lr_ = c.prever(a['c'], a['base'])
+        pe += R.pontos(R.palpite(*a['base']), real)
+        pr += R.pontos(R.palpite(*lr_), real)
+        re_ += D.calibracao([{'lam_est': a['base'], 'real': real}])['estatistica']['rps']
+        rr += D.calibracao([{'lam_est': lr_, 'real': real}])['estatistica']['rps']
+    n = len(ams) - corte
+    print(f'usuario (rede v3): teste em {n} jogos — estatística {pe} pts (RPS {re_ / n:.4f}) x rede {pr} pts (RPS {rr / n:.4f}) '
+          f'({time.time() - t0:.0f} s)')
+    out['usuario'] = {'teste_jogos': n, 'estatistica': pe, 'rede': pr, 'versao': 3}
+    rede_v3.gravar_buffer(ams)
+    final = rede_v3.Comite(D.N_IN['usuario'])
+    final.extra = {'pretreino': out['usuario']}
+    final.treinar(ams)
+    final.salvar()
+    D._REDES.pop('usuario', None)
+
+
 def teste(amostras, rede_, est):
     """est recebe a amostra inteira (x, y, data[, xe])."""
     pe = pr = 0
@@ -71,7 +116,9 @@ def main():
     # estatística v2 do usuário: a do teste só conhece os 80% iniciais (como a rede)
     est_teste = dict(e, coef_usr=D.ajustar_est([{'xe': xe, 'saldo': y[0] - y[1]} for _, y, _, xe in usr[:corte_u]]),
                      total_usuario=sum(y[0] + y[1] for _, y, _, _ in usr[max(0, corte_u - 15):corte_u]) / max(1, min(15, corte_u)))
-    arenas = [('usuario', usr, lambda am: D.est_usr(est_teste, am[3]))]
+    arenas = []   # 19/10/2026: a arena do usuário usa o comitê v3 (treinar_usuario_v3), abaixo
+    if len(usr) >= 30:
+        treinar_usuario_v3(usr, out)
     if not so_usuario:
         arenas.insert(0, ('simulados', sim, lambda am: [max(0.15, base + D.COEF * am[0][2] * 5), max(0.15, base - D.COEF * am[0][2] * 5)]))
     for arena, ams, est in arenas:

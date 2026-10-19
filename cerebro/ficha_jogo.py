@@ -122,14 +122,23 @@ def _lado(d, s, ti, xi, data, P, cargas):
     return lado
 
 
-def montar(d, s, user_ti, adv_ti, data, P, dados=None, todas=None):
+def montar(d, s, user_ti, adv_ti, data, P, dados=None, todas=None, comp=None):
     """Ficha do jogo do usuário contra `adv_ti` na data `data` (save da última reunião `d`)."""
     import partidas_save as ps
     todas = todas if todas is not None else ps.todas(d, *ps.FAIXA)
     cargas = _cargas(todas)
+    xi_u, xi_a = xi_usuario(d, s, user_ti), xi_clube(d, s, adv_ti, data, P)
     ficha = {'data': list(data[:3]),
-             'nos': _lado(d, s, user_ti, xi_usuario(d, s, user_ti), data, P, cargas),
-             'adv': _lado(d, s, adv_ti, xi_clube(d, s, adv_ti, data, P), data, P, cargas)}
+             'nos': _lado(d, s, user_ti, xi_u, data, P, cargas),
+             'adv': _lado(d, s, adv_ti, xi_a, data, P, cargas)}
+    try:   # 19/10/2026: jogador por jogador e contexto (rede v3)
+        of = oficiais(todas)
+        pt = por_time(of)
+        ficha['nos']['jog'] = jogadores(xi_u, user_ti, data, pt, P)
+        ficha['adv']['jog'] = jogadores(xi_a, adv_ti, data, pt, P)
+        ficha.update(contexto_jogo(of, user_ti, adv_ti, data, comp))
+    except Exception as e:  # noqa: BLE001 - sem isso a rede usa valores neutros
+        print('aviso: ficha (jogadores):', e)
     try:
         import dificuldade
         esp = d[dificuldade.ESPIRITO]
@@ -140,6 +149,89 @@ def montar(d, s, user_ti, adv_ti, data, P, dados=None, todas=None):
     mor = [j['moral'] for j in js if j.get('moral') is not None]
     ficha['moral'] = round(sum(mor) / len(mor)) if mor else None
     return ficha
+
+
+# ---------------------------------------------------------------- jogador por jogador (rede v3, 19/10/2026)
+ATQ = {'CF', 'SS', 'LWF', 'RWF', 'AMF'}
+DEF = {'CB', 'LB', 'RB'}
+CONTINENTAL = {3, 4, 8, 9, 10}
+
+
+def oficiais(todas):
+    """Súmulas de jogos oficiais (sem amistosos/torneios de pré-temporada), em ordem — a mesma base do estudo."""
+    import duelo
+    return sorted((p for p in todas if p['comp'] not in duelo.NAO_OFICIAL), key=lambda p: tuple(p['data']))
+
+
+def por_time(todas_of):
+    chave = (id(todas_of), len(todas_of))
+    if _MEMO.get('pt_chave') != chave:
+        pt = {}
+        for p in todas_of:
+            pt.setdefault(p['time1'], []).append(p)
+            pt.setdefault(p['time2'], []).append(p)
+        _MEMO.update(pt_chave=chave, pt=pt)
+    return _MEMO['pt']
+
+
+def jogadores(xi, time, data, pt, P):
+    """Leitura do XI de um lado: qualidade do ataque e da defesa, velocidade e jogo aéreo de quem decide, quem está
+    QUENTE (gols + 0,5·assistências nos últimos 5 jogos do time) e a dependência do artilheiro na temporada."""
+    def nota(k):
+        f = P.get(tuple(k)) if P else None
+        return _nota(P, k) if f else None
+
+    def at(k, a):
+        f = P.get(tuple(k)) if P else None
+        return f.attrs.get(a) if f else None
+
+    def media(xs):
+        xs = [x for x in xs if x is not None]
+        return sum(xs) / len(xs) if xs else None
+    ks = [tuple(k) for k in xi]
+    pos = {k: (P[k].pos if P and k in P else '') for k in ks}
+    atq = sorted((nota(k) or 0 for k in ks if pos[k] in ATQ), reverse=True)[:3]
+    dfs = sorted((nota(k) or 0 for k in ks if pos[k] in DEF), reverse=True)[:4]
+    atq_k = sorted((k for k in ks if pos[k] in ATQ), key=lambda k: -(nota(k) or 0))[:3]
+    cb_k = [k for k in ks if pos[k] == 'CB'][:2]
+    dia = tuple(data[:3])
+    ant = [q for q in pt.get(time, []) if tuple(q['data']) < dia]
+    quente = {}
+    for q in ant[-5:]:
+        for x in (q['linhas1'] if q['time1'] == time else q['linhas2']):
+            k = (x['reg'], x['pid'])
+            quente[k] = quente.get(k, 0) + x['gols'] + 0.5 * x['assist']
+    hot = [quente.get(k, 0) for k in ks]
+    ini = (dia[0] if dia[1] >= 7 else dia[0] - 1, 7, 1)
+    gols = {}
+    for q in ant:
+        if tuple(q['data']) >= ini:
+            for x in (q['linhas1'] if q['time1'] == time else q['linhas2']):
+                gols[(x['reg'], x['pid'])] = gols.get((x['reg'], x['pid']), 0) + x['gols']
+    tot = sum(gols.values())
+    aereo = lambda k: ((at(k, 'header') or 0) + (at(k, 'jump') or 0)) / 2
+    return {'atq': media(atq), 'def': media(dfs), 'gk': next((nota(k) for k in ks if pos[k] == 'GK'), None),
+            'vel_atq': media([at(k, 'speed') for k in atq_k]), 'vel_cb': media([at(k, 'speed') for k in cb_k]),
+            'aereo_cf': max([aereo(k) for k in atq_k] or [0]), 'aereo_cb': media([aereo(k) for k in cb_k]),
+            'drib_atq': media([at(k, 'drib') for k in atq_k]), 'fin_atq': media([at(k, 'finish') for k in atq_k]),
+            'hot_max': max(hot or [0]), 'hot_soma': sum(hot), 'hot_n': sum(1 for h in hot if h >= 2),
+            'dep': (max(gols.values()) / tot) if tot >= 5 else None,
+            'quentes': sorted(([P[k].name.strip(), round(quente.get(k, 0), 1)] for k in ks if P and k in P and quente.get(k, 0) >= 2),
+                              key=lambda t: -t[1])[:3]}
+
+
+def contexto_jogo(todas_of, a, b, data, comp):
+    """Forma em gols (últimos 5) dos dois lados, confronto direto (saldo de a nos 2 últimos) e tipo da competição."""
+    import duelo
+    F = _MEMO.get('formas') if _MEMO.get('formas_chave') == (id(todas_of), len(todas_of)) else None
+    if F is None:
+        F = duelo.Formas(todas_of)
+        _MEMO.update(formas=F, formas_chave=(id(todas_of), len(todas_of)))
+    dia = tuple(data[:3])
+    h2h = [q for q in todas_of if {q['time1'], q['time2']} == {a, b} and tuple(q['data']) < dia][-2:]
+    return {'forma_gols': [list(F.antes(a, dia)), list(F.antes(b, dia))],
+            'h2h': [(q['gols1'] - q['gols2']) if q['time1'] == a else (q['gols2'] - q['gols1']) for q in h2h],
+            'tipo': 'cont' if comp in CONTINENTAL else 'copa' if comp in duelo.COPAS else 'liga'}
 
 
 def lado_sumula(cargas, ti, linhas, data, P):
