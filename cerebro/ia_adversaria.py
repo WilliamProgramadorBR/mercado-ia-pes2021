@@ -173,6 +173,17 @@ def contra_olheiro(p, olho, rec=None, pers=None):
     if 'laterais_sobem' in vul and p['estilo_ofensivo'] == 0:
         p['area_ataque'] = 0
         mot.append('contra-ataque nas costas dos laterais que sobem')
+    # 20/10/2026: os vícios do usuário pelos números do próprio jogo (olheiro.estilo_do_jogo)
+    est_ = olho.get('estilo') or {}
+    if (est_.get('enfiada_sofridos') or 0) >= 0.45 and p['estilo_ofensivo'] == 0:
+        p['saida_de_bola'] = 0
+        mot.append(f'bola nas costas: {round(100 * est_["enfiada_sofridos"])}% dos gols que o adversário sofre nascem '
+                   'de passe e enfiada — saída longa e rápida')
+    lados = est_.get('lados') or {}
+    if lados and lados['esquerda'] + lados['direita'] >= 0.70 and 'armador' not in vul:
+        p['contencao'] = 1
+        mot.append(f'contenção ampla: o adversário ataca pelos lados ({round(100 * lados["esquerda"])}% esquerda, '
+                   f'{round(100 * lados["direita"])}% direita)')
     ent = olho.get('entrosamento')
     if ent is not None and ent < 85:
         p.update(estilo_defensivo=0, pressao=0)
@@ -202,10 +213,14 @@ def instrucoes_para(p, base_instr, olho, atacante_rapido, rec=None, alvo_marcaca
     defs = []
     amea = olho.get('ameacas') or []
     a0 = amea[0] if amea else None
+    dep = olho.get('dependencia')
     if alvo_marcacao == 'auto':
         if 'armador' in vul:
             defs.append((14, vul['armador']['idx']))
             mot.append(f'marcação individual no armador {vul["armador"]["nome"]}')
+        elif dep:   # 20/10/2026: quem concentra os chutes do time (números do jogo) pesa mais que só os gols
+            defs.append((14, dep['idx']))
+            mot.append(f'marcação individual no {dep["nome"]}: {round(100 * dep["parte_chutes"])}% dos chutes do time')
         elif a0 and a0['titular'] and (a0['parte_gols'] >= 0.3 or a0['peso'] >= 0.9):
             defs.append((14, a0['idx']))
             mot.append(f'marcação individual no {a0["nome"]} ({a0["gols"]} gols, {a0["assist"]} assistências)')
@@ -220,10 +235,12 @@ def instrucoes_para(p, base_instr, olho, atacante_rapido, rec=None, alvo_marcaca
     if p['linha_defensiva'] <= 4 and (olho.get('aereo') or 0) >= 85:
         defs.append((11, 0))
         mot.append('invadir a área: centroavante forte no alto')
-    if atacante_rapido is not None and (p['estilo_ofensivo'] == 0 or 'zaga_lenta' in vul):
+    enfiada = ((olho.get('estilo') or {}).get('enfiada_sofridos') or 0) >= 0.45
+    if atacante_rapido is not None and (p['estilo_ofensivo'] == 0 or 'zaga_lenta' in vul or enfiada):
         defs.append((15, atacante_rapido[0]))
         mot.append(f'pivô de contra-ataque: {atacante_rapido[1]} fica na frente'
-                   + (' contra a zaga lenta do adversário' if 'zaga_lenta' in vul else ''))
+                   + (' contra a zaga lenta do adversário' if 'zaga_lenta' in vul else
+                      ' para a bola nas costas (o ponto fraco deles)' if enfiada else ''))
     defs += [(c, a) for c, _, a in base_instr if c in T.DEFENSIVAS]
     vistos, d2 = set(), []
     for c, a in defs:

@@ -205,6 +205,7 @@ def estado_projetado(slot=None):
     d['ia_adversaria'] = reg[-1] if reg else None   # como o adversário do próximo jogo foi preparado
     d['ia_adversaria_resumo'] = ia.get('resumo')    # o que a IA já aprendeu sobre o usuário
     d['familiaridade'] = _familiaridade(d)          # entrosamento do elenco com o plano (números do jogo)
+    d['desempenho'] = _desempenho(d)                # 20/10/2026: raio-x do time (tela Desempenho do clube)
     try:   # 12/10/2026: duelo estatística x rede neural (duelo.py)
         import duelo
         d['duelo'] = duelo.resumo()
@@ -217,6 +218,30 @@ def estado_projetado(slot=None):
 
 
 _FAMIL = {}
+_DESEMP = {}
+
+
+def _desempenho(d):
+    """20/10/2026: números da tela "Desempenho do clube" (desempenho_save.py): temporada e últimos 8 jogos."""
+    try:
+        decs = _glob_cache(os.path.join(HERE, '..', 'save_work', 'vestiario_*', 'dec', 'data.dat'), 10.0)
+        if not decs:
+            return None
+        f = max(decs, key=os.path.getmtime)
+        chave = (f, os.path.getmtime(f), d.get('carreira'))
+        if _DESEMP.get('chave') != chave:
+            import carreira
+            import desempenho_save as DS
+            with open(f, 'rb') as fh:
+                dd = fh.read()
+            nomes = {(j['reg'], j['pid']): j['nome'] for j in d.get('jogadores') or []}
+            t = DS.temporada(dd, nomes)
+            rec = DS.janela(carreira.time_do_usuario(dd)[1], 8) if t else None
+            _DESEMP.update(chave=chave, valor={'temporada': t, 'recente': rec} if t else None)
+        return _DESEMP['valor']
+    except Exception as e:  # noqa: BLE001
+        print('aviso: desempenho:', e, flush=True)
+        return None
 
 
 def _familiaridade(d):

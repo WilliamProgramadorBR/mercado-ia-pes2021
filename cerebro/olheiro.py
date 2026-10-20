@@ -54,6 +54,49 @@ def vulnerabilidades(dados, P, pos_elenco, out):
     return vs
 
 
+def estilo_do_jogo(d, out, pos_elenco, P, dados):
+    """20/10/2026: os VÍCIOS do usuário pelos números do próprio jogo (desempenho_save: tela "Desempenho do clube"),
+    só com MIN_JOGOS+ jogos jogados na temporada. Preenche out['estilo'] (para a IA adversária e a futura IA da
+    partida), out['dependencia'] (quem concentra o jogo) e frases para o relatório."""
+    try:
+        import desempenho_save as DS
+        nomes = {k: f.name for k, f in (P or {}).items()}
+        r = DS.temporada(d, nomes)
+    except Exception:  # noqa: BLE001
+        r = None
+    if not r or r['jogos'] < DS.MIN_JOGOS:
+        return
+    out['estilo'] = {k: r[k] for k in ('jogos', 'lados', 'terco_ataque', 'enfiada_sofridos', 'reta_final_feitos',
+                                       'reta_final_sofridos', 'fim_1t_sofridos', 'bola_parada_feitos', 'posse')}
+    pct = lambda x: f'{round(100 * x)}%'
+    if r['enfiada_sofridos'] is not None and r['enfiada_sofridos'] >= 0.45 and r['sofridos'] >= 8:
+        out['frases'].append(f'{pct(r["enfiada_sofridos"])} dos gols que sofre nascem de passe e enfiada nas costas')
+    lados = r['lados']
+    if lados['esquerda'] + lados['direita'] >= 0.70:
+        out['frases'].append(f'ataca pelos lados ({pct(lados["esquerda"])} esquerda, {pct(lados["direita"])} direita)')
+    elif lados['centro'] >= 0.40:
+        out['frases'].append(f'ataca pelo meio ({pct(lados["centro"])} das jogadas)')
+    if r['reta_final_feitos'] and r['reta_final_feitos'] >= 0.22 and r['gols'] >= 10:
+        out['frases'].append(f'cresce no fim: {pct(r["reta_final_feitos"])} dos gols depois dos 75 minutos')
+    J = {(j['reg'], j['pid']): j for j in dados.get('jogadores') or []}
+    if (dados.get('lesao') or {}).get('k'):
+        J.setdefault(tuple(dados['lesao']['k']), {})['lesao'] = True
+
+    def titular(k, x):   # minutos recentes da Central; sem eles, metade dos jogos da temporada nos números do jogo
+        j = J.get(k) or {}
+        if j.get('lesao'):
+            return False
+        mr = j.get('minutos_recentes')
+        return mr >= 0.5 if mr is not None else x['jogos'] >= 0.5 * r['jogos']
+    for x in r.get('protagonistas') or []:
+        k = tuple(x['k'])
+        if x['parte_chutes'] >= 0.40 and k in pos_elenco and titular(k, x):
+            out['dependencia'] = {'nome': x['nome'], 'idx': pos_elenco[k], 'parte_chutes': x['parte_chutes'],
+                                  'parte_dribles': x['parte_dribles'], 'conversao': x['conversao']}
+            out['frases'].append(f'depende do {x["nome"]}: {pct(x["parte_chutes"])} dos chutes do time')
+            break
+
+
 def perfil(d, dados, P, squad):
     """d = save descriptografado; dados = estado da Central (jogadores, últimos jogos); P = fichas; squad = SaveML.squad
     do time do usuário (para achar a posição de cada jogador no elenco)."""
@@ -93,6 +136,7 @@ def perfil(d, dados, P, squad):
     # dribles do time por jogo = soma do ritmo de cada um (só partidas JOGADAS entram nos números detalhados)
     num = [j.get('numeros') or {} for j in J]
     out['dribles_por_jogo'] = round(sum((n.get('dribles') or 0) / n['jogos'] for n in num if n.get('jogos')), 1)
+    estilo_do_jogo(d, out, pos_elenco, P, dados)
     out['vulnerabilidades'] = vulnerabilidades(dados, P, pos_elenco, out)
     for v in out['vulnerabilidades']:
         out['frases'].append(v['frase'])

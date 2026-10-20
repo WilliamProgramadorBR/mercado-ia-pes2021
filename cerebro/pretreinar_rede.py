@@ -44,7 +44,7 @@ def treinar_usuario_v3(usr, out):
            for (x, y, _, _), b in zip(usr, bases)]
     corte = int(len(ams) * 0.8)
     t0 = time.time()
-    c = rede_v3.Comite(D.N_IN['usuario'])
+    c = rede_v3.Comite(D.N_IN['usuario'], rede_v3.ler_cfg())
     c.treinar(ams[:corte])
     pe = pr = 0
     re_ = rr = 0.0
@@ -60,7 +60,7 @@ def treinar_usuario_v3(usr, out):
           f'({time.time() - t0:.0f} s)')
     out['usuario'] = {'teste_jogos': n, 'estatistica': pe, 'rede': pr, 'versao': 3}
     rede_v3.gravar_buffer(ams)
-    final = rede_v3.Comite(D.N_IN['usuario'])
+    final = rede_v3.Comite(D.N_IN['usuario'], rede_v3.ler_cfg())
     final.extra = {'pretreino': out['usuario']}
     final.treinar(ams)
     final.salvar()

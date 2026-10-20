@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Central do Técnico</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%231e3a6e'/><stop offset='1' stop-color='%230b1426'/></linearGradient></defs><rect x='2' y='2' width='60' height='60' rx='14' fill='url(%23g)'/><rect x='13' y='10' width='38' height='44' rx='3' fill='%231f7a43'/><rect x='16' y='13' width='32' height='38' rx='1' fill='none' stroke='white' stroke-width='2.5'/><line x1='16' y1='32' x2='48' y2='32' stroke='white' stroke-width='2.5'/><circle cx='32' cy='32' r='5.5' fill='none' stroke='white' stroke-width='2.5'/><circle cx='24' cy='43' r='2.8' fill='%23f5c542'/><circle cx='40' cy='43' r='2.8' fill='%23f5c542'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
@@ -870,6 +871,7 @@ section h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom:
     <div class="grid2"><section><h2>Relatório da comissão técnica</h2><div id="tatica"></div></section>
       <section><h2>Jogo da rodada · 4 x 4</h2><div id="duelo2"></div></section></div>
     <section style="margin-top:14px"><h2>Duelo: estatística x rede neural <span class="dica">bolão: placar exato 3 · saldo certo 2 · vencedor certo 1 · quem somar mais nos últimos 100 jogos decide</span></h2><div id="duelo"></div></section>
+    <section style="margin-top:14px"><h2>Raio-x do time <span class="dica">números do próprio jogo (Informações do time › Desempenho do clube), só partidas jogadas</span></h2><div id="raiox"></div></section>
     <section style="margin-top:14px"><h2>Entrosamento com o plano de jogo <span class="dica">o quanto cada um já aprendeu o seu sistema (números do próprio jogo)</span></h2><div id="familiaridade"></div></section>
   </div>
   <div class="tela" id="t-disciplina">
@@ -978,7 +980,7 @@ function render() {
     return `<span class="res ${r}" title="${esc(g.adversario)} ${g.pro}x${g.contra}">${r}</span>`;
   }).join('') || '—';
   renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
-  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderDuelo(d); renderFrentes(d);
+  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderRaioX(d); renderDuelo(d); renderFrentes(d);
   renderCalMes(d); ligarArmarios(); renderSino(); notificarNovos(); atualizarModal(d); atualizarCarrosseis();
   document.documentElement.style.setProperty('--h-placar', document.querySelector('.placar').offsetHeight + 'px');
   $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
@@ -1618,6 +1620,40 @@ function renderDuelo(d) {
       ${(u.ultimos || []).map(h => `<div class="item">${dataBR(h.data)} · ${esc(h.adv || '')}: deu <b>${pc(h.real)}</b>
         <div class="dica">${NOME_MOD.estatistica} ${pc(h.est)} (+${h.p_est}) · ${NOME_MOD.rede} ${pc(h.rede)} (+${h.p_rede})${h.decidiu ? ` · plano: ${NOME_MOD[h.decidiu]}` : ''}</div></div>`).join('')
         || '<div class="vazio">Os palpites dos seus jogos aparecem aqui assim que o próximo jogo acontecer.</div>'}</div></div>`;
+}
+
+function renderRaioX(d) {
+  const el = $('raiox');
+  if (!el) return;
+  const R = d.desempenho, T = R && R.temporada;
+  if (!T) { el.innerHTML = '<div class="vazio">Sem números nesta temporada ainda (o jogo só conta partidas jogadas).</div>'; return; }
+  const pc = x => Math.round(100 * (x || 0)) + '%';
+  const h3 = t => `<h3 style="margin:10px 0 4px;font:700 12px var(--f-score);letter-spacing:1.2px;text-transform:uppercase;color:var(--gold)">${t}</h3>`;
+  const barra = (v, max, cor) => `<div class="bar" style="margin-top:3px"><i style="width:${max ? Math.round(100 * v / max) : 0}%;background:${cor}"></i></div>`;
+  const L = T.lados;
+  const per = Object.keys(T.gols_periodo).filter(k => k !== 'prorrogação' || T.gols_periodo[k] || T.sofridos_periodo[k]);
+  const mx = Math.max(1, ...per.map(k => Math.max(T.gols_periodo[k], T.sofridos_periodo[k])));
+  const tipos = Object.keys(T.tipos_feitos);
+  const mt = Math.max(1, ...tipos.map(k => Math.max(T.tipos_feitos[k], T.tipos_sofridos[k])));
+  const r = R.recente && R.recente.resumo;
+  const cmp = (rot, a, b, melhorMaior) => {
+    if (a == null || b == null) return '';
+    const bom = melhorMaior ? a >= b : a <= b;
+    return `<div class="item">${rot}: <b style="color:${bom ? 'var(--good)' : 'var(--worse)'}">${a}</b> <span class="dica">nos últimos ${R.recente.jogos} · temporada ${b}</span></div>`;
+  };
+  el.innerHTML = `<div class="item"><b>${T.jogos} jogos</b> · ${T.gols} gols feitos, ${T.sofridos} sofridos · posse ${T.posse}% · ${T.chutes_pj} chutes por jogo (${T.chutes_gol_pj} no gol) · precisão de passe ${pc(T.precisao_passe)}</div>
+    <div class="grid2"><div>
+      ${h3('Por onde ataca')}
+      ${['esquerda', 'centro', 'direita'].map(k => `<div class="item">${k} <b style="float:right">${pc(L[k])}</b>${barra(L[k], 1, 'var(--gold)')}</div>`).join('')}
+      ${h3('Gols por período <span class="dica">feitos · sofridos</span>')}
+      ${per.map(k => `<div class="item">${k}' <span style="float:right"><b style="color:var(--good)">${T.gols_periodo[k]}</b> · <b style="color:var(--worse)">${T.sofridos_periodo[k]}</b></span>${barra(T.gols_periodo[k], mx, 'var(--good)')}${barra(T.sofridos_periodo[k], mx, 'var(--worse)')}</div>`).join('')}
+    </div><div>
+      ${h3('Como saem os gols <span class="dica">feitos · sofridos</span>')}
+      ${tipos.map(k => `<div class="item">${esc(k)} <span style="float:right"><b style="color:var(--good)">${T.tipos_feitos[k]}</b> · <b style="color:var(--worse)">${T.tipos_sofridos[k]}</b></span>${barra(T.tipos_feitos[k], mt, 'var(--good)')}${barra(T.tipos_sofridos[k], mt, 'var(--worse)')}</div>`).join('')}
+      ${h3('Quem carrega o time')}
+      ${(T.protagonistas || []).map(j => `<div class="item"><b>${esc(j.nome || '?')}</b> <span class="dica">${j.jogos} jogos · ${j.gols} gols</span><div class="dica">${pc(j.parte_chutes)} dos chutes · ${pc(j.parte_dribles)} dos dribles · ${pc(j.parte_recebidos)} dos passes recebidos${j.conversao != null ? ' · converte ' + pc(j.conversao) : ''}</div></div>`).join('')}
+      ${r ? h3('Últimos jogos x temporada') + cmp('chutes no gol por jogo', r.chutes_gol_pj, T.chutes_gol_pj, true) + cmp('chutes no gol sofridos por jogo', r.chutes_sofridos_gol_pj, T.chutes_sofridos_gol_pj, false) + cmp('posse', r.posse, T.posse, true) : ''}
+    </div></div>`;
 }
 
 function renderFamiliaridade(d) {

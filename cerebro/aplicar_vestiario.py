@@ -604,6 +604,11 @@ def main():
             destaques.da_reuniao(car, r, d, snap)
         except Exception as e:  # noqa: BLE001
             print('aviso: destaques do mundo não calculados:', e)
+        try:   # 20/10/2026: desempenho do clube (tela do jogo) — uma foto por reunião para o histórico jogo a jogo
+            import desempenho_save
+            desempenho_save.registrar(d)
+        except Exception as e:  # noqa: BLE001
+            print('aviso: desempenho do clube não registrado:', e)
         try:   # história do clube: fecha a temporada no banco (o jogo apaga tudo na virada), recordes e marcos
             import historia
             for m in historia.da_reuniao(car, r, d, snap):
@@ -659,6 +664,13 @@ def main():
             car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + analise_jogo.da_reuniao(car, r, snap, hoje)
         except Exception as e:  # noqa: BLE001
             print('aviso: análise do jogo não gerada:', e)
+        try:   # 20/10/2026: raio-x do time a cada 8 jogos (raio_x.py): números da tela "Desempenho do clube"
+            import raio_x
+            ms_rx, nt_rx = raio_x.da_reuniao(car, r, d, snap)
+            car['_imprensa_extra'] = (car.get('_imprensa_extra') or []) + ms_rx
+            noticias += nt_rx
+        except Exception as e:  # noqa: BLE001
+            print('aviso: raio-x não gerado:', e)
         try:   # rumores de mercado sobre os nossos (rumores.py) e o celular do técnico (celular.py)
             import celular
             import rumores

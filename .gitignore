@@ -40,3 +40,6 @@ config.json
 # Segredos locais (chave do Gemini)
 .env
 diagnostico/
+
+# Atalhos do Windows (caminhos absolutos do PC; gere com python empacotar\icones.py)
+*.lnk

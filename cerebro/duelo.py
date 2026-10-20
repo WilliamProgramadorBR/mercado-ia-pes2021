@@ -442,7 +442,7 @@ def pontuar(e, arena, resultados, hoje=None):
         if arena == 'usuario' and p.get('xe'):   # 13/10/2026: a estatística v2 se reajusta a cada jogo do usuário
             registrar_jogo_usr(e, p['xe'], real, p.get('extra') or 0.0, p.get('data'))
         if len(p.get('x') or []) == N_IN[arena]:   # palpites de versões antigas não servem de treino para a rede nova
-            amostras.append((p['x'], [float(real[0]), float(real[1])]) + ((p.get('lam_est'),) if arena == 'usuario' else ()))
+            amostras.append((p['x'], [float(real[0]), float(real[1])]) + ((p.get('lam_est'), p.get('data')) if arena == 'usuario' else ()))
     if pontuados:
         _liderança(A, arena)
     return amostras
@@ -513,7 +513,9 @@ def treinar(arena, amostras, epocas=3):
     if arena == 'usuario':
         import rede_v3
         buf = rede_v3.ler_buffer()
-        buf += [{'c': list(a[0]), 'y': list(a[1]), 'base': list(a[2])} for a in amostras if len(a) >= 3 and a[2]]
+        # 20/10/2026: com a data do jogo — entradas novas (ex.: desempenho_save.janela) podem ser calculadas depois
+        buf += [{'c': list(a[0]), 'y': list(a[1]), 'base': list(a[2]), 'data': list(a[3]) if len(a) > 3 and a[3] else None}
+                for a in amostras if len(a) >= 3 and a[2]]
         rede_v3.gravar_buffer(buf)
         rede_v3.treinar_em_fundo(N_IN['usuario'])
         return
