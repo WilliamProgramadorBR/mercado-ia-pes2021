@@ -605,8 +605,8 @@ def main():
         except Exception as e:  # noqa: BLE001
             print('aviso: destaques do mundo não calculados:', e)
         try:   # 20/10/2026: desempenho do clube (tela do jogo) — uma foto por reunião para o histórico jogo a jogo
-            import desempenho_save
-            desempenho_save.registrar(d)
+            import desempenho_save   # e a temporada no banco permanente (imprensa.db, hist_desempenho)
+            desempenho_save.reuniao(d, car, hoje)
         except Exception as e:  # noqa: BLE001
             print('aviso: desempenho do clube não registrado:', e)
         try:   # história do clube: fecha a temporada no banco (o jogo apaga tudo na virada), recordes e marcos

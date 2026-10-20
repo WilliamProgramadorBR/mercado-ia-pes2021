@@ -7,6 +7,8 @@ Tabelas:
   negocios      transferências feitas pelo Mercado IA (aplicar.py grava; a reunião vira matéria e marca materia_id).
   estatisticas  foto das estatísticas da temporada do nosso elenco a cada reunião: a diferença entre duas fotos dá os
                 números de UM jogo (passes, chutes, desarmes...) para o pós-jogo.
+  hist_desempenho  (20/10/2026) a tela "Desempenho do clube" de cada temporada (76 números + tabela por jogador),
+                sobrescrita a cada reunião: a última antes da virada fica para sempre (o jogo zera o bloco).
 """
 import datetime as dt
 import json
@@ -49,6 +51,9 @@ CREATE TABLE IF NOT EXISTS hist_jogador (
   jogos INTEGER, gols INTEGER, assist INTEGER, media REAL, minutos INTEGER, PRIMARY KEY (carreira, temporada, reg, pid));
 CREATE TABLE IF NOT EXISTS hist_marcos (
   carreira TEXT NOT NULL, chave TEXT NOT NULL, data TEXT, texto TEXT, PRIMARY KEY (carreira, chave));
+CREATE TABLE IF NOT EXISTS hist_desempenho (
+  carreira TEXT NOT NULL, temporada TEXT NOT NULL, time TEXT, jogos INTEGER, ultimo_jogo TEXT, valores TEXT,
+  jogadores TEXT, atualizado TEXT, PRIMARY KEY (carreira, temporada));
 CREATE TABLE IF NOT EXISTS estatisticas (
   carreira TEXT NOT NULL, data TEXT NOT NULL, reg INTEGER NOT NULL, pid INTEGER NOT NULL, dados TEXT,
   PRIMARY KEY (carreira, data, reg, pid));

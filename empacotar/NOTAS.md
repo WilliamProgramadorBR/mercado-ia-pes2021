@@ -6,3 +6,4 @@ Mercado IA 0.9.6: os vícios do seu time viram tática da IA e matéria da impre
 - Rede neural mais estável: entradas com poucos jogos de dado (moral, espírito, condição) ficam neutras até juntar 15 jogos, e nenhuma entrada passa de 3 desvios. Isso acabou com palpites exagerados como o 4 x 0 contra o Nottingham.
 - Rede neural preparada para carreiras longas: os jogos recentes pesam mais no treino (o seu elenco e o seu jogo mudam com as temporadas) e, a cada 100 jogos, ela testa sozinha se um tamanho ou uma regularização diferente prevê melhor, e só troca se ganhar.
 - Ícones: a Central do Técnico ganhou ícone na aba do navegador, e quem roda do código tem atalhos numerados com ícones próprios (1 = Painel, o app principal).
+- Os números do "Desempenho do clube" de cada temporada ficam guardados para sempre no banco do Mercado IA (o jogo zera tudo na virada de temporada).

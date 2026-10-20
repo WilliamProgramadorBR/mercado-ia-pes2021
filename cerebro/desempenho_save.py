@@ -205,6 +205,60 @@ def registrar(d, h=None, quando=None, gravar=True):
     return f
 
 
+def fechar_temporada(f, ck, hoje, time_nome=None):
+    """Grava (ou atualiza) a temporada desta foto no banco permanente (imprensa.db, hist_desempenho), como a história
+    do clube faz: a última reunião antes da virada deixa a temporada completa guardada. Só grava se o último jogo da
+    foto for DESTA temporada (na virada as súmulas somem e o bloco zera) e se não tiver MENOS jogos que o já guardado."""
+    if not f or not ck or not f.get('data'):
+        return None
+    import json as _json
+    import destaques
+    import historia
+    import imprensa_db as db
+    ini = destaques.ini_temporada(tuple(hoje))
+    if tuple(f['data'][:3]) < tuple(ini[:3]):
+        return None
+    t = historia.tkey(ini)
+    jogos = max((v[0] for v in f['jogadores'].values()), default=0)
+    with db.conectar() as c:
+        x = c.execute('SELECT jogos FROM hist_desempenho WHERE carreira = ? AND temporada = ?', (ck, t)).fetchone()
+        if x and (x['jogos'] or 0) > jogos:
+            return None
+        c.execute('INSERT OR REPLACE INTO hist_desempenho VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                  (ck, t, time_nome, jogos, db.data_txt(f['data']), _json.dumps(f['valores']),
+                   _json.dumps({'campos': CAMPOS_JOG, 'jogadores': f['jogadores']}), db._agora()))
+    return t
+
+
+def temporadas_fechadas(ck):
+    """{temporada: {'jogos', 'ultimo_jogo', 'resumo'}} do banco permanente, da mais antiga para a mais nova."""
+    import json as _json
+    import imprensa_db as db
+    out = {}
+    with db.conectar() as c:
+        for x in c.execute('SELECT * FROM hist_desempenho WHERE carreira = ? ORDER BY temporada', (ck,)):
+            jg = _json.loads(x['jogadores'])
+            jog = {tuple(int(v) for v in k.split(':')): dict(zip(jg['campos'], v)) for k, v in jg['jogadores'].items()}
+            out[x['temporada']] = {'jogos': x['jogos'], 'ultimo_jogo': x['ultimo_jogo'],
+                                   'resumo': resumo(_json.loads(x['valores']), jog, x['jogos'])}
+    return out
+
+
+def reuniao(d, car, hoje):
+    """Gancho da reunião (aplicar_vestiario): foto no histórico (se mudou) + temporada no banco permanente."""
+    nome, f = foto(d)
+    if f is None:
+        return None
+    h = _ler_hist()
+    lst = h.setdefault(nome, [])
+    if not lst or lst[-1]['valores'] != f['valores']:
+        f2 = dict(f, quando=time.strftime('%Y-%m-%d %H:%M:%S'))
+        lst.append(f2)
+        h[nome] = lst[-600:]
+        _gravar_hist(h)
+    return fechar_temporada(f, (car or {}).get('ck'), hoje, nome)
+
+
 def reconstruir(pasta=None, log=print):
     """Refaz o histórico com todos os saves descriptografados guardados (save_work/vestiario_*/dec/data.dat)."""
     pasta = pasta or os.path.join(HERE, '..', 'save_work')
