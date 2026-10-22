@@ -206,6 +206,12 @@ def estado_projetado(slot=None):
     d['ia_adversaria_resumo'] = ia.get('resumo')    # o que a IA já aprendeu sobre o usuário
     d['familiaridade'] = _familiaridade(d)          # entrosamento do elenco com o plano (números do jogo)
     d['desempenho'] = _desempenho(d)                # 20/10/2026: raio-x do time (tela Desempenho do clube)
+    try:   # 22/10/2026: autópsia dos últimos jogos (autopsia.py): por que deu diferente do previsto
+        import autopsia
+        d['autopsias'] = autopsia.recentes(5)
+    except Exception as e:  # noqa: BLE001
+        d['autopsias'] = []
+        print('aviso: autópsia:', e, flush=True)
     try:   # 12/10/2026: duelo estatística x rede neural (duelo.py)
         import duelo
         d['duelo'] = duelo.resumo()

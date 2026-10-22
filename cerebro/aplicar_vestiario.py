@@ -609,6 +609,11 @@ def main():
             desempenho_save.reuniao(d, car, hoje)
         except Exception as e:  # noqa: BLE001
             print('aviso: desempenho do clube não registrado:', e)
+        try:   # 22/10/2026: autópsia dos jogos pontuados no duelo (autopsia.py): por que deu diferente do previsto
+            import autopsia
+            autopsia.atualizar(d, nomes={tuple(j['k']): j['nome'] for j in r.get('J') or []})
+        except Exception as e:  # noqa: BLE001
+            print('aviso: autópsia não feita:', e)
         try:   # história do clube: fecha a temporada no banco (o jogo apaga tudo na virada), recordes e marcos
             import historia
             for m in historia.da_reuniao(car, r, d, snap):

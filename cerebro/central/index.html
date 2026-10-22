@@ -871,6 +871,7 @@ section h2::before { content: ""; position: absolute; left: 0; top: 2px; bottom:
     <div class="grid2"><section><h2>Relatório da comissão técnica</h2><div id="tatica"></div></section>
       <section><h2>Jogo da rodada · 4 x 4</h2><div id="duelo2"></div></section></div>
     <section style="margin-top:14px"><h2>Duelo: estatística x rede neural <span class="dica">bolão: placar exato 3 · saldo certo 2 · vencedor certo 1 · quem somar mais nos últimos 100 jogos decide</span></h2><div id="duelo"></div></section>
+    <section style="margin-top:14px"><h2>Autópsia dos últimos jogos <span class="dica">por que deu diferente do previsto: chances, placar merecido, azar x leitura do jogo</span></h2><div id="autopsias"></div></section>
     <section style="margin-top:14px"><h2>Raio-x do time <span class="dica">números do próprio jogo (Informações do time › Desempenho do clube), só partidas jogadas</span></h2><div id="raiox"></div></section>
     <section style="margin-top:14px"><h2>Entrosamento com o plano de jogo <span class="dica">o quanto cada um já aprendeu o seu sistema (números do próprio jogo)</span></h2><div id="familiaridade"></div></section>
   </div>
@@ -980,7 +981,7 @@ function render() {
     return `<span class="res ${r}" title="${esc(g.adversario)} ${g.pro}x${g.contra}">${r}</span>`;
   }).join('') || '—';
   renderFita(d); renderResumo(d); renderElenco(d); renderImprensa(d); renderColetiva(d);
-  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderRaioX(d); renderDuelo(d); renderFrentes(d);
+  renderDiretoria(d); renderMercado(d); renderHistoria(d); renderArquibancada(d); renderCelular(d); renderAtividade(d); renderDisciplina(d); renderCalendario(d); renderPatrocinio(d); renderRodada(d); renderProximo(d); renderFamiliaridade(d); renderRaioX(d); renderAutopsias(d); renderDuelo(d); renderFrentes(d);
   renderCalMes(d); ligarArmarios(); renderSino(); notificarNovos(); atualizarModal(d); atualizarCarrosseis();
   document.documentElement.style.setProperty('--h-placar', document.querySelector('.placar').offsetHeight + 'px');
   $('rodape').innerHTML = esc(`Reunião do vestiário: ${(d.gerado_em || '').replace('T', ' ')}` +
@@ -1620,6 +1621,22 @@ function renderDuelo(d) {
       ${(u.ultimos || []).map(h => `<div class="item">${dataBR(h.data)} · ${esc(h.adv || '')}: deu <b>${pc(h.real)}</b>
         <div class="dica">${NOME_MOD.estatistica} ${pc(h.est)} (+${h.p_est}) · ${NOME_MOD.rede} ${pc(h.rede)} (+${h.p_rede})${h.decidiu ? ` · plano: ${NOME_MOD[h.decidiu]}` : ''}</div></div>`).join('')
         || '<div class="vazio">Os palpites dos seus jogos aparecem aqui assim que o próximo jogo acontecer.</div>'}</div></div>`;
+}
+
+function renderAutopsias(d) {
+  const el = $('autopsias');
+  if (!el) return;
+  const A = d.autopsias || [];
+  if (!A.length) { el.innerHTML = '<div class="vazio">Aparece depois do próximo jogo salvo.</div>'; return; }
+  const g = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v || 0).toFixed(1).replace('.', ',');
+  el.innerHTML = A.map(a => {
+    const v = a.veredito || {};
+    const cor = v.rede_pesou_a_mao ? 'var(--worse)' : v.rede_ajudou ? 'var(--good)' : 'var(--muted, #8fa396)';
+    return `<div class="item"><b>${dataBR(a.data)} · ${esc(a.adv || '?')}: ${a.real[0]} x ${a.real[1]}</b>
+      ${a.merecido ? `<span class="dica"> · merecido ${a.merecido[0].toFixed(1).replace('.', ',')} x ${a.merecido[1].toFixed(1).replace('.', ',')}</span>` : ''}
+      ${(a.texto || []).slice(1).map(t => `<div class="dica">${esc(t)}</div>`).join('')}
+      ${a.veredito ? `<div style="color:${cor};font-size:12px">erro da rede ${g(v.erro_rede)} = azar ${g(v.azar)} + leitura ${g(v.leitura_rede)}</div>` : ''}</div>`;
+  }).join('');
 }
 
 function renderRaioX(d) {

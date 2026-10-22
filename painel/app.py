@@ -424,6 +424,9 @@ class PaginaRede(QWidget):
         self.ficha = rotulo('', rico=True)
         self.ficha.setWordWrap(True)
         self.v.addWidget(cartao(rotulo('Próximo jogo: ficha e por quê', 'h2'), self.ficha))
+        self.autopsia = rotulo('', rico=True)   # 22/10/2026: por que o último jogo deu diferente do previsto
+        self.autopsia.setWordWrap(True)
+        self.v.addWidget(cartao(rotulo('Autópsia do último jogo', 'h2'), self.autopsia))
         self.tab = QTableWidget(0, 5)
         self.tab.setHorizontalHeaderLabels(['Jogo', 'Resultado', '📊 Palpite da estatística', '🧠 Palpite da rede neural', 'Quem foi melhor'])
         self.tab.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -432,7 +435,8 @@ class PaginaRede(QWidget):
         self.tab.setMinimumHeight(300)
         legenda = rotulo('Placares sempre no formato <b>mandante x visitante</b>. Cada palpite ganha: <b>3</b> pelo placar exato · '
                          '<b>2</b> pelo saldo certo · <b>1</b> pelo vencedor (ou empate) certo · <b>0</b> se errar. '
-                         'Passe o mouse num palpite para ver o porquê.', 'sub', rico=True)
+                         'Passe o mouse num palpite para ver o porquê, e no resultado para ver a autópsia do jogo. '
+                         '<b>Merecido</b> = o placar que as chances no gol davam.', 'sub', rico=True)
         self.v.addWidget(cartao(rotulo('Palpites nos seus jogos', 'h2'), legenda, self.tab))
         bar = QHBoxLayout()
         self.b_estudar = QPushButton('Estudar o histórico do save de novo')
@@ -589,6 +593,33 @@ class PaginaRede(QWidget):
             linhas.append(f'<span style="color:{cor}">{txt}</span>')
         self.ficha.setText('<br>'.join(linhas) + '<br>' + voce)
 
+    def _autopsia(self, aut):
+        if not aut:
+            self.autopsia.setText('Aparece depois do próximo jogo salvo: o que os números do jogo dizem sobre o palpite.')
+            return
+        a = aut[max(aut)]
+        v = a.get('veredito') or {}
+        cab = f'<b>{"/".join(str(x) for x in (a.get("data") or [])[::-1])} · {esc_html(a.get("adv") or "?")}</b>'
+        linhas = [cab] + [esc_html(t) for t in a.get('texto') or []]
+        if v:
+            cor = COR['ruim'] if v.get('rede_pesou_a_mao') else COR['bom'] if v.get('rede_ajudou') else COR['mudo']
+            linhas.append(f'<span style="color:{cor}">Erro da rede: {fmt_gols(v.get("erro_rede"))} de saldo = '
+                          f'azar {fmt_gols(v.get("azar"))} + leitura {fmt_gols(v.get("leitura_rede"))}</span>')
+        try:   # o julgamento da rede sobre ela mesma (autopsia.autoavaliacao), calculado aqui com as autópsias
+            vs = [x['veredito'] for k, x in sorted(aut.items(), reverse=True) if x.get('veredito')][:20]
+            if len(vs) >= 5:
+                med = lambda k: sum(abs(y[k]) for y in vs) / len(vs)
+                aj, pm = sum(1 for y in vs if y['rede_ajudou']), sum(1 for y in vs if y['rede_pesou_a_mao'])
+                n1 = lambda x: f'{x:.1f}'.replace('.', ',')
+                linhas.append(f'<br><b>Julgamento da rede</b> (últimos {len(vs)} jogos com números): a correção dela '
+                              f'<span style="color:{COR["bom"]}">ajudou em {aj}</span> e '
+                              f'<span style="color:{COR["ruim"]}">pesou a mão em {pm}</span>. Erro médio de leitura do jogo: '
+                              f'rede {n1(med("leitura_rede"))} x estatística {n1(med("leitura_est"))} gol; '
+                              f'azar médio (finalização e goleiro): {n1(med("azar"))} gol.')
+        except Exception:  # noqa: BLE001
+            pass
+        self.autopsia.setText('<br>'.join(linhas))
+
     # 13/10/2026: o quadro conta a história de cada jogo — quem jogou onde, o que cada um apostou e quanto fez
     def _tabela_palpites(self, e):
         nos = nosso_time()
@@ -601,6 +632,8 @@ class PaginaRede(QWidget):
         APOSTA = {'vitória': 'você vence', 'empate': 'empate', 'derrota': 'você perde'}
         COR_PTS = {3: COR['bom'], 2: '#8fd14f', 1: COR['aviso'], 0: COR['ruim']}
         MOTIVO = {3: 'placar exato', 2: 'saldo certo', 1: 'vencedor certo', 0: 'errou'}
+        aut = ler_json(os.path.join(base.HIST, 'autopsias.json'), {}) or {}   # 22/10/2026: autopsia.py
+        self._autopsia(aut)
 
         def res(g):   # g = [gols do usuário, gols do adversário]
             return 'vitória' if g[0] > g[1] else 'empate' if g[0] == g[1] else 'derrota'
@@ -628,7 +661,13 @@ class PaginaRede(QWidget):
                 self.tab.setItem(i, 1, item('a jogar', COR['mudo']))
             else:
                 r = res(h['real'])
-                self.tab.setItem(i, 1, item(f'{placar(h["real"], fora)}\n{FEZ[r]}', COR_RES[r], True))
+                a = aut.get('%04d-%02d-%02d' % tuple((h.get('data') or [0, 0, 0])[:3])) or {}
+                mer = a.get('merecido')
+                txt = f'{placar(h["real"], fora)}\n{FEZ[r]}' + (f'\nmerecido {placar([f"{x:.1f}".replace(".", ",") for x in mer], fora)}' if mer else '')
+                it = item(txt, COR_RES[r], True)
+                if a.get('texto'):
+                    it.setToolTip('Autópsia do jogo:\n' + '\n'.join('  ' + t for t in a['texto']))
+                self.tab.setItem(i, 1, it)
             for col, (k, kp) in ((2, ('est', 'p_est')), (3, ('rede', 'p_rede'))):
                 g = h.get(k)
                 if not g:

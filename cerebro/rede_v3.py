@@ -34,8 +34,12 @@ TRAVA_TREINO = os.path.join(HERE, 'historico', 'rede_usuario_v3.treinando')
 ARQ_CFG = os.path.join(HERE, 'historico', 'rede_usuario_v3_config.json')
 SEMENTES = (1, 2, 3, 4, 5)
 EPOCAS, LR, LIMITE = 60, 0.004, 1.0
-CFG_PADRAO = {'ocultos': 4, 'l2': 0.1, 'recencia': 1.0}   # o campeão do estudo de 19/10 (sem recência)
-GRADE = [{'ocultos': o, 'l2': l, 'recencia': r} for o in (4, 8) for l in (0.1, 0.05) for r in (1.0, 0.995, 0.98)]
+CFG_PADRAO = {'ocultos': 4, 'l2': 0.1, 'recencia': 1.0, 'merecido': 0.0}   # o campeão do estudo de 19/10 (sem recência)
+# 22/10/2026: 'merecido' = peso do placar MERECIDO (chutes no gol x conversão, autopsia.py) no alvo do treino — tira parte
+# da sorte do aprendizado (8 chutes no gol e nenhum gol não é "o usuário jogou mal"). O teste é sempre no placar real.
+# Com 37 jogos com números (22/10) α=0,3 melhorou o NLL mas piorou o RPS: fica para o reajuste automático decidir.
+MERECIDO_TESTE = 0.3
+GRADE = [{'ocultos': o, 'l2': l, 'recencia': r, 'merecido': 0.0} for o in (4, 8) for l in (0.1, 0.05) for r in (1.0, 0.995, 0.98)]
 AJUSTE_A_CADA, AJUSTE_MIN_JOGOS = 100, 60
 MARGEM_NLL = 0.01
 MAX_AMOSTRAS = 800
@@ -148,7 +152,12 @@ class Comite:
         rec = self.cfg['recencia']   # o buffer está em ordem cronológica: o último é o jogo mais novo
         pesos = [rec ** (n - 1 - i) for i in range(n)]
         mp = sum(pesos) / n
-        dados = [(self.z(a['c']), a['base'], a['y'], w / mp) for a, w in zip(ams, pesos)]
+        al = self.cfg.get('merecido') or 0.0
+
+        def alvo(a):   # placar real, ou misturado com o merecido quando o jogo tem números (autópsia)
+            m = a.get('merecido')
+            return [(1 - al) * y + al * x for y, x in zip(a['y'], m)] if al and m else a['y']
+        dados = [(self.z(a['c']), a['base'], alvo(a), w / mp) for a, w in zip(ams, pesos)]
         self.redes, perdas = [], []
         for sm in SEMENTES:
             r = Residual(self.n_in, sm, self.cfg['ocultos'])
@@ -263,6 +272,15 @@ def ajustar(n_in, log=print, forcar=False):
         if r:
             tabela.append({'cfg': cfg, **r})
             log(f'rede v3 ajuste: {cfg} -> NLL {r["nll"]:.4f} RPS {r["rps"]:.4f}')
+    # 22/10/2026: a melhor da grade também treinando com o placar merecido (quando há jogos com números)
+    if tabela and sum(1 for a in buf if a.get('merecido')) >= 20:
+        top = min(tabela, key=lambda t: t['nll'])['cfg']
+        cfg = dict(top, merecido=MERECIDO_TESTE)
+        if cfg not in [t['cfg'] for t in tabela]:
+            r = testar(buf, n_in, cfg, n_teste, passo)
+            if r:
+                tabela.append({'cfg': cfg, **r})
+                log(f'rede v3 ajuste: {cfg} -> NLL {r["nll"]:.4f} RPS {r["rps"]:.4f}')
     base = next((t for t in tabela if t['cfg'] == atual), None)
     cands = [t for t in tabela if base is None or (t['rps'] <= base['rps'] and t['nll'] <= base['nll'] - MARGEM_NLL)]
     melhor = min(cands, key=lambda t: t['nll']) if cands else None
